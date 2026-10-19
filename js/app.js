@@ -44,9 +44,10 @@ const CATALOG = [
 
 const SHARED = [
   { key: 'datum', label: 'Datum', type: 'date' },
-  { key: 'bandel', label: 'Bandel', inputmode: 'numeric' },
-  { key: 'driftplats', label: 'Driftplats / trafikplats' },
-  { key: 'spar', label: 'Spår' },
+  // row: fält med samma värde står på en rad; flex: hur stor del av raden fältet tar.
+  { key: 'bandel', label: 'Bandel', inputmode: 'numeric', row: 'plats', flex: 1 },
+  { key: 'driftplats', label: 'Driftplats', row: 'plats', flex: 2 },
+  { key: 'spar', label: 'Spår', row: 'plats', flex: 1 },
   { key: 'km', label: 'Km', inputmode: 'numeric', half: true },
   { key: 'm', label: 'm', inputmode: 'numeric', half: true },
   { key: 'vaxeltyp', label: 'Växeltyp', kind: 'vaxeltyp' },
@@ -280,7 +281,7 @@ function sharedInputs(values, onChange, opts = {}) {
   for (let i = 0; i < fields.length; i++) {
     const f = fields[i];
     if (f.kind) { out.push(special(f)); continue; }
-    const input = (field) => h('label', { class: 'field' + (field.half ? ' half' : '') },
+    const input = (field) => h('label', { class: 'field' + (field.half ? ' half' : ''), style: field.flex ? `flex: ${field.flex} 1 0` : null },
       h('span', {}, field.label),
       inputs[field.key] = h('input', {
         type: field.type || 'text', inputmode: field.inputmode, value: values[field.key] || '',
@@ -305,7 +306,12 @@ function sharedInputs(values, onChange, opts = {}) {
       showHint();
       continue;
     }
-    if (f.half && fields[i + 1]?.half) {
+    if (f.row) {
+      const group = [];
+      while (fields[i]?.row === f.row) group.push(fields[i++]);
+      i--;
+      out.push(h('div', { class: 'row' }, group.map(input)));
+    } else if (f.half && fields[i + 1]?.half) {
       out.push(h('div', { class: 'row' }, input(f), input(fields[i + 1])));
       i++;
     } else {
