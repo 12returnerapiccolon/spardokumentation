@@ -366,3 +366,7 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .matrix tbody.span td.calc.tom { background: repeating-linear-gradient(-30deg, transparent 0 8px, var(--line) 8px 9px); cursor: default; }
 .matrix tbody th.mark { color: var(--accent-text); background: var(--accent); border-radius: 6px; }
 .matrix tbody th.dim { color: var(--line); }
+
+/* Nytt jobb: rubrik i kort och föreslagna dokument. */
+.card h3 { margin: 0 0 8px; font-size: 15px; }
+.check small.forslag { color: var(--accent); font-size: 13px; }
