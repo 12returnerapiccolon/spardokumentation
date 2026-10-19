@@ -5,10 +5,11 @@ import { fillOverlay, isPdf } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
 import svets from './forms/svets.js';
+import heta from './forms/heta.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 
-const FORMS = [...VAXELFORMS, oversyn1481, svets];
+const FORMS = [...VAXELFORMS, oversyn1481, svets, heta];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
@@ -16,7 +17,7 @@ function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
 
-const READY = new Set(['vaxel', '1481', 'svets']);
+const READY = new Set(['heta', 'vaxel', '1481', 'svets']);
 
 // Jobb från första prototypen hade dokumentet "ev" i stället för växeltyp.
 function upgradeJob(job) {
@@ -447,7 +448,7 @@ function renderItem(item, data, onChange, job) {
       // placeholder: förval från jobbet, visas grått och används om rutan är tom.
       const listId = item.list ? `list-${item.key}-${Math.random().toString(36).slice(2, 8)}` : null;
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
-        h('input', { type: 'text', inputmode: item.inputmode, value: data[item.key] || '', autocomplete: 'off', list: listId,
+        h('input', { type: item.inputType || 'text', inputmode: item.inputmode, value: data[item.key] ?? (item.defaultValue ? item.defaultValue(job) : ''), autocomplete: 'off', list: listId,
           placeholder: item.placeholder ? item.placeholder(job) : null,
           oninput: e => onChange(item.key, e.target.value) }),
         item.list ? h('datalist', { id: listId }, item.list.map(v => h('option', { value: v }))) : null);
@@ -456,9 +457,19 @@ function renderItem(item, data, onChange, job) {
       return h('label', { class: 'field' }, h('span', {}, item.label),
         h('textarea', { rows: 3, oninput: e => onChange(item.key, e.target.value) }, data[item.key] || ''));
     case 'check':
-      return h('label', { class: 'check' },
-        h('input', { type: 'checkbox', checked: data[item.key], onchange: e => onChange(item.key, e.target.checked) }),
+      // defaultValue: ikryssad tills man ändrar den. sub: hör till punkten ovanför.
+      return h('label', { class: 'check' + (item.sub ? ' sub' : '') },
+        h('input', { type: 'checkbox', name: item.key, checked: data[item.key] ?? item.defaultValue, onchange: e => onChange(item.key, e.target.checked) }),
         h('span', {}, item.label));
+    case 'allcheck':
+      return h('button', {
+        type: 'button', class: 'button',
+        onclick: () => item.keys.forEach(k => {
+          onChange(k, true);
+          const box = document.querySelector(`input[name="${k}"]`);
+          if (box) box.checked = true;
+        }),
+      }, item.label);
     case 'radio': {
       const name = `r_${item.key}`;
       return h('fieldset', { class: 'segmented' },
@@ -487,7 +498,7 @@ function renderItem(item, data, onChange, job) {
         h('select', { onchange: e => onChange(item.key, e.target.value) },
           ['', ...item.options].map(opt => h('option', { value: opt, selected: (data[item.key] || '') === opt }, opt || '–'))));
     case 'group': {
-      const body = h('div', { class: 'group-body' }, item.items.map(i => renderItem(i, data, onChange, job)));
+      const body = h('div', { class: 'group-body' }, renderItems(item.items, data, onChange, job));
       if (item.toggle) {
         body.hidden = !data[item.toggle];
         return h('div', { class: 'group' },
@@ -511,22 +522,23 @@ function renderItem(item, data, onChange, job) {
   }
 }
 
+// Fält efter varandra. row: antal fält bredvid varandra, half: två.
+function renderItems(items, data, onChange, job) {
+  const out = [];
+  for (let i = 0; i < items.length; i++) {
+    const f = items[i];
+    const n = f.row || (f.half && items[i + 1]?.half ? 2 : 1);
+    if (n > 1) { out.push(h('div', { class: 'row' }, items.slice(i, i + n).map(x => renderItem(x, data, onChange, job)))); i += n - 1; } else out.push(renderItem(f, data, onChange, job));
+  }
+  return out;
+}
+
 // Upprepade rader, t.ex. svetsar. Varje rad har samma fält. En ny rad får innehållet från
 // raden före (eller den senaste raden från ett tidigare jobb) via item.newRow.
 function rowsEditor(item, data, onChange, job) {
   const list = data[item.key] = data[item.key] || [];
   const wrap = h('div', { class: 'rows' });
-  const fields = row => {
-    const out = [];
-    for (let i = 0; i < item.fields.length; i++) {
-      const f = item.fields[i];
-      const one = x => renderItem(x, row, (k, v) => { row[k] = v; onChange(item.key, list); }, job);
-      // row: antal fält bredvid varandra, half: två.
-      const n = f.row || (f.half && item.fields[i + 1]?.half ? 2 : 1);
-      if (n > 1) { out.push(h('div', { class: 'row' }, item.fields.slice(i, i + n).map(one))); i += n - 1; } else out.push(one(f));
-    }
-    return out;
-  };
+  const fields = row => renderItems(item.fields, row, (k, v) => { row[k] = v; onChange(item.key, list); }, job);
   const draw = () => wrap.replaceChildren(
     ...list.map((row, i) => h('div', { class: 'rowcard' },
       h('div', { class: 'rowhead' },
@@ -674,7 +686,7 @@ async function formView(id, key) {
     ...form.sections.map(section => h('section', { class: 'card' },
       h('h2', {}, section.title),
       section.help ? h('p', { class: 'muted' }, section.help) : null,
-      section.items.map(item => renderItem(item, data, onChange, job)))),
+      renderItems(section.items, data, onChange, job))),
     h('a', { class: 'button primary big', href: `#/jobb/${id}`, onclick: () => save.flush() }, 'Klar'),
   );
 }
