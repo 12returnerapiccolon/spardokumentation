@@ -15,6 +15,25 @@ z = zipfile.ZipFile(src)
 ENTRIES = [(it, z.read(it.filename)) for it in z.infolist()]
 DOCXML = dict((it.filename, d) for it, d in ENTRIES)['word/document.xml']
 
+# Pilarna ovanför växelbilden ligger i några mallar en bit ovanför sin rad och hamnar då
+# i rubrikraden (Inläggningsår, Växelmodell). Flytta ner dem i raden, lika högt.
+WP = '{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}'
+# EKV: vänster pil mellan ordet Driftplats och strecklinjen, höger pil ovanför sin Driftplats.
+ARROW_PT = {('ekv', 'Line 36'): 13, ('ekv', 'Line 37'): 3}
+def fix_arrows(xml):
+    doc = etree.fromstring(xml)
+    for tr in doc.iter(w + 'tr'):
+        arrows = [a for a in tr.iter(WP + 'anchor') if int(a.find(WP + 'extent').get('cy')) < 200000
+                  and a.find(WP + 'positionV').get('relativeFrom') == 'paragraph']
+        offs = [int(a.find(WP + 'positionV')[0].text) for a in arrows]
+        if not arrows or min(offs) >= 0: continue
+        target = max(offs) if 0 <= max(offs) <= 8 * 12700 else 3 * 12700
+        for a in arrows:
+            name = a.find(WP + 'docPr').get('name')
+            a.find(WP + 'positionV')[0].text = str(int(ARROW_PT.get((key, name), target / 12700) * 12700))
+    return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
+DOCXML = fix_arrows(DOCXML)
+
 def load():
     return etree.fromstring(DOCXML)
 
