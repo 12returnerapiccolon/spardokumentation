@@ -1,15 +1,20 @@
 // Växelbesiktningsrapporterna (TMALL 0379–0386). Alla är Word-mallar med samma uppbyggnad,
 // men fälten ligger på olika platser. Siffrorna är formulärfältens ordning i mallens
 // document.xml. Måttabellerna kommer ur vaxel-matt.js.
-import MATT from './vaxel-matt.js';
+// Kryssväxlarnas rapporter (TMALL 0393 och 0394) är PDF-formulär. Där är siffrorna appens egna
+// och platserna kommer ur kryss-layout.js.
+import WORD_MATT from './vaxel-matt.js';
 import { blankettDatum } from '../datum.js';
 import NORMAL from './vaxel-normal.js';
-import LAYOUT from './vaxel-layout.js';
+import WORD_LAYOUT from './vaxel-layout.js';
+import { LAYOUT as KRYSS_LAYOUT, MATT as KRYSS_MATT } from './kryss-layout.js';
 import { toleranser } from './vaxel-tolerans.js';
 
 const FORBES = ['Säkerhetsbesiktning', 'Underhållsbesiktning', 'Förbesiktning i spår', 'Förbesiktning på byggplats'];
 
 const range = (n, f) => Array.from({ length: n }, (_, i) => f(i));
+const LAYOUT = { ...WORD_LAYOUT, ...KRYSS_LAYOUT };
+const MATT = { ...WORD_MATT, ...KRYSS_MATT };
 
 // Korsningar och växeldelar för mallarna med flera korsningar (EKV, DKV, 3-vägsväxlar).
 function korsningar(names, b, layout) {
@@ -150,13 +155,60 @@ export const VAXELTYPER = [
     ],
     date: [153, 154, 155], sign: 156,
   },
+  {
+    key: 'evk', short: 'EV KRYSSVX', code: 'TMALL 0394', title: 'Besiktningsrapport EV tillhörande KRYSSVX',
+    // Blankettens växelbild visar var måtten tas, så den används i stället för bilaga 7.
+    bild: 'img/vaxelbild/evk.png',
+    typ: ['Säkerhetsbesiktning', 'Underhållsbesiktning', 'Förbesiktning på byggplats', 'Förbesiktning i spår'],
+    // Upp-/Nedspår är en textruta på blanketten.
+    data: { usp: 4, inlaggningsar: 5, ritnr: 6, ybv: 7, radie: 8, bandel: 9, vxnr: 10, trafikplats: 11, vxmodell: 12, driftplats_v: 13, besiktningsklass: 14, driftplats_h: 15 },
+    groups: [
+      { title: 'Korsning', items: [['Tillverkare', 110], ['Tillverkarens namn', 111, 'text'], ['Rälsstål', 112], ['Manganstål', 113], ['Manganstål, explosionshärdad', 114]] },
+      { title: 'Isolerskarvsplacering', items: [1, 2, 3, 4].map(n => [`Position ${n}`, 114 + n]) },
+      {
+        title: 'Värmebehandlad',
+        items: [['Tunga V', 119], ['Tunga H', 120], ['Stödräl V', 121], ['Stödräl H', 122], ['Farräl V', 123], ['Mellanräl V', 124], ['Mellanräl H', 125], ['Farräl H', 126]],
+      },
+      { title: 'Driv', items: [['T1', 127], ['T2', 128]] },
+      { title: 'TKK', items: [1, 2, 3, 4].map(n => [`TKK ${n}`, 128 + n]) },
+      {
+        title: 'Övrigt',
+        items: [['Elektriskt tungspetslås', 133], ['Växelklot med klykväxellås', 134], ['Växelklot utan klykväxellås', 135],
+          ['Uppkörbar omläggningsanordning', 136], ['Växelvärme', 137]],
+      },
+    ],
+    date: 138, sign: 139,
+  },
+  {
+    key: 'spkk', short: 'SPK KRYSSVX', code: 'TMALL 0393', title: 'Besiktningsrapport SPK tillhörande KRYSSVX',
+    bild: 'img/vaxelbild/spkk.png',
+    typ: ['Säkerhetsbesiktning', 'Underhållsbesiktning', 'Förbesiktning på byggplats', 'Förbesiktning i spår'],
+    data: { inlaggningsar: 4, ritnr: 5, ybv: 6, radie: 7, bandel: 8, vxnr: 9, trafikplats: 10, vxmodell: 11, driftplats_v: 12, besiktningsklass: 13, driftplats_h: 14 },
+    groups: [
+      ...['EK1', 'EK2', 'DK1', 'DK2'].map((name, k) => ({
+        title: `Korsning ${name}`,
+        items: [['Tillverkare', 120 + 5 * k], ['Tillverkarens namn', 121 + 5 * k, 'text'], ['Rälsstål', 122 + 5 * k],
+          ['Manganstål', 123 + 5 * k], ['Manganstål, explosionshärdad', 124 + 5 * k]],
+      })),
+      { title: 'Isolerskarv A-ände', items: [1, 2, 3, 4].map(n => [`Position ${n}`, 139 + n]) },
+      { title: 'Isolerskarv B-ände', items: [1, 2, 3, 4].map(n => [`Position ${n}`, 143 + n]) },
+    ],
+    date: 148, sign: 149,
+  },
 ];
+
+// Normalvärdena för en kryssväxels EV står i bilaga 8 som KRYSSVX-EV-…, medan växelmodellen heter KRYSSVX-….
+function normalModell(vaxeltyp, modell) {
+  if (vaxeltyp === 'evk' && /^KRYSSVX-(?!EV-)/i.test(modell)) return modell.replace(/^KRYSSVX-/i, 'KRYSSVX-EV-');
+  return modell;
+}
 
 // Måtten i den ordning de tas när man går från framkant stödräl till bakkant korsning.
 // Rak väg först, sedan läggs växeln om (x1, y1). I korsningen i och g före h.
 const ORDNING = {
   ev: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 i g h i1 g1 h1 e e1',
   evr: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 z q z1 q1 e e1',
+  evk: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 i g h i1 g1 e',
 };
 
 function ordna(key, namn) {
@@ -170,12 +222,13 @@ function ordna(key, namn) {
 // Ett värde med snedstreck (43/44) beror på korsningen och visas bara som förslag.
 export function autoVarden(vaxeltyp, job, data) {
   const modell = job.vxmodell || '';
+  const nyckel = normalModell(vaxeltyp, modell);
   const normal = {}, forslag = {};
-  for (const [m, v] of Object.entries(NORMAL[modell] || {})) {
+  for (const [m, v] of Object.entries(NORMAL[nyckel] || {})) {
     if (v.includes('/')) forslag[m] = v; else normal[m] = v;
   }
   const t = toleranser({ vaxeltyp, modell, typ: data.typ, besiktningsklass: data.besiktningsklass, radiefalt: data.radie, normal });
-  return { normal, forslag, tol: t.tol, tabeller: t.tabeller, saknas: t.saknas, matpunkter: t.matpunkter, harNormal: modell in NORMAL };
+  return { normal, forslag, tol: t.tol, tabeller: t.tabeller, saknas: t.saknas, matpunkter: t.matpunkter, harNormal: nyckel in NORMAL };
 }
 
 // Det svetsaren skrivit gäller före det automatiska, även en tömd ruta.
@@ -216,7 +269,7 @@ function buildForm(t) {
 
     // Den gamla Word-mallen känns igen så att appen kan be om PDF-mallen i stället.
     matchesWord({ word }) {
-      return !!word && word.fieldCount === t.fieldCount && word.text.includes(t.match);
+      return !!word && !!t.fieldCount && word.fieldCount === t.fieldCount && word.text.includes(t.match);
     },
 
     sections: [
@@ -230,24 +283,26 @@ function buildForm(t) {
           { type: 'shared', label: 'Växelmodell', from: 'vxmodell' },
           ...['inlaggningsar', 'ritnr', 'ybv', 'radie'].filter(k => k in d)
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0], inputmode: DATA_LABELS[k][1] })),
-          ...(d.usp ? [{ type: 'radio', key: 'usp', label: 'Spår', options: ['USP', 'NSP'] }] : []),
+          ...(d.usp != null ? [{ type: 'radio', key: 'usp', label: 'Spår', options: ['USP', 'NSP'] }] : []),
           { type: 'select', key: 'besiktningsklass', label: 'Besiktningsklass', options: ['B1', 'B2', 'B3', 'B4', 'B5'] },
           ...['driftplats_v', 'driftplats_h']
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0] })),
         ],
       },
-      {
+      ...(t.bild ? [] : [{
         title: t.markers ? 'Markeringar i växelbilden' : 'Växelbild',
         items: [
           { type: 'image', src: `img/vaxelbild/${t.key}.png`, alt: `Växelbild ${t.short}` },
           ...(t.markers || []).flatMap(g => [{ type: 'label', label: g.title.replace(/^Markeringar (i växelbilden, )?/, '') }, ...checkItems(g)]),
         ],
-      },
+      }]),
       {
         title: 'Mått i växeln',
         help: 'Normalvärde och tolerans fylls i efter växelmodell och besiktning (TRVINFRA-00017 bilaga 8–11) och går att ändra. Fyll i uppmätt, så hoppar markören vidare och differensen räknas ut.',
         items: [
-          { type: 'image', src: `img/placering/${t.key}.png`, alt: `Placering mått ${t.short}, TRVINFRA-00017 bilaga 7` },
+          t.bild
+            ? { type: 'image', src: t.bild, alt: `Växelbild ${t.short}` }
+            : { type: 'image', src: `img/placering/${t.key}.png`, alt: `Placering mått ${t.short}, TRVINFRA-00017 bilaga 7` },
           { type: 'measures', keys: ordna(t.key, matt.map(m => m[0])), auto: (job, data) => autoVarden(t.key, job, data) },
         ],
       },
@@ -265,7 +320,7 @@ function buildForm(t) {
     toValues(job, data, { diff }) {
       const v = {};
       t.typ.forEach((label, i) => { v[i] = data.typ === label; });
-      if (d.usp) { v[d.usp[0]] = data.usp === 'USP'; v[d.usp[1]] = data.usp === 'NSP'; }
+      if (Array.isArray(d.usp)) { v[d.usp[0]] = data.usp === 'USP'; v[d.usp[1]] = data.usp === 'NSP'; } else if (d.usp != null) v[d.usp] = data.usp || '';
       const fromJob = { bandel: job.bandel, vxnr: job.vxnr, trafikplats: job.driftplats, vxmodell: job.vxmodell };
       for (const [k, idx] of Object.entries(d)) {
         if (k === 'usp') continue;
@@ -281,8 +336,11 @@ function buildForm(t) {
       for (const g of [...(t.markers || []), ...t.groups]) {
         for (const [, idx, kind] of g.items) v[idx] = kind === 'text' ? data[`t${idx}`] : !!data[`c${idx}`];
       }
-      const [yyyy, mm, dd] = blankettDatum(job).split('-');
-      v[t.date[0]] = yyyy; v[t.date[1]] = mm; v[t.date[2]] = dd;
+      const datum = blankettDatum(job);
+      if (Array.isArray(t.date)) {
+        const [yyyy, mm, dd] = datum.split('-');
+        v[t.date[0]] = yyyy; v[t.date[1]] = mm; v[t.date[2]] = dd;
+      } else v[t.date] = datum;
       v[t.sign] = data.underskrift || job.namn;
       for (const k of Object.keys(v)) if (v[k] == null) v[k] = '';
       return v;

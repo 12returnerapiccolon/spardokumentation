@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v65';
+const VERSION = 'v66';
 const FILES = [
   './',
   'index.html',
@@ -18,6 +18,9 @@ const FILES = [
   'js/forms/vaxelmodeller.js',
   'js/forms/vaxel-normal.js',
   'js/forms/vaxel-tolerans.js',
+  'js/forms/kryss-layout.js',
+  'img/vaxelbild/evk.png',
+  'img/vaxelbild/spkk.png',
   'img/vaxelbild/ev.png',
   'img/vaxelbild/evr.png',
   'img/vaxelbild/ekv.png',

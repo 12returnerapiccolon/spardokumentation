@@ -1,4 +1,6 @@
 // Växelmodeller ur TRVINFRA-00017 Spårväxel v5.0, bilaga 2–4: [modell, sortiment].
+// evk är kryssväxlarna (EV tillhörande KRYSSVX). spkk är spårkorsningarna i kryssväxlar ur bilaga 8
+// tabell B8.7, sorterade efter kryssväxelns sortiment.
 export default {
  "ev": [
   [
@@ -300,7 +302,7 @@ export default {
    "Förvaltning"
   ]
  ],
- "kryssvx": [
+ "evk": [
   [
    "KRYSSVX-60E-208-1:9",
    "Standard"
@@ -469,6 +471,48 @@ export default {
   ],
   [
    "3V-SJ43-5,9-1:10/1:9-HH/VV",
+   "Avveckling"
+  ]
+ ],
+ "spkk": [
+  [
+   "KRYSSVX-SPK-60E-1:4,44",
+   "Standard"
+  ],
+  [
+   "KRYSSVX-SPK-60E-1:7,47",
+   "Standard"
+  ],
+  [
+   "KRYSSVX-SPK-BV50-1:4,44",
+   "Standard"
+  ],
+  [
+   "KRYSSVX-SPK-BV50-1:7,47",
+   "Standard"
+  ],
+  [
+   "KRYSSVX-SPK-UIC60-1:9",
+   "Förvaltning"
+  ],
+  [
+   "KRYSSVX-SPK-UIC60-1:7,47",
+   "Förvaltning"
+  ],
+  [
+   "KRYSSVX-SPK-UIC60-1:4,44",
+   "Förvaltning"
+  ],
+  [
+   "KRYSSVX-SPK-SJ50-1:7,47",
+   "Avveckling"
+  ],
+  [
+   "KRYSSVX-SPK-SJ50-1:4,44",
+   "Avveckling"
+  ],
+  [
+   "KRYSSVX-SPK-SJ43-1:4,44",
    "Avveckling"
   ]
  ]

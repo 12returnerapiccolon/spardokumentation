@@ -19,6 +19,8 @@ function t(...pairs) {
 
 const MM = (max, min) => ({ max, min });
 const X = '≥59/55';
+// Fotnoterna till kryssväxelns SPK övriga växeltyper: spårkorsning SJ50/SJ43 1:4,44 har egna toleranser för g5–g8 och i2–i5.
+const SJ_444 = [{ modell: /-SJ(50|43)-1:4,44/i, tol: t('g5 g6 g7 g8', '+3/-9', 'i2 i3 i4 i5', '+12/-0') }];
 
 export const TABELLER = [
   // Bilaga 9 Nybyggnad
@@ -29,6 +31,10 @@ export const TABELLER = [
   { id: 'B9.5', typ: 'ny', vx: ['dkv'], fam: '60E', tol: t('e..3 b..3 c..7', '±3', 'g..3', '±1,5', 'h..7', '±1', 'i..3', '+2/-1', 'k..3', '±2', 'x..7', '≥57') },
   { id: 'B9.6', typ: 'ny', vx: ['dkv'], fam: 'S54', tol: t('e..3 b..3 c..7', '±3', 'g..3', '±1,5', 'h..7', '±1', 'i..3', '+3/-1', 'k..3', '±2', 'x..7', '≥59') },
   { id: 'B9.7', typ: 'ny', vx: ['ekv'], fam: 'S54', tol: t('e..3 b..3 c c1 c2 c5 c6 c7', '±3', 'g..3', '±1,5', 'h..7', '±1', 'i..3', '+3/-1', 'k..3', '±2', 'x..3', '≥59') },
+  { id: 'B9.8', typ: 'ny', vx: ['evk'], fam: '60E', tol: t('a b c c1 e y y1 r r1 t t1 u u1 d d1', '±4', 'g g1 g2', '±1,5', 'h', '±1', 'i i1', '+2/-1', 'x x1', '≥59') },
+  { id: 'B9.9', typ: 'ny', vx: ['spkk'], fam: '60E', tol: t('b..3', '±2', 'g3 g4 g5 g6 g7 g8 g9 g10', '±1,5', 'h2 h3 h4 h5', '±1', 'i2 i3 i4 i5', '+2/-1', 'k..3', '±2') },
+  { id: 'B9.10', typ: 'ny', vx: ['evk'], fam: 'BV50', tol: t('a b c c1 e y y1 r r1 t t1 u u1 d d1', '±2', 'g g1 g2', '±1,5', 'h', '±1', 'i i1', '+3/-1', 'x x1', '≥59') },
+  { id: 'B9.11', typ: 'ny', vx: ['spkk'], fam: 'BV50', tol: t('b..3', '±2', 'g3 g4 g5 g6 g7 g8 g9 g10', '±1,5', 'h2 h3 h4 h5', '±1', 'i2 i3 i4 i5', '+3/-1', 'k..3', '±2') },
   { id: 'B9.12', typ: 'ny', vx: ['spk'], fam: '60E', tol: t('e..3 b..3', '±2', 'g..3', '±1,5', 'h..7', '±1', 'i..3', '+3/-1', 'k..3', '±2') },
   { id: 'B9.13', typ: 'ny', vx: ['spk'], fam: 'BV50', tol: t('e..3 b..3', '±2', 'g..3', '±1,5', 'h..7', '±1', 'i..3', '+3/-1', 'k..3', '±2') },
 
@@ -48,6 +54,15 @@ export const TABELLER = [
   { id: 'B10.13', typ: 'sak', vx: ['dkv'], fam: 'ovr', klass: '12', tol: t('b..3 c..7', '+15/-5', 'i..3', '+6/-5', 'h h1 h6 h7', '±4') },
   { id: 'B10.14', typ: 'sak', vx: ['ekv'], klass: '35', tol: t('b..3 c c1 c2 c5 c6 c7', '+8/-4', 'i..3', '+4/-2', 'h h1 h6 h7', '±3') },
   { id: 'B10.15', typ: 'sak', vx: ['ekv'], klass: '12', tol: t('b..3 c c1 c2 c5 c6 c7', '+15/-5', 'i..3', '+6/-5', 'h h1 h6 h7', '±4') },
+  { id: 'B10.16', typ: 'sak', vx: ['evk'], fam: '60E', klass: '35', tol: t('a c t c1 t1', '+6/-7', 'd d1', '+4/-6', 'i i1', '+2/-4', 'h', '±3') },
+  { id: 'B10.17', typ: 'sak', vx: ['spkk'], fam: '60E', klass: '35', tol: t('g5 g6 g7 g8', '±3', 'i2 i3 i4 i5', '+2/-4') },
+  { id: 'B10.18', typ: 'sak', vx: ['evk'], fam: 'ovr', klass: '35', radie: 'ge300', tol: t('a c t c1 t1', '+8/-4', 'd d1', '+6/-4', 'i i1', MM(1398, 1392), 'h', '±3') },
+  { id: 'B10.19', typ: 'sak', vx: ['evk'], fam: 'ovr', klass: '35', radie: 'lt300', tol: t('a c t', '+8/-4', 'c1 t1', '+15/-5', 'd', '+6/-4', 'd1', '+8/-5', 'i i1', MM(1398, 1392), 'h', '±3') },
+  { id: 'B10.20', typ: 'sak', vx: ['spkk'], fam: 'ovr', klass: '35', tol: t('g5 g6 g7 g8', '±3', 'i2 i3 i4 i5', MM(1398, 1392)), undantag: SJ_444 },
+  { id: 'B10.21', typ: 'sak', vx: ['evk'], fam: '60E', klass: '12', tol: t('a c t c1 t1', '+13/-7', 'd d1', '+6/-7', 'i i1', '+4/-7', 'h', '±4') },
+  { id: 'B10.22', typ: 'sak', vx: ['spkk'], fam: '60E', klass: '12', tol: t('g5 g6 g7 g8', '±3', 'i2 i3 i4 i5', '+4/-7') },
+  { id: 'B10.23', typ: 'sak', vx: ['evk'], fam: 'ovr', klass: '12', tol: t('a c t c1 t1', '+15/-5', 'd d1', '+8/-5', 'i i1', MM(1400, 1389), 'h', '±4') },
+  { id: 'B10.24', typ: 'sak', vx: ['spkk'], fam: 'ovr', klass: '12', tol: t('g5 g6 g7 g8', '±3', 'i2 i3 i4 i5', MM(1400, 1389)), undantag: SJ_444 },
   { id: 'B10.25', typ: 'sak', vx: ['spk'], tol: t('i..3', '+6/-5', 'h h1 h6 h7', '±4') },
 
   // Bilaga 11 Underhåll
@@ -66,6 +81,15 @@ export const TABELLER = [
   { id: 'B11.13', typ: 'und', vx: ['dkv'], fam: 'ovr', klass: '12', tol: t('e..3 b..3 c1 c2 c5 c6', '+10/-5', 'c c3 c4 c7', '+15/-5', 'g..3', '±3', 'h..7', '±4', 'i..3', '+4/-2', 'k..3', '+10/-5', 'x..7', X) },
   { id: 'B11.14', typ: 'und', vx: ['ekv'], klass: '35', tol: t('e..3 b..3 c c1 c2 c5 c6 c7', '+8/-4', 'g..3 h..7', '±3', 'i..3', '+4/-2', 'k..3', '+8/-4', 'x..3', X) },
   { id: 'B11.15', typ: 'und', vx: ['ekv'], klass: '12', tol: t('e..3 b..3 c1 c2 c5 c6', '+10/-5', 'c c7', '+15/-5', 'g..3', '±3', 'h..7', '±4', 'i..3', '+4/-2', 'k..3', '+10/-5', 'x..3', X) },
+  { id: 'B11.16', typ: 'und', vx: ['evk'], fam: '60E', klass: '35', tol: t('a b c c1 y y1 r r1 t t1 u u1', '+6/-4', 'd d1 e', '±4', 'g g1 g2 h', '±3', 'i i1', '±2', 'x x1', '≥59') },
+  { id: 'B11.17', typ: 'und', vx: ['spkk'], fam: '60E', klass: '35', tol: t('b..3', MM(1441, 1431), 'g3 g4 g5 g6 g7 g8 g9 g10 h2 h3 h4 h5', '±3', 'i2 i3 i4 i5', '±2', 'k..3', '+6/-4') },
+  { id: 'B11.18', typ: 'und', vx: ['evk'], fam: 'ovr', klass: '35', radie: 'ge300', tol: t('a b c c1 y y1 r r1 t t1 u u1', '+8/-4', 'd d1 e', '+6/-4', 'g g1 g2 h', '±3', 'i i1', MM(1398, 1392), 'x x1', X) },
+  { id: 'B11.19', typ: 'und', vx: ['evk'], fam: 'ovr', klass: '35', radie: 'lt300', tol: t('a b c y r t u', '+8/-4', 'c1 r1 t1 u1', '+15/-5', 'y1', '+10/-5', 'd e', '+6/-4', 'd1', '+8/-5', 'g g1 g2 h', '±3', 'i i1', MM(1398, 1392), 'x x1', X) },
+  { id: 'B11.20', typ: 'und', vx: ['spkk'], fam: 'ovr', klass: '35', tol: t('b..3', MM(1441, 1431), 'g3 g4 g5 g6 g7 g8 g9 g10 h2 h3 h4 h5', '±3', 'i2 i3 i4 i5', MM(1398, 1392), 'k..3', '+8/-4'), undantag: SJ_444 },
+  { id: 'B11.21', typ: 'und', vx: ['evk'], fam: '60E', klass: '12', tol: t('a b c y r t u', '+8/-5', 'c1 y1 r1 t1 u1', '+13/-5', 'd d1 e', '+6/-5', 'g g1 g2', '±3', 'h', '±4', 'i i1', '+2/-3', 'x x1', '≥59') },
+  { id: 'B11.22', typ: 'und', vx: ['spkk'], fam: '60E', klass: '12', tol: t('b..3', MM(1443, 1430), 'g3 g4 g5 g6 g7 g8 g9 g10', '±3', 'h2 h3 h4 h5', '±4', 'i2 i3 i4 i5', '+2/-3', 'k..3', '+8/-5') },
+  { id: 'B11.23', typ: 'und', vx: ['evk'], fam: 'ovr', klass: '12', tol: t('a b c y r t u', '+10/-5', 'c1 y1 r1 t1 u1', '+15/-5', 'd d1 e', '+8/-5', 'g g1 g2', '±3', 'h', '±4', 'i i1', MM(1398, 1392), 'x x1', X) },
+  { id: 'B11.24', typ: 'und', vx: ['spkk'], fam: 'ovr', klass: '12', tol: t('b..3', MM(1443, 1430), 'g3 g4 g5 g6 g7 g8 g9 g10', '±3', 'h2 h3 h4 h5', '±4', 'i2 i3 i4 i5', MM(1398, 1392), 'k..3', '+10/-5'), undantag: SJ_444 },
   { id: 'B11.25', typ: 'und', vx: ['spk'], klass: '35', tol: t('e..3 b..3', MM(1441, 1431), 'g..3 h..7', '±3', 'i..3', MM(1398, 1392), 'k..3', MM(1443, 1431)) },
   { id: 'B11.26', typ: 'und', vx: ['spk'], klass: '12', tol: t('e..3 b..3', MM(1443, 1430), 'g..3', '±3', 'h..7', '±4', 'i..3', MM(1398, 1392), 'k..3', MM(1445, 1430)) },
 ];
@@ -137,9 +161,11 @@ export function toleranser({ vaxeltyp, modell, typ, besiktningsklass, radiefalt,
   }
 
   const tol = {};
+  const medUndantag = tab => Object.assign({}, tab.tol, ...(tab.undantag || []).filter(u => u.modell.test(modell)).map(u => u.tol));
   if (kandidater.length) {
-    for (const [matt, v] of Object.entries(kandidater[0].tol)) {
-      const varden = kandidater.map(tab => tab.tol[matt] == null ? null : relativ(tab.tol[matt], normal[matt], modell));
+    const tabTol = kandidater.map(medUndantag);
+    for (const matt of Object.keys(tabTol[0])) {
+      const varden = tabTol.map(tt => tt[matt] == null ? null : relativ(tt[matt], normal[matt], modell));
       if (varden[0] != null && varden.every(x => x === varden[0])) tol[matt] = varden[0];
     }
   }
