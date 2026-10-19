@@ -358,12 +358,10 @@ function jobInputs(job, change, { visaVaxel }) {
   });
   andrat.push(() => { namn.placeholder = jobbnamn(job) || 'V01 Mån Lnk Isolbyte'; });
 
-  const fraga = (key, label) => h('fieldset', { class: 'segmented' }, h('legend', {}, label),
-    ['Ja', 'Nej'].map(opt => h('label', {},
-      h('input', { type: 'radio', name: `q_${key}`, value: opt, checked: job[key] === opt, onchange: () => onChange(key, opt) }),
-      h('span', {}, opt))));
+  const fraga = (key, label) => h('label', { class: 'check' },
+    h('input', { type: 'checkbox', name: `q_${key}`, checked: !!job[key], onchange: e => onChange(key, e.target.checked) }),
+    h('span', {}, label));
 
-  const valda = new Set(job.arbeten || []);
   const resultat = h('div', { class: 'note info' });
   andrat.push(() => {
     const b = bedomning(job.arbeten);
@@ -385,20 +383,18 @@ function jobInputs(job, change, { visaVaxel }) {
     h('div', { class: 'card' },
       h('label', { class: 'field' }, h('span', {}, 'Arbetsbeskrivning'),
         h('input', { type: 'text', name: 'arbete', value: job.arbete || '', autocomplete: 'off', placeholder: 'T.ex. Isolbyte', oninput: e => onChange('arbete', e.target.value) })),
-      h('label', { class: 'field' }, h('span', {}, 'Jobbnamn'), namn),
-      h('p', { class: 'muted note' }, 'Vecka, dag, driftplats och arbetsbeskrivning. Natt mot tisdag blir NmTis. Skriv ett eget namn om du vill.')),
+      h('label', { class: 'field' }, h('span', {}, 'Jobbnamn'), namn)),
     h('div', { class: 'card' }, sharedInputs(job, onChange, { only: ['km', 'km2'] })),
     h('div', { class: 'card' },
-      fraga('hett', 'Är det ett hett arbete?'),
-      fraga('svetsning', 'Kommer det att svetsas?'),
-      fraga('ivaxel', 'Sker arbetet i en växel?')),
+      fraga('hett', 'Hett arbete'),
+      fraga('svetsning', 'Svetsning'),
+      fraga('ivaxel', 'Arbete i växel'),
+      fraga('vxrevision', 'Växelrevision')),
     h('div', { class: 'card' },
-      h('h3', {}, 'Typ av arbete'),
-      h('p', { class: 'muted note' }, 'Enligt TRVINFRA-00271 bilaga 1. Avgör vem som får ibruktaga och vilken spårlägesmätning som krävs. Välj alla som gäller.'),
-      ARBETEN.map(a => h('label', { class: 'check' },
-        h('input', { type: 'checkbox', name: `arbete_${a.id}`, checked: valda.has(a.id),
-          onchange: e => { e.target.checked ? valda.add(a.id) : valda.delete(a.id); onChange('arbeten', ARBETEN.map(x => x.id).filter(id => valda.has(id))); } }),
-        h('span', {}, a.label))),
+      h('label', { class: 'field' }, h('span', {}, 'Typ av arbete (TRVINFRA-00271 bilaga 1)'),
+        h('select', { name: 'arbetstyp', onchange: e => onChange('arbeten', e.target.value ? [e.target.value] : []) },
+          h('option', { value: '' }, '– välj –'),
+          ARBETEN.map(a => h('option', { value: a.id, selected: (job.arbeten || [])[0] === a.id }, a.label)))),
       resultat),
     vaxel,
   ];
@@ -444,7 +440,7 @@ async function newJobView() {
         location.hash = `#/jobb/${record.id}`;
       },
     },
-      jobInputs(job, () => docs.refresh(), { visaVaxel: j => j.ivaxel === 'Ja' || valt('vaxel') }),
+      jobInputs(job, () => docs.refresh(), { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || valt('vaxel') }),
       h('h2', {}, 'Dokument'),
       h('p', { class: 'muted' }, 'Förvalda efter svaren ovan. Du kan kryssa i fler eller färre, och lägga till eller ta bort dokument senare.'),
       docs,
@@ -503,7 +499,7 @@ async function jobView(id) {
         save(); docBox.refresh();
         if (k === 'vaxeltyp') docList.replaceChildren(...docItems());
         setTitle(jobLabel(job), '#/');
-      }, { visaVaxel: j => j.ivaxel === 'Ja' || j.docs.includes('vaxel') })),
+      }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })),
     h('button', {
       class: 'button danger', type: 'button',
       onclick: async () => {

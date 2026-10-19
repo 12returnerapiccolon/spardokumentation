@@ -55,11 +55,12 @@ export function bedomning(ids = []) {
 // Dokumenten som jobbet troligen behöver, utifrån frågorna och typen av arbete.
 export function foreslagnaDokument(job) {
   const { valda, sparlage } = bedomning(job.arbeten);
-  const ja = k => job[k] === 'Ja';
+  const ja = k => job[k] === true;
   const docs = new Set();
   if (ja('hett') || ja('svetsning')) docs.add('heta');
   if (ja('svetsning')) docs.add('svets');
-  if (ja('ivaxel')) { docs.add('vaxel'); docs.add('1481'); }
+  if (ja('ivaxel')) docs.add('vaxel');
+  if (ja('vxrevision')) docs.add('1481');
   if (valda.some(a => a.ibt)) docs.add('ibt');
   if (valda.some(a => a.stab)) docs.add('0737');
   if (valda.some(a => a.kap)) docs.add('kap');
