@@ -42,6 +42,10 @@ const regel = key => REGLER[Number(key.match(/\d+/)[0])];
 // Hetarbetare och brandvakter: namn, certifikatkontroll, HA, BV.
 const ARBETARE = [['arb1', 24], ['arb2', 27], ['arb3', 30]];
 
+// Tillståndet gäller från jobbets datum. Vid nattarbete slutar det dagen efter (blankettDatum).
+// Standardtider (2026-10-19): natt 21:00–06:00, dag 07:00–15:00.
+const TIDER = job => (job.natt ? ['21:00', '06:00'] : ['07:00', '15:00']);
+
 // Brandvakter: de som kryssats som BV bland hetarbetarna.
 const brandvakter = (job, data) => ARBETARE
   .filter(([key], n) => data[`${key}bv`] && (data[key] ?? (n === 0 ? job.namn : '')))
@@ -77,10 +81,10 @@ export default {
       title: 'Tillståndet gäller',
       help: 'Tillståndet ska gälla så kort tid som möjligt och normalt en dag eller ett skift.',
       items: [
-        { type: 'text', key: 'franDatum', label: 'Från och med', inputType: 'date', defaultValue: job => blankettDatum(job), half: true },
-        { type: 'text', key: 'franKl', label: 'Klockan', inputType: 'time', half: true },
+        { type: 'text', key: 'franDatum', label: 'Från och med', inputType: 'date', defaultValue: job => job.datum || '', half: true },
+        { type: 'text', key: 'franKl', label: 'Klockan', inputType: 'time', defaultValue: job => TIDER(job)[0], half: true },
         { type: 'text', key: 'tillDatum', label: 'Till och med', inputType: 'date', defaultValue: job => blankettDatum(job), half: true },
-        { type: 'text', key: 'tillKl', label: 'Klockan', inputType: 'time', half: true },
+        { type: 'text', key: 'tillKl', label: 'Klockan', inputType: 'time', defaultValue: job => TIDER(job)[1], half: true },
       ],
     },
     {
@@ -130,10 +134,10 @@ export default {
     const v = {
       plats: data.plats || '',
       annat: data.annatText || '',
-      franDatum: val('franDatum', blankettDatum(job)),
-      franKl: data.franKl || '',
+      franDatum: val('franDatum', job.datum || ''),
+      franKl: val('franKl', TIDER(job)[0]),
       tillDatum: val('tillDatum', blankettDatum(job)),
-      tillKl: data.tillKl || '',
+      tillKl: val('tillKl', TIDER(job)[1]),
       // Tomt: de som kryssats som BV under underskrifterna.
       brandvakter: data.brandvakter || brandvakter(job, data),
       langreTid: data.langreTid || '',
