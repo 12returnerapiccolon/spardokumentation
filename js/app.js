@@ -505,15 +505,6 @@ function renderItem(item, data, onChange, job) {
         h('input', { type: 'checkbox', name: item.key, checked: data[item.key] ?? item.defaultValue, onchange: e => onChange(item.key, e.target.checked) }),
         h('span', {}, item.label)),
         item.help ? h('p', { class: 'muted note rule' }, item.help) : null];
-    case 'allcheck':
-      return h('button', {
-        type: 'button', class: 'button',
-        onclick: () => item.keys.forEach(k => {
-          onChange(k, true);
-          const box = document.querySelector(`input[name="${k}"]`);
-          if (box) box.checked = true;
-        }),
-      }, item.label);
     case 'radio': {
       const name = `r_${item.key}`;
       return h('fieldset', { class: 'segmented' },

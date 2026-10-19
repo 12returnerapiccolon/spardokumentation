@@ -90,7 +90,6 @@ export default {
     {
       title: 'Kontrollpunkter',
       items: [
-        { type: 'allcheck', label: 'Kryssa i alla kontrollpunkter', keys: PUNKTER.map(([key]) => key) },
         ...PUNKTER.flatMap(([key, label, , sub]) => [
           { type: 'check', key, label, help: key === 'p2b' ? null : regel(key) },
           ...(sub ? [{ type: 'check', key: sub[0], label: sub[1], sub: true }] : []),
