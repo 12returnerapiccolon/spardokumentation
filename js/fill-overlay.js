@@ -39,7 +39,8 @@ function drawWrapped(page, value, { x, base, size, maxWidth, height, align, font
     return out;
   };
   let s = size, l = lines(s);
-  while (s > 5 && l.length * s * 1.15 > height - 2) { s -= 0.5; l = lines(s); }
+  const forBred = () => l.some(t => font.widthOfTextAtSize(t, s) > maxWidth);
+  while (s > 5 && (l.length * s * 1.15 > height - 2 || forBred())) { s -= 0.5; l = lines(s); }
   const top = base + height - 1.5;
   l.forEach((line, i) => {
     const w = font.widthOfTextAtSize(line, s);

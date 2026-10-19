@@ -10,9 +10,12 @@ import { AVSNITT, PUNKT } from './tdok0311.js';
 // höjd och sidled (2026-10-19). Raden går från y 67,3 till 95,8 på sidan 2. Läggs
 // ovanpå den genererade layouten så att det finns kvar när mallen görs om.
 const MITT = { A78: [95.1, 86], C78: [229.4, 175], G78: [386, 130] };
+// Rutorna för UH-kontrakt och projekt får namnet på två rader (2026-10-19).
+const KONTRAKT = { C2: 162.27, E2: 251.8 };
 const layout = {
   ...LAYOUT,
-  text: { ...LAYOUT.text, ...Object.fromEntries(Object.entries(MITT).map(([cell, [x, maxW]]) => [cell, [1, x, 77.7, 11, 'center', maxW]])) },
+  text: { ...LAYOUT.text, ...Object.fromEntries(Object.entries(MITT).map(([cell, [x, maxW]]) => [cell, [1, x, 77.7, 11, 'center', maxW]])),
+    ...Object.fromEntries(Object.entries(KONTRAKT).map(([cell, x]) => [cell, [0, x, 749.5, 9, 'center', 44, 21]])) },
 };
 
 // TRVINFRA-00271 bilaga 1, tabell B1.1. sv: får utföras av spårsvetsare.
@@ -157,7 +160,8 @@ export default {
       title: 'Arbete',
       help: 'Grå text hämtas från jobbet.',
       items: [
-        { type: 'radio', key: 'kontrakt', label: 'Arbete i', options: ['UH-kontrakt', 'Projekt'], defaultValue: () => 'UH-kontrakt' },
+        { type: 'radio', key: 'kontrakt', label: 'Arbete i', options: ['UH-kontrakt', 'Projekt'], noEmpty: true, remember: true, defaultValue: () => 'UH-kontrakt' },
+        { type: 'text', key: 'kontraktNamn', label: 'UH-kontrakt eller projekt (namn)', remember: true },
         { type: 'shared', label: 'Datum för besiktning', from: 'datum' },
         { type: 'text', key: 'arbete', label: 'Arbete', placeholder: () => 't.ex. Byte av isolerskarv vxl 12' },
         { type: 'text', key: 'bestnr', label: 'Beställningsnr', placeholder: job => job.ao || '' },
@@ -265,8 +269,9 @@ export default {
     const sign = initialer(namn);
     const kontrakt = val('kontrakt', 'UH-kontrakt');
     const v = {
-      C2: kontrakt === 'UH-kontrakt' ? 'X' : '-',
-      E2: kontrakt === 'Projekt' ? 'X' : '-',
+      // Namnet skrivs i rutan för det som är valt. Utan namn blir det ett X.
+      C2: kontrakt === 'UH-kontrakt' ? data.kontraktNamn || 'X' : '',
+      E2: kontrakt === 'Projekt' ? data.kontraktNamn || 'X' : '',
       H2: datum,
       B3: data.arbete || '',
       I3: data.bestnr || job.ao || '',
