@@ -32,10 +32,14 @@ const EGENKONTROLL = [
 // Förval som hämtas från jobbet när svetsaren inte skrivit något eget.
 const dag = job => (blankettDatum(job) ? String(Number(blankettDatum(job).slice(8))) : '');
 const plats = job => [job.bandel, job.driftplats, job.vxnr || (job.spar && `spår ${job.spar}`)].filter(Boolean).join('-');
-const kmm = job => (job.vxnr || !job.km ? '' : `${job.km}+${job.m || '000'}`);
+const kmm = (km, m) => `${km}+${String(m || 0).padStart(3, '0')}`;
+const jobKmm = job => (job.vxnr || !job.km ? '' : kmm(job.km, job.m));
+// Läget skrivs som km och m eller som svetsens nummer på växelbilden (1–14).
+// row.km är fritext från första versionen.
+const lage = (row, job) => row.nr || (row.lagekm ? kmm(row.lagekm, row.lagem) : '') || row.km || jobKmm(job);
 
 // Rader som läggs till kopierar föregående svets, utom det som skiljer mellan svetsar.
-const KOPIERAS_INTE = ['dag', 'plats', 'km', 'fore', 'efter'];
+const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter'];
 
 export default {
   key: 'svets',
@@ -76,7 +80,9 @@ export default {
           { type: 'text', key: 'dag', label: 'Dag', inputmode: 'numeric', placeholder: dag, half: true },
           { type: 'select', key: 'hv', label: 'H/V räl', options: ['H', 'V'], half: true },
           { type: 'text', key: 'plats', label: 'Bandel-ort-växelnummer / spår', placeholder: plats },
-          { type: 'text', key: 'km', label: 'Km+m eller nr enligt växelbilden', placeholder: kmm, list: Array.from({ length: 14 }, (_, i) => String(i + 1)) },
+          { type: 'text', key: 'lagekm', label: 'Km', inputmode: 'numeric', placeholder: job => (job.vxnr ? '' : job.km || ''), row: 3 },
+          { type: 'text', key: 'lagem', label: 'm', inputmode: 'numeric', placeholder: job => (job.vxnr ? '' : job.km ? job.m || '' : '') },
+          { type: 'text', key: 'nr', label: 'el. nr i vxbild', inputmode: 'numeric' },
           { type: 'text', key: 'fore', label: 'Före kap mm', inputmode: 'decimal', half: true },
           { type: 'text', key: 'efter', label: 'Efter kap mm', inputmode: 'decimal', half: true },
           { type: 'select', key: 'temp', label: 'Rältemp °C', options: TEMP, half: true },
@@ -124,9 +130,9 @@ export default {
       R27: job.svetsansvarig_tel || data.telefon || '',
       O29: data.kommentar || '',
     };
-    const auto = { dag: dag(job), plats: plats(job), km: kmm(job) };
+    const auto = { dag: dag(job), plats: plats(job) };
     (data.svetsar || []).slice(0, RADER).forEach((row, i) => {
-      for (const [k, col] of Object.entries(COLS)) v[`${col}${6 + 2 * i}`] = row[k] || auto[k] || '';
+      for (const [k, col] of Object.entries(COLS)) v[`${col}${6 + 2 * i}`] = (k === 'km' ? lage(row, job) : row[k] || auto[k]) || '';
     });
     for (const [key, , cell] of EGENKONTROLL) v[cell] = data[key] || '';
     return v;

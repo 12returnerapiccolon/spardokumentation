@@ -524,7 +524,9 @@ function rowsEditor(item, data, onChange, job) {
     for (let i = 0; i < item.fields.length; i++) {
       const f = item.fields[i];
       const one = x => renderItem(x, row, (k, v) => { row[k] = v; onChange(item.key, list); }, job);
-      if (f.half && item.fields[i + 1]?.half) { out.push(h('div', { class: 'row' }, one(f), one(item.fields[++i]))); } else out.push(one(f));
+      // row: antal fält bredvid varandra, half: två.
+      const n = f.row || (f.half && item.fields[i + 1]?.half ? 2 : 1);
+      if (n > 1) { out.push(h('div', { class: 'row' }, item.fields.slice(i, i + n).map(one))); i += n - 1; } else out.push(one(f));
     }
     return out;
   };
