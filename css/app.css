@@ -345,3 +345,16 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .info-summary th, .info-summary td { text-align: left; vertical-align: top; padding: 6px 4px; border-bottom: 1px solid var(--line, #ddd); }
 .info-summary th { font-weight: 600; width: 55%; }
 .button.info-image { display: block; width: 100%; text-align: left; margin: 0 0 8px; min-height: 44px; }
+
+/* Tabell med mätpunkter (skevningsprotokoll). */
+.matrix-wrap { overflow-x: auto; margin: 0 -4px 12px; }
+.matrix { width: 100%; border-collapse: collapse; font-size: 15px; }
+.matrix th, .matrix td { padding: 2px 3px; text-align: center; border-bottom: 1px solid var(--line); }
+.matrix thead th { font-size: 12px; font-weight: 600; color: var(--muted); vertical-align: bottom; }
+.matrix tbody th { font-weight: 600; width: 2.5em; }
+.matrix input { width: 100%; min-width: 3.5em; height: 40px; text-align: center; font-size: 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
+.matrix td.calc { color: var(--muted); font-variant-numeric: tabular-nums; }
+.matrix td.calc.warn { color: var(--danger); font-weight: 600; }
+.matrix td.with-sign { display: flex; gap: 2px; align-items: center; }
+.matrix td.with-sign input { min-width: 2.8em; }
+.matrix button.sign { flex: none; width: 30px; height: 40px; border: 1px solid var(--line); border-radius: 6px; background: var(--shared); color: var(--text); font-size: 18px; padding: 0; }

@@ -9,11 +9,12 @@ import heta from './forms/heta.js';
 import ibt from './forms/ibt.js';
 import k0737 from './forms/k0737.js';
 import kap from './forms/kap.js';
+import skev from './forms/skev.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 
-const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt, k0737, kap];
+const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt, k0737, kap, skev];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
@@ -21,7 +22,7 @@ function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
 
-const READY = new Set(['heta', 'vaxel', '1481', 'svets', 'ibt', '0737', 'kap']);
+const READY = new Set(['heta', 'vaxel', '1481', 'svets', 'ibt', '0737', 'kap', 'skevning']);
 
 // Jobb från första prototypen hade dokumentet "ev" i stället för växeltyp.
 function upgradeJob(job) {
@@ -36,7 +37,7 @@ function upgradeJob(job) {
 const CATALOG = [
   { key: 'heta', title: 'Heta arbeten, tillstånd och kontrollista' },
   { key: 'svets', title: 'Svetsrapport / egenkontroll' },
-  { key: 'skevning', title: 'Spårlägesmätning / skevningsprotokoll' },
+  { key: 'skevning', title: 'Spårlägesmätning / skevningsprotokoll (TMALL 1605)' },
   { key: 'vaxel', title: 'Växelbesiktningsrapport (efter växeltyp)' },
   { key: '1481', title: 'Översyn spårväxel (TMALL 1481)' },
   { key: 'ibt', title: 'Ibruktagande, IBT (TMALL 0824)' },
@@ -489,6 +490,42 @@ function renderItem(item, data, onChange, job) {
           item.summary ? h('table', { class: 'info-summary' }, item.summary.map(([a, b]) => h('tr', {}, h('th', {}, a), h('td', {}, b)))) : null,
           (item.images || []).map(([text, src]) => h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(src, text) }, `📋 ${text}`)),
           (item.text || []).map(stycke)));
+    }
+    case 'matrix': {
+      // Tabell med ett fast antal rader, t.ex. mätpunkter. cols: rutor att skriva i, calc:
+      // uträknade kolumner { label, value(list, i), warn(list, i) }. Enter går till raden under.
+      // sign: knapp ± bredvid rutan, eftersom telefonens sifferknappsats saknar minustecken.
+      const list = data[item.key] = data[item.key] || [];
+      const calcCells = [];
+      const refresh = () => calcCells.forEach(({ td, c, i }) => {
+        td.textContent = c.value(list, i) || '';
+        td.classList.toggle('warn', !!c.warn?.(list, i));
+      });
+      const table = h('table', { class: 'matrix' },
+        h('thead', {}, h('tr', {}, h('th', {}, item.rowHead), item.cols.map(c => h('th', {}, c.label)), (item.calc || []).map(c => h('th', { class: 'calc' }, c.label)))),
+        h('tbody', {}, Array.from({ length: item.rows }, (_, i) => h('tr', {},
+          h('th', {}, item.rowLabel(i)),
+          item.cols.map((c, ci) => {
+            const spara = value => { list[i] = { ...(list[i] || {}), [c.key]: value }; onChange(item.key, list); refresh(); };
+            const input = h('input', {
+              type: 'text', inputmode: c.inputmode || 'decimal', enterkeyhint: 'next', autocomplete: 'off',
+              value: list[i]?.[c.key] ?? '', 'aria-label': `${c.label} ${item.rowLabel(i)}`, 'data-col': ci, 'data-row': i,
+              oninput: e => spara(e.target.value),
+              onkeydown: e => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                table.querySelector(`input[data-col="${ci}"][data-row="${i + 1}"]`)?.focus() || e.target.blur();
+              },
+            });
+            const tecken = c.sign ? h('button', {
+              type: 'button', class: 'sign', 'aria-label': 'Byt tecken',
+              onclick: () => { input.value = input.value.startsWith('-') ? input.value.slice(1) : `-${input.value}`; spara(input.value); },
+            }, '±') : null;
+            return h('td', { class: c.sign ? 'with-sign' : null }, input, tecken);
+          }),
+          (item.calc || []).map(c => { const td = h('td', { class: 'calc' }); calcCells.push({ td, c, i }); return td; })))));
+      refresh();
+      return h('div', { class: 'matrix-wrap' }, table);
     }
     case 'calc': {
       // Uträknat värde som inte går att skriva i, t.ex. SFT. Räknas om när något ändras.
