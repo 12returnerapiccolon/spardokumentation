@@ -58,7 +58,8 @@ export default {
     {
       title: 'Huvud',
       items: [
-        { type: 'shared', label: 'Företag/enhet', value: job => job.enhet || '' },
+        // Förval från Inställningar (grått). Det som skrivs här gäller bara den här rapporten.
+        { type: 'text', key: 'enhet', label: 'Företag/enhet', placeholder: job => job.enhet || '' },
         { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric' },
         { type: 'text', key: 'kundao', label: 'Kundens Ao nr' },
         { type: 'text', key: 'bessy', label: 'Bessy anm/Ofelia' },
@@ -108,10 +109,10 @@ export default {
     },
     {
       title: 'Svetsansvarig och kommentarer',
-      help: 'Företag/enhet och svetsansvarig ändras under Inställningar.',
+      help: 'Grå text hämtas från Inställningar. Skriv här om det ska vara något annat i den här rapporten.',
       items: [
-        { type: 'shared', label: 'Svetsansvarig', value: job => job.svetsansvarig || '' },
-        { type: 'shared', label: 'Telefonnr', value: job => job.svetsansvarig_tel || '' },
+        { type: 'text', key: 'ansvarig', label: 'Svetsansvarig', placeholder: job => job.svetsansvarig || '' },
+        { type: 'text', key: 'telefon', label: 'Telefonnr', inputmode: 'tel', placeholder: job => job.svetsansvarig_tel || '' },
         { type: 'textarea', key: 'kommentar', label: 'Avvikelser eller kommentarer' },
       ],
     },
@@ -120,16 +121,16 @@ export default {
   toValues(job, data) {
     const datum = blankettDatum(job);
     const v = {
-      // data.* för jobb som skapades innan uppgifterna flyttades till Inställningar.
-      C2: job.enhet || data.enhet || '',
+      // Det som skrivits i rapporten går före Inställningar.
+      C2: data.enhet || job.enhet || '',
       H2: data.ao || '',
       P2: data.kundao || '',
       C4: [job.namn, job.svetsid].filter(Boolean).join(' '),
       H4: datum.slice(0, 4),
       K4: datum ? MANADER[Number(datum.slice(5, 7)) - 1] : '',
       P4: data.bessy || '',
-      R26: job.svetsansvarig || data.ansvarig || '',
-      R27: job.svetsansvarig_tel || data.telefon || '',
+      R26: data.ansvarig || job.svetsansvarig || '',
+      R27: data.telefon || job.svetsansvarig_tel || '',
       O29: data.kommentar || '',
     };
     const auto = { dag: dag(job), plats: plats(job) };
