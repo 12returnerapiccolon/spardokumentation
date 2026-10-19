@@ -106,8 +106,9 @@ export default {
     },
     {
       title: 'Egenkontroll',
-      help: 'X = utfört, -- = inte aktuellt.',
-      items: EGENKONTROLL.map(([key, label]) => ({ type: 'radio', key, label, options: ['X', '--'] })),
+      help: 'Kryssa i det som är utfört. Det blir X på blanketten, och det som inte är ikryssat lämnas tomt.',
+      // En kryssruta per egenkontroll (2026-10-19). Äldre jobb sparade X eller --.
+      items: EGENKONTROLL.map(([key, label]) => ({ type: 'check', key, label, isChecked: v => v === true || v === 'X' })),
     },
     {
       title: 'Svetsansvarig och kommentarer',
@@ -139,7 +140,7 @@ export default {
     (data.svetsar || []).slice(0, RADER).forEach((row, i) => {
       for (const [k, col] of Object.entries(COLS)) v[`${col}${6 + 2 * i}`] = (k === 'km' ? lage(row, job) : row[k] || auto[k]) || '';
     });
-    for (const [key, , cell] of EGENKONTROLL) v[cell] = data[key] || '';
+    for (const [key, , cell] of EGENKONTROLL) v[cell] = data[key] === true || data[key] === 'X' ? 'X' : '';
     return v;
   },
 };
