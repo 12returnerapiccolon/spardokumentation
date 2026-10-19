@@ -169,17 +169,16 @@ export default {
       title: `Kontrollpunkter: ${title}`,
       help: title === 'Allmänt' ? 'Kryssa i punkterna som är kontrollerade. De signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld, och övriga får ett streck. Tryck på en punkt för att se vad som ska kontrolleras enligt TDOK 2021:0311. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
       items: rows.map(([r, label, enligt, moment]) => ({
-        type: 'check', key: `k${r}`, label,
+        type: 'check', key: `k${r}`, label, isChecked: kontrollerad,
         details: { intro: [`Utförs enligt: ${enligt}`, `Kontrollmoment: ${moment}`], blocks: (PUNKT[r] || []).map(n => AVSNITT[n]) },
       })),
     })),
     {
       title: 'Kontrollerade och bifogade egenkontroller',
-      help: 'Förvalt Kontrollerad för dokument som ingår i jobbet.',
-      items: EGEN.flatMap(([, tmall, label, doc], i) => [
-        { type: 'radio', key: `e${i}`, label: `${tmall === '-' ? '' : `TMALL ${tmall} `}${label}`, options: [UTFORD, EJ], defaultValue: job => (doc && job.docs?.includes(doc) ? UTFORD : undefined) },
-        { type: 'radio', key: `e${i}bif`, label: 'Bifogas', options: ['Ja', 'Nej'], defaultValue: job => (doc && job.docs?.includes(doc) ? 'Ja' : undefined), sub: true },
-      ]),
+      help: 'Kryssa i det som är kontrollerat och bifogas. Dokument som ingår i jobbet är ikryssade från början.',
+      items: EGEN.map(([, tmall, label, doc], i) => (
+        { type: 'check', key: `e${i}`, label: `${tmall === '-' ? '' : `TMALL ${tmall} `}${label}`, defaultValue: job => !!doc && !!job.docs?.includes(doc), isChecked: kontrollerad }
+      )),
     },
     {
       title: 'Noterade anmärkningar',
@@ -259,10 +258,9 @@ export default {
     }
     EGEN.forEach(([r, , , doc], i) => {
       const har = doc && job.docs?.includes(doc);
-      const s = val(`e${i}`, har ? UTFORD : undefined);
-      const bif = val(`e${i}bif`, har ? 'Ja' : undefined);
-      if (s === UTFORD) Object.assign(v, { [`F${r}`]: datum, [`H${r}`]: bif || '', [`I${r}`]: sign });
-      else if (s === EJ) Object.assign(v, { [`F${r}`]: EJ, [`H${r}`]: '-', [`I${r}`]: '-' });
+      // Ikryssad = kontrollerad och bifogad (2026-10-19).
+      if (kontrollerad(val(`e${i}`, !!har))) Object.assign(v, { [`F${r}`]: datum, [`H${r}`]: 'Ja', [`I${r}`]: sign });
+      else Object.assign(v, { [`F${r}`]: '-', [`H${r}`]: '-', [`I${r}`]: '-' });
     });
     (data.anm || []).slice(0, 4).forEach((a, i) => {
       const r = 68 + i;

@@ -511,15 +511,18 @@ function renderItem(item, data, onChange, job) {
     case 'textarea':
       return h('label', { class: 'field' }, h('span', {}, item.label),
         h('textarea', { rows: 3, oninput: e => onChange(item.key, e.target.value) }, data[item.key] || ''));
-    case 'check':
-      // defaultValue: ikryssad tills man ändrar den. sub: hör till punkten ovanför.
+    case 'check': {
+      // defaultValue: ikryssad tills man ändrar den (värde eller funktion av jobbet).
+      // isChecked: tolkar sparade värden från äldre versioner av blanketten. sub: hör till punkten ovanför.
       // help: förklaring under rutan, t.ex. säkerhetsregeln för en kontrollpunkt.
       // details: { intro, blocks } fälls ut när man trycker på texten, t.ex. kraven i en TDOK.
       // Rutan kryssas då bara i när man trycker på själva rutan.
+      const current = data[item.key] ?? (typeof item.defaultValue === 'function' ? item.defaultValue(job) : item.defaultValue);
+      const checked = !!(item.isChecked ? item.isChecked(current) : current);
       if (item.details) {
         return h('div', { class: 'check punkt' },
           h('label', { class: 'punkt-box' },
-            h('input', { type: 'checkbox', name: item.key, 'aria-label': item.label, checked: data[item.key] ?? item.defaultValue, onchange: e => onChange(item.key, e.target.checked) })),
+            h('input', { type: 'checkbox', name: item.key, 'aria-label': item.label, checked, onchange: e => onChange(item.key, e.target.checked) })),
           h('details', {},
             h('summary', {}, item.label),
             h('div', { class: 'tdok' },
@@ -530,9 +533,10 @@ function renderItem(item, data, onChange, job) {
               ]))));
       }
       return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },
-        h('input', { type: 'checkbox', name: item.key, checked: data[item.key] ?? item.defaultValue, onchange: e => onChange(item.key, e.target.checked) }),
+        h('input', { type: 'checkbox', name: item.key, checked, onchange: e => onChange(item.key, e.target.checked) }),
         h('span', {}, item.label)),
         item.help ? h('p', { class: 'muted note rule' }, item.help) : null];
+    }
     case 'radio': {
       // defaultValue: förval tills man väljer själv. help: förklaring under valen.
       const name = `r_${item.key}`;
