@@ -92,14 +92,14 @@ const ROLLER = [
   ['projektledare', 'TRV Projektledare', 4],
   ['platschef', 'Entreprenör Platschef', 5, job => job.platschef || ''],
   ['arbetsledare', 'Ibruktagande-/arbetsledare', 6, job => job.arbetsledare || ''],
-  ['besiktningsman', 'Ibruktagandebesiktningsman', 7, job => job.namn || ''],
-  ['bankontrollant', 'Bankontrollant', 8],
+  ['besiktningsman', 'Ibruktagandebesiktningsman', 7],
+  ['bankontrollant', 'Bankontrollant', 8, job => job.namn || ''],
 ];
 
 const km = job => (job.km ? `${job.km}+${String(job.m || 0).padStart(3, '0')}` : '');
 const dpl = job => [job.driftplats, job.vxnr ? `vxl ${job.vxnr}` : '', job.spar ? `sp ${job.spar}` : ''].filter(Boolean).join(' / ');
-// Den som besiktigar signerar. Förval: namnet i profilen.
-const besiktningsman = (job, data) => data.besiktningsman ?? job.namn ?? '';
+// Bankontrollanten besiktigar och signerar. Förval: namnet i profilen.
+const bankontrollant = (job, data) => data.bankontrollant ?? job.namn ?? '';
 
 export default {
   key: 'ibt',
@@ -205,7 +205,7 @@ export default {
     },
     {
       title: 'Underskrift',
-      help: 'Underskriften blir besiktningsmannens initialer och namnförtydligandet hela namnet.',
+      help: 'Underskriften blir bankontrollantens initialer och namnförtydligandet hela namnet.',
       items: [
         { type: 'text', key: 'klockslag', label: 'Klockslag', inputType: 'time' },
       ],
@@ -215,7 +215,7 @@ export default {
   toValues(job, data) {
     const val = (key, def) => (data[key] !== undefined ? data[key] : def);
     const datum = blankettDatum(job);
-    const namn = besiktningsman(job, data);
+    const namn = bankontrollant(job, data);
     const sign = initialer(namn);
     const kontrakt = val('kontrakt', 'UH-kontrakt');
     const v = {
