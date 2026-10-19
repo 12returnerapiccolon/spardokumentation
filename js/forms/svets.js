@@ -34,9 +34,9 @@ const dag = job => (blankettDatum(job) ? String(Number(blankettDatum(job).slice(
 const plats = job => [job.bandel, job.driftplats, job.vxnr || (job.spar && `spår ${job.spar}`)].filter(Boolean).join('-');
 const kmm = (km, m) => `${km}+${String(m || 0).padStart(3, '0')}`;
 const jobKmm = job => (job.vxnr || !job.km ? '' : kmm(job.km, job.m));
-// Läget skrivs som km och m eller som svetsens nummer på växelbilden (1–14).
-// row.km är fritext från första versionen.
-const lage = (row, job) => row.nr || (row.lagekm ? kmm(row.lagekm, row.lagem) : '') || row.km || jobKmm(job);
+// Läget skrivs som km + m. Utan meter är första rutan svetsens nummer på växelbilden (1–14).
+// row.nr och row.km (fritext) kommer från tidigare versioner.
+const lage = (row, job) => (row.lagekm ? (row.lagem ? kmm(row.lagekm, row.lagem) : row.lagekm) : '') || row.nr || row.km || jobKmm(job);
 
 // Rader som läggs till kopierar föregående svets, utom det som skiljer mellan svetsar.
 const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter'];
@@ -80,9 +80,10 @@ export default {
           { type: 'text', key: 'dag', label: 'Dag', inputmode: 'numeric', placeholder: dag, half: true },
           { type: 'select', key: 'hv', label: 'H/V räl', options: ['H', 'V'], half: true },
           { type: 'text', key: 'plats', label: 'Bandel-ort-växelnummer / spår', placeholder: plats },
-          { type: 'text', key: 'lagekm', label: 'Km', inputmode: 'numeric', placeholder: job => (job.vxnr ? '' : job.km || ''), row: 3 },
-          { type: 'text', key: 'lagem', label: 'm', inputmode: 'numeric', placeholder: job => (job.vxnr ? '' : job.km ? job.m || '' : '') },
-          { type: 'text', key: 'nr', label: 'el. nr i vxbild', inputmode: 'numeric' },
+          {
+            type: 'plus', label: 'Km + m (utan meter: nr på växelbilden)', keys: ['lagekm', 'lagem'],
+            placeholders: [job => (job.vxnr ? '' : job.km || ''), job => (job.vxnr || !job.km ? '' : job.m || '')],
+          },
           { type: 'text', key: 'fore', label: 'Före kap mm', inputmode: 'decimal', half: true },
           { type: 'text', key: 'efter', label: 'Efter kap mm', inputmode: 'decimal', half: true },
           { type: 'select', key: 'temp', label: 'Rältemp °C', options: TEMP, half: true },

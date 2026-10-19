@@ -485,6 +485,17 @@ function renderItem(item, data, onChange, job) {
             onchange: () => onChange(item.key, opt) }),
           h('span', {}, opt || 'Inget'))));
     }
+    case 'plus':
+      // Två sifferrutor med + emellan, t.ex. km + m.
+      return h('div', { class: 'field plus' }, h('span', {}, item.label),
+        h('div', { class: 'plus-row' }, item.keys.map((key, i) => [
+          i ? h('span', { class: 'plus-sign' }, '+') : null,
+          h('input', {
+            type: 'text', inputmode: 'numeric', value: data[key] || '', autocomplete: 'off', 'aria-label': i ? 'm' : 'km',
+            placeholder: item.placeholders?.[i] ? item.placeholders[i](job) : null,
+            oninput: e => onChange(key, e.target.value),
+          }),
+        ]).flat()));
     case 'select':
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
         h('select', { onchange: e => onChange(item.key, e.target.value) },

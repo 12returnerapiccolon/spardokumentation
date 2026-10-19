@@ -289,3 +289,6 @@ details[open] summary { margin-bottom: 12px; }
 .rows > .button { width: 100%; margin-top: 12px; }
 button.link { background: none; border: 0; padding: 8px 0; font: inherit; color: var(--accent); }
 button.link.danger { color: var(--danger); }
+.plus-row { display: flex; align-items: center; gap: 8px; }
+.plus-row input { flex: 1; min-width: 0; }
+.plus-sign { font-size: 20px; font-weight: 600; }
