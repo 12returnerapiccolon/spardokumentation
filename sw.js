@@ -1,0 +1,51 @@
+// Gör appen körbar offline. Höj VERSION när filerna ändras.
+const VERSION = 'v1';
+const FILES = [
+  './',
+  'index.html',
+  'css/app.css',
+  'js/app.js',
+  'js/db.js',
+  'js/fill-word.js',
+  'js/fill-pdf.js',
+  'js/forms/ev.js',
+  'js/forms/oversyn1481.js',
+  'vendor/jszip.min.js',
+  'vendor/pdf-lib.min.js',
+  'manifest.webmanifest',
+  'icons/icon.svg',
+  'icons/icon-180.png',
+  'icons/icon-512.png',
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+      .then(() => self.clients.claim()),
+  );
+});
+
+// Nätet först så att uppdateringar syns direkt. Vid dålig eller ingen täckning
+// används cachen efter tre sekunder.
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
+  const network = fetch(event.request).then(response => {
+    if (response.ok) {
+      const copy = response.clone();
+      caches.open(VERSION).then(cache => cache.put(event.request, copy));
+    }
+    return response;
+  });
+  const cached = () => caches.match(event.request, { ignoreSearch: true });
+  const timeout = new Promise(resolve => setTimeout(resolve, 3000)).then(cached);
+  event.respondWith(
+    Promise.race([network, timeout])
+      .then(r => r || network)
+      .catch(() => cached().then(r => r || network)),
+  );
+});

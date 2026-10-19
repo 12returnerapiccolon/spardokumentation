@@ -1,0 +1,9 @@
+# Blankettmallar och ifyllda filer får aldrig checkas in.
+*.dotx
+*.docx
+*.pdf
+*.xlsx
+*.xlsm
+mallar/
+.DS_Store
+node_modules/

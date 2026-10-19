@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Spårdok">
+  <meta name="theme-color" content="#f4f1ea">
+  <meta name="robots" content="noindex">
+  <title>Spårdokumentation</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="vendor/jszip.min.js" defer></script>
+  <script src="vendor/pdf-lib.min.js" defer></script>
+  <script src="js/app.js" type="module"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" id="back" href="#/" hidden aria-label="Tillbaka">‹</a>
+    <h1 id="title">Spårdokumentation</h1>
+    <a class="menu" href="#/installningar" aria-label="Inställningar">⚙︎</a>
+  </header>
+  <main id="view"></main>
+  <noscript>Appen behöver JavaScript.</noscript>
+</body>
+</html>
