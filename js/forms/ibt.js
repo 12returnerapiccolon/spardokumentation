@@ -167,7 +167,7 @@ export default {
     },
     ...PUNKTER.map(([title, rows]) => ({
       title: `Kontrollpunkter: ${title}`,
-      help: title === 'Allmänt' ? 'Kryssa i punkterna som är kontrollerade. De signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld, och övriga får ett streck. Tryck på en punkt för att se vad som ska kontrolleras enligt TDOK 2021:0311. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
+      help: title === 'Allmänt' ? 'Kryssa i punkterna som är kontrollerade. De signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld, och övriga lämnas tomma. Tryck på en punkt för att se vad som ska kontrolleras enligt TDOK 2021:0311. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
       items: rows.map(([r, label, enligt, moment]) => ({
         type: 'check', key: `k${r}`, label, isChecked: kontrollerad,
         details: { intro: [`Utförs enligt: ${enligt}`, `Kontrollmoment: ${moment}`], blocks: (PUNKT[r] || []).map(n => AVSNITT[n]) },
@@ -253,14 +253,13 @@ export default {
     });
     for (const [, rows] of PUNKTER) {
       for (const [r] of rows) {
-        v[`I${r}`] = kontrollerad(data[`k${r}`]) ? sign : '-';
+        v[`I${r}`] = kontrollerad(data[`k${r}`]) ? sign : '';
       }
     }
     EGEN.forEach(([r, , , doc], i) => {
       const har = doc && job.docs?.includes(doc);
       // Ikryssad = kontrollerad och bifogad (2026-10-19).
       if (kontrollerad(val(`e${i}`, !!har))) Object.assign(v, { [`F${r}`]: datum, [`H${r}`]: 'Ja', [`I${r}`]: sign });
-      else Object.assign(v, { [`F${r}`]: '-', [`H${r}`]: '-', [`I${r}`]: '-' });
     });
     (data.anm || []).slice(0, 4).forEach((a, i) => {
       const r = 68 + i;
