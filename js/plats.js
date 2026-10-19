@@ -18,18 +18,26 @@ export function minPosition() {
   });
 }
 
-// Närmaste adress, t.ex. "Stationsgatan 2, Testby". null utan täckning eller träff.
+// Närmaste adress, t.ex. "Stationsgatan 2, Testby". Finns ingen gatuadress (ofta vid spåret)
+// blir det bara orten. null utan täckning eller träff.
+async function reverse(lat, lon, zoom, signal) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=${zoom}&addressdetails=1&accept-language=sv`;
+  const r = await fetch(url, { signal });
+  if (!r.ok) return {};
+  return (await r.json()).address || {};
+}
+const ORT = ['town', 'city', 'village', 'hamlet', 'isolated_dwelling', 'locality', 'suburb', 'neighbourhood', 'municipality'];
+const ortAv = a => ORT.map(k => a[k]).find(Boolean);
+
 export async function adress(lat, lon) {
   if (!navigator.onLine) return null;
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 8000);
+  const t = setTimeout(() => ctrl.abort(), 10000);
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=sv`;
-    const r = await fetch(url, { signal: ctrl.signal });
-    if (!r.ok) return null;
-    const a = (await r.json()).address || {};
-    const gata = [a.road, a.house_number].filter(Boolean).join(' ');
-    const ort = a.town || a.city || a.village || a.hamlet || a.suburb || a.municipality;
+    const a = await reverse(lat, lon, 18, ctrl.signal);
+    const gata = a.road ? [a.road, a.house_number].filter(Boolean).join(' ') : '';
+    // Ingen ort i svaret: fråga efter närmaste ort (zoomnivå 14 ger by eller stadsdel).
+    const ort = ortAv(a) || ortAv(await reverse(lat, lon, 14, ctrl.signal));
     return [gata, ort].filter(Boolean).join(', ') || null;
   } catch (e) {
     return null;

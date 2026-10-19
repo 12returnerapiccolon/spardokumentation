@@ -470,7 +470,7 @@ function renderItem(item, data, onChange, job) {
           input.value = base ? `${base}, ${suffix}` : suffix;
           onChange(suffixKey, suffix);
           onChange(item.key, input.value);
-          status.textContent = `${kalla}${pos.accuracy ? ` (±${Math.round(pos.accuracy)} m)` : ''}.${adr ? '' : ' Ingen adress hittades, bara koordinater.'}`;
+          status.textContent = `${kalla}${pos.accuracy ? ` (±${Math.round(pos.accuracy)} m)` : ''}.${adr ? '' : navigator.onLine ? ' Ingen adress eller ort hittades, bara koordinater.' : ' Ingen täckning, bara koordinater.'}`;
         };
         const egen = h('button', {
           type: 'button', class: 'button',
