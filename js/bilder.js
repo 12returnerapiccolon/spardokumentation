@@ -5,7 +5,8 @@ import * as db from './db.js';
 export const BILDTYPER = [
   { key: 'fore', label: 'Före' },
   { key: 'efter', label: 'Efter' },
-  { key: 'markning', label: 'Rälsmärkning och brickor' },
+  // Snedstreck går inte i filnamn, därför ett eget filnamn.
+  { key: 'markning', label: 'Rälsmärkning/bricka', fil: 'Rälsmärkning-bricka' },
 ];
 const STORSTA = 2400; // längsta sida i pixlar
 const KVALITET = 0.85;
@@ -53,5 +54,5 @@ export async function taBortAlla(jobId) {
 export async function bildfiler(jobId, namn) {
   const bilder = await jobbetsBilder(jobId);
   return BILDTYPER.flatMap(t => bilder.filter(b => b.typ === t.key)
-    .map((b, i, list) => new File([b.data], `${namn} ${t.label}${list.length > 1 ? ` ${i + 1}` : ''}.jpg`, { type: 'image/jpeg' })));
+    .map((b, i, list) => new File([b.data], `${namn} ${t.fil || t.label}${list.length > 1 ? ` ${i + 1}` : ''}.jpg`, { type: 'image/jpeg' })));
 }
