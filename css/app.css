@@ -294,7 +294,7 @@ button.link.danger { color: var(--danger); }
 .plus-sign { font-size: 20px; font-weight: 600; }
 button.link.inline { padding: 0; font-size: inherit; text-decoration: underline; }
 .check.sub { padding-left: 36px; }
-.note.rule { white-space: pre-line; font-size: 13px; margin: -4px 0 12px 36px; }
+.note.rule { white-space: pre-line; font-size: 13px; margin: 6px 0 16px 36px; }
 
 /* Plats: knappar och karta */
 .row.geo { margin-top: 8px; }
