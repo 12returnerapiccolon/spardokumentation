@@ -68,7 +68,7 @@ export default {
       title: 'Arbetsplats och arbetsmetod',
       help: 'Grå text hämtas från jobbet.',
       items: [
-        { type: 'text', key: 'plats', label: 'Arbetsplats/Larmadress', placeholder: plats },
+        { type: 'text', key: 'plats', label: 'Arbetsplats/Larmadress', placeholder: plats, geo: true },
         { type: 'group', label: 'Arbetsmetod', items: [
           ...METOD.map(([key, label]) => ({ type: 'check', key, label, defaultValue: key === 'svetsning' })),
           { type: 'text', key: 'annatText', label: 'Annat, vad' },

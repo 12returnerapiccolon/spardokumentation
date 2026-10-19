@@ -452,8 +452,28 @@ function renderItem(item, data, onChange, job) {
         placeholder: item.placeholder ? item.placeholder(job, data) : null, 'data-ph': item.placeholder ? '' : null,
         oninput: e => onChange(item.key, e.target.value) });
       if (item.placeholder) input.refreshPh = () => { input.placeholder = item.placeholder(job, data); };
+      // geo: knapp som lägger till telefonens position (WGS84) efter texten.
+      const geo = item.geo ? h('button', {
+        type: 'button', class: 'link',
+        onclick: e => {
+          const btn = e.currentTarget;
+          if (!navigator.geolocation) { alert('Telefonen kan inte ge någon position här.'); return; }
+          btn.textContent = 'Hämtar position …';
+          navigator.geolocation.getCurrentPosition(pos => {
+            const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+            const koord = `N ${lat.toFixed(5)} E ${lon.toFixed(5)}`;
+            const base = (input.value || input.placeholder || '').replace(/,?\s*N \d+\.\d+ E \d+\.\d+$/, '');
+            input.value = base ? `${base}, ${koord}` : koord;
+            onChange(item.key, input.value);
+            btn.textContent = `📍 Position hämtad (±${Math.round(accuracy)} m). Hämta igen`;
+          }, err => {
+            btn.textContent = '📍 Hämta min position';
+            alert(err.code === 1 ? 'Appen fick inte använda platstjänster. Tillåt det för Safari under Inställningar > Integritet > Platstjänster.' : 'Kunde inte hämta positionen. Försök igen.');
+          }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+        },
+      }, '📍 Hämta min position') : null;
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
-        input,
+        input, geo,
         item.list ? h('datalist', { id: listId }, item.list.map(v => h('option', { value: v }))) : null);
     }
     case 'textarea':
