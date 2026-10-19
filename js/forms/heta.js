@@ -23,8 +23,30 @@ const PUNKTER = [
   ['p10', '10. Räddningstjänsten/brandkåren kan larmas omedelbart.', 23],
 ];
 
+// Säkerhetsreglerna på blankettens sida 2. Visas under den kontrollpunkt de hör till.
+const REGLER = {
+  1: 'Säkerhetsregel 1 – Behörighet\nDen som ska utföra brandfarliga heta arbeten ska ha behörighet och erfarenhet av brandskydd. Detsamma gäller den som ska vara brandvakt. Behörighetsutbildning ska vara genomförd enligt den plan som beslutats av försäkringsbolagens och SBFs utbildningskommitté för Heta arbeten. Den som är utsedd att regelbundet vara tillståndsansvarig ska ha motsvarande utbildning och erfarenhet.',
+  2: 'Säkerhetsregel 2 – Brandvakt\nBrandvakt ska utses och finnas på arbetsplatsen – även under arbetsrast – under den tid som de Heta arbetena utförs och under den efterbevakningstid – minst en timme – eller annan tid som den tillståndsansvarige angett i tillståndet. Brandvakten får inte lämna arbetsplatsen förrän faran för brand upphört. Brandvakt krävs inte när den tillståndsansvarige bedömer att det är uppenbart att arbetet kan utföras med samma säkerhet som brandvakt.',
+  3: 'Säkerhetsregel 3 – Brandfarlig vara\nFör arbete i utrymme som innehåller/innehållit brandfarlig vara, ska tillstånd inhämtas av den som är utsedd att vara föreståndare för hanteringen.',
+  4: 'Säkerhetsregel 4 – Städning och vattning\nArbetsplatsen ska vara städad och vid behov vattnad.',
+  5: 'Säkerhetsregel 5 – Brännbart material\nBrännbart material på och i närheten av arbetsplatsen ska flyttas bort, skyddas genom övertäckning eller avskärmas.',
+  6: 'Säkerhetsregel 6 – Dolda brännbara byggnadsdelar\nVärmeledande konstruktioner och dolda brännbara byggnadsdelar ska undersökas med hänsyn till brandfaran, samt vid konstaterad brandfara skyddas och göras åtkomliga för omedelbar släckinsats.',
+  7: 'Säkerhetsregel 7 – Otätheter\nSpringor, hål, genomföringar och andra öppningar på och i närheten av arbetsplatsen ska vara tätade eller kontrollerade med hänsyn till brandfaran.',
+  8: 'Säkerhetsregel 8 – Släckutrustning\nGodkänd, fungerande och tillräcklig släckutrustning ska finnas tillgänglig för omedelbar släckinsats. Här avses slang med vatten eller två certifierade handbrandsläckare med minsta effektivitetsklass 34A 233BC (minst 2 x 6 kg pulver).\nVid takläggning krävs slang med vatten och två certifierade handbrandsläckare med minsta effektivitetsklass 34A 233BC (minst 2 x 6 kg pulver) samt brytverktyg, t.ex. pikyxa och handstrålkastare. När förutsättning för släckning med vatten saknas, t.ex. vid risk för frysning eller lågt vattentryck, ska utrustningen kompletteras med ytterligare en certifierad handbrandsläckare med lägst effektivitetsklass 34A 233BC (minst 6 kg).',
+  9: 'Säkerhetsregel 9 – Svetsutrustning\nSvetsutrustning ska vara felfri. Acetylenflaska ska vara försedd med bakslagsskydd. Svetsbrännare ska vara försedd med backventil för bränngas och syrgas. Skyddshandske och avstängningsnyckel ska finnas.',
+  10: 'Säkerhetsregel 10 – Larmning\nRäddningstjänsten/Brandkåren ska kunna larmas omedelbart. Fungerande mobiltelefon ska finnas tillgänglig om inte stationär telefon finns inom räckhåll. Den som uppdras larma ska känna till arbetsplatsens adress.',
+};
+// Kontrollpunkt → säkerhetsregel. Punkt 0 har ingen regel.
+const regel = key => REGLER[Number(key.match(/\d+/)[0])];
+
 // Hetarbetare och brandvakter: namn, certifikatkontroll, HA, BV.
 const ARBETARE = [['arb1', 24], ['arb2', 27], ['arb3', 30]];
+
+// Brandvakter: de som kryssats som BV bland hetarbetarna.
+const brandvakter = (job, data) => ARBETARE
+  .filter(([key], n) => data[`${key}bv`] && (data[key] ?? (n === 0 ? job.namn : '')))
+  .map(([key], n) => data[key] ?? (n === 0 ? job.namn : ''))
+  .join(', ');
 
 const plats = job => [job.driftplats, job.vxnr ? `vx ${job.vxnr}` : job.spar && `spår ${job.spar}`, job.km && `km ${job.km}+${String(job.m || 0).padStart(3, '0')}`, job.bandel && `bandel ${job.bandel}`].filter(Boolean).join(', ');
 
@@ -69,12 +91,12 @@ export default {
       items: [
         { type: 'allcheck', label: 'Kryssa i alla kontrollpunkter', keys: PUNKTER.map(([key]) => key) },
         ...PUNKTER.flatMap(([key, label, , sub]) => [
-          { type: 'check', key, label },
+          { type: 'check', key, label, help: regel(key) },
           ...(sub ? [{ type: 'check', key: sub[0], label: sub[1], sub: true }] : []),
-          ...(key === 'p2a' ? [{ type: 'text', key: 'brandvakter', label: 'Brandvaktens/vakternas namn' }] : []),
+          ...(key === 'p2a' ? [{ type: 'text', key: 'brandvakter', label: 'Brandvaktens/vakternas namn', placeholder: brandvakter }] : []),
           ...(key === 'p2b' ? [
             { type: 'text', key: 'langreTid', label: 'Annan, längre tid' },
-            { type: 'text', key: 'efterNamn', label: 'Brandvakt efterbevakning, namn' },
+            { type: 'text', key: 'efterNamn', label: 'Brandvakt efterbevakning, namn', placeholder: brandvakter },
           ] : []),
         ]),
       ],
@@ -115,9 +137,10 @@ export default {
       franKl: data.franKl || '',
       tillDatum: val('tillDatum', blankettDatum(job)),
       tillKl: data.tillKl || '',
-      brandvakter: data.brandvakter || '',
+      // Tomt: de som kryssats som BV under underskrifterna.
+      brandvakter: data.brandvakter || brandvakter(job, data),
       langreTid: data.langreTid || '',
-      efterNamn: data.efterNamn || '',
+      efterNamn: data.efterNamn || brandvakter(job, data),
       sektioner: data.sektioner || '',
       ansvarig: data.ansvarig || '',
       ansvarigTel: data.ansvarigTel || '',

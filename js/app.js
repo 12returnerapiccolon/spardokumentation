@@ -82,7 +82,7 @@ function h(tag, attrs = {}, ...children) {
     else if (k === 'checked') el.checked = !!v;
     else el.setAttribute(k, v === true ? '' : v);
   }
-  for (const c of children.flat()) {
+  for (const c of children.flat(Infinity)) {
     if (c == null || c === false) continue;
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   }
@@ -446,11 +446,14 @@ function renderItem(item, data, onChange, job) {
     case 'text': {
       // list: förslag att välja bland (man kan ändå skriva något annat).
       // placeholder: förval från jobbet, visas grått och används om rutan är tom.
+      // Förvalet kan bero på andra fält och räknas om när något ändras (se formView).
       const listId = item.list ? `list-${item.key}-${Math.random().toString(36).slice(2, 8)}` : null;
+      const input = h('input', { type: item.inputType || 'text', inputmode: item.inputmode, value: data[item.key] ?? (item.defaultValue ? item.defaultValue(job) : ''), autocomplete: 'off', list: listId,
+        placeholder: item.placeholder ? item.placeholder(job, data) : null, 'data-ph': item.placeholder ? '' : null,
+        oninput: e => onChange(item.key, e.target.value) });
+      if (item.placeholder) input.refreshPh = () => { input.placeholder = item.placeholder(job, data); };
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
-        h('input', { type: item.inputType || 'text', inputmode: item.inputmode, value: data[item.key] ?? (item.defaultValue ? item.defaultValue(job) : ''), autocomplete: 'off', list: listId,
-          placeholder: item.placeholder ? item.placeholder(job) : null,
-          oninput: e => onChange(item.key, e.target.value) }),
+        input,
         item.list ? h('datalist', { id: listId }, item.list.map(v => h('option', { value: v }))) : null);
     }
     case 'textarea':
@@ -458,9 +461,11 @@ function renderItem(item, data, onChange, job) {
         h('textarea', { rows: 3, oninput: e => onChange(item.key, e.target.value) }, data[item.key] || ''));
     case 'check':
       // defaultValue: ikryssad tills man ändrar den. sub: hör till punkten ovanför.
-      return h('label', { class: 'check' + (item.sub ? ' sub' : '') },
+      // help: förklaring under rutan, t.ex. säkerhetsregeln för en kontrollpunkt.
+      return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },
         h('input', { type: 'checkbox', name: item.key, checked: data[item.key] ?? item.defaultValue, onchange: e => onChange(item.key, e.target.checked) }),
-        h('span', {}, item.label));
+        h('span', {}, item.label)),
+        item.help ? h('p', { class: 'muted note rule' }, item.help) : null];
     case 'allcheck':
       return h('button', {
         type: 'button', class: 'button',
@@ -673,6 +678,7 @@ async function formView(id, key) {
   // Tabellen räknas om när något som styr normalvärden och toleranser ändras.
   const onChange = (k, v) => {
     data[k] = v; save();
+    document.querySelectorAll('input[data-ph]').forEach(el => el.refreshPh?.());
     if (remember.has(k)) {
       remembered[`${form.key}.${k}`] = Array.isArray(v) ? v[v.length - 1] : v;
       if (remembered[`${form.key}.${k}`] === undefined) delete remembered[`${form.key}.${k}`];
