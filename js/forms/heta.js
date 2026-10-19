@@ -4,6 +4,7 @@
 // Kryssrutorna har sitt index i Word-mallen.
 import LAYOUT from './heta-layout.js';
 import { blankettDatum } from '../datum.js';
+import { initialer } from '../initialer.js';
 
 const METOD = [['svetsning', 'Svetsning', 0], ['rondell', 'Rondell', 1], ['skarning', 'Skärning', 2], ['lodning', 'Lödning', 3], ['hetluft', 'Hetluft', 4], ['annat', 'Annat', 5]];
 
@@ -109,7 +110,7 @@ export default {
     },
     {
       title: 'Underskrifter',
-      help: 'Namnen skrivs som namnförtydligande. Raden för namnteckning lämnas tom.',
+      help: 'Namnen skrivs som namnförtydligande och initialerna på raden för namnteckning.',
       items: [
         { type: 'text', key: 'ansvarig', label: 'Tillståndsansvarig', remember: true, names: true },
         { type: 'text', key: 'ansvarigTel', label: 'Tillståndsansvarigs telefonnummer', inputType: 'tel', inputmode: 'tel', remember: true },
@@ -149,6 +150,8 @@ export default {
       arb3: data.arb3 || '',
       avslut: data.avslut || data.ansvarig || '',
     };
+    // Namnteckning: initialerna, t.ex. JGJ för John Glen Jonson.
+    for (const k of ['ansvarig', 'arb1', 'arb2', 'arb3', 'avslut']) v[`${k}Sign`] = initialer(v[k]);
     for (const [key, , i] of METOD) v[i] = !!val(key, key === 'svetsning');
     v[6] = data.brandfarligt === 'Ja';
     v[7] = data.brandfarligt === 'Nej';
