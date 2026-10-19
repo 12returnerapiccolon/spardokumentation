@@ -1,7 +1,7 @@
 import * as db from './db.js';
 import { fillWord, wordInfo } from './fill-word.js';
 import { fillPdf, pdfInfo } from './fill-pdf.js';
-import { VAXELTYPER, VAXELFORMS } from './forms/vaxel.js';
+import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
 import MODELLER from './forms/vaxelmodeller.js';
 
@@ -435,7 +435,7 @@ function renderItem(item, data, onChange, job) {
       return h('div', { class: 'group' }, h('p', { class: 'grouplabel' }, item.label), body);
     }
     case 'measures':
-      return measureTable(item.keys, data, onChange);
+      return measureTable(item, data, onChange, job);
     case 'image':
       return h('button', { type: 'button', class: 'figure', onclick: () => showImage(item.src, item.alt) },
         h('img', { src: item.src, alt: item.alt, loading: 'lazy' }),
@@ -454,25 +454,73 @@ function showImage(src, alt) {
   document.body.append(overlay);
 }
 
-function measureTable(keys, data, onChange) {
+// Måttabell. Normalvärde och tolerans fylls i automatiskt (grå text) tills svetsaren skriver
+// något eget. Efter ett uppmätt värde hoppar markören till nästa uppmätt-ruta.
+function measureTable(item, data, onChange, job) {
   data.matt = data.matt || {};
-  const cell = (m, col, out) => h('input', {
-    type: 'text', inputmode: 'decimal', maxlength: 4, value: (data.matt[m] || {})[col] || '',
-    'aria-label': `${m} ${col}`,
-    oninput: e => {
-      const row = data.matt[m] = data.matt[m] || {};
-      row[col] = e.target.value;
-      out.value = diff(row.normal, row.uppmatt);
-      onChange('matt', data.matt);
-    },
-  });
-  return h('div', { class: 'measures' },
-    h('div', { class: 'mrow head' }, h('span', {}, 'Mått'), h('span', {}, 'Normal'), h('span', {}, 'Tolerans'), h('span', {}, 'Uppmätt'), h('span', {}, 'Diff')),
-    keys.map(m => {
+  const wrap = h('div', { class: 'measures-wrap' });
+  const draw = () => {
+    const auto = item.auto ? item.auto(job, data) : { normal: {}, forslag: {}, tol: {}, tabeller: [], saknas: [] };
+    const uppInputs = [];
+    const next = input => {
+      const i = uppInputs.indexOf(input);
+      if (uppInputs[i + 1]) uppInputs[i + 1].focus(); else input.blur();
+    };
+    const cell = (m, col, out) => {
       const row = data.matt[m] || {};
-      const out = h('output', {}, diff(row.normal, row.uppmatt));
-      return h('div', { class: 'mrow' }, h('span', { class: 'mname' }, m), cell(m, 'normal', out), cell(m, 'tolerans', out), cell(m, 'uppmatt', out), out);
-    }));
+      const own = Object.prototype.hasOwnProperty.call(row, col);
+      const autoValue = col === 'normal' ? auto.normal[m] : col === 'tolerans' ? auto.tol[m] : undefined;
+      const input = h('input', {
+        type: 'text', inputmode: col === 'tolerans' ? 'text' : 'decimal',
+        maxlength: col === 'tolerans' ? 7 : 4,
+        enterkeyhint: col === 'uppmatt' ? 'next' : 'done',
+        class: !own && autoValue ? 'auto' : null,
+        value: own ? row[col] : (autoValue || ''),
+        placeholder: col === 'normal' && auto.forslag[m] ? auto.forslag[m] : '',
+        'aria-label': `${m} ${col}`,
+        oninput: e => {
+          const r = data.matt[m] = data.matt[m] || {};
+          r[col] = e.target.value;
+          e.target.classList.remove('auto');
+          out.value = diff(effektiv(r, 'normal', auto.normal[m]), r.uppmatt);
+          onChange('matt', data.matt);
+          if (col === 'uppmatt') {
+            const siffror = e.target.value.replace(/\D/g, '').length;
+            const normal = effektiv(r, 'normal', auto.normal[m]) || auto.forslag[m] || '';
+            const behov = (String(normal).split('/')[0].match(/\d+/) || ['0000'])[0].length;
+            if (siffror >= behov && !/[,.]$/.test(e.target.value)) next(e.target);
+          }
+        },
+        onkeydown: e => { if (e.key === 'Enter' && col === 'uppmatt') { e.preventDefault(); next(e.target); } },
+      });
+      if (col === 'uppmatt') uppInputs.push(input);
+      return input;
+    };
+    const notes = [];
+    const modell = job.vxmodell;
+    if (!modell) notes.push('Välj växelmodell på jobbet för att få normalvärden.');
+    else if (!auto.harNormal) notes.push(`${modell} finns inte i bilaga 8, fyll i normalvärden själv.`);
+    if (item.auto) {
+      if (!data.typ) notes.push('Välj besiktningstyp för att få toleranser.');
+      else if (auto.tabeller.length) notes.push(`Toleranser enligt tabell ${auto.tabeller.join(' / ')}.`);
+      else if (modell) notes.push('Bilagan har ingen toleranstabell för den här modellen och besiktningen.');
+      if (auto.saknas.includes('besiktningsklass')) notes.push('Fyll i besiktningsklass under Växeldata för att få alla toleranser.');
+      if (auto.saknas.includes('radie')) notes.push('Fyll i radie under Växeldata för att få toleranserna som beror på R ≥ 300 m.');
+      if (Object.keys(auto.forslag).length) notes.push('Grå siffror med snedstreck (t.ex. 43/44) beror på korsningens utförande. Skriv rätt värde.');
+    }
+    wrap.replaceChildren(
+      ...notes.map(n => h('p', { class: 'muted note' }, n)),
+      h('div', { class: 'measures' },
+        h('div', { class: 'mrow head' }, h('span', {}, 'Mått'), h('span', {}, 'Normal'), h('span', {}, 'Tolerans'), h('span', {}, 'Uppmätt'), h('span', {}, 'Diff')),
+        item.keys.map(m => {
+          const row = data.matt[m] || {};
+          const out = h('output', {}, diff(effektiv(row, 'normal', auto.normal[m]), row.uppmatt));
+          return h('div', { class: 'mrow' }, h('span', { class: 'mname' }, m), cell(m, 'normal', out), cell(m, 'tolerans', out), cell(m, 'uppmatt', out), out);
+        })));
+  };
+  draw();
+  wrap.refresh = draw;
+  return wrap;
 }
 
 async function formView(id, key) {
@@ -483,7 +531,11 @@ async function formView(id, key) {
   const data = job.forms[form.key] = job.forms[form.key] || {};
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   window.onpagehide = () => save.flush();
-  const onChange = (k, v) => { data[k] = v; save(); };
+  // Tabellen räknas om när något som styr normalvärden och toleranser ändras.
+  const onChange = (k, v) => {
+    data[k] = v; save();
+    if (['typ', 'besiktningsklass', 'radie'].includes(k)) document.querySelectorAll('.measures-wrap').forEach(w => w.refresh());
+  };
 
   render(
     h('p', { class: 'muted' }, `${form.code}. Uppgifter i grått hämtas från jobbet.`),

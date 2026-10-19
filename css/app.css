@@ -208,6 +208,9 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
   min-height: 44px;
   text-align: center;
 }
+.mrow input.auto { color: var(--muted); }
+.mrow input::placeholder { color: var(--muted); opacity: .7; }
+.measures-wrap .note { margin: 0 0 8px; }
 .mname { font-weight: 600; }
 .mrow output { text-align: center; color: var(--muted); }
 

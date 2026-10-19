@@ -2,6 +2,8 @@
 // men fälten ligger på olika platser. Siffrorna är formulärfältens ordning i mallens
 // document.xml. Måttabellerna kommer ur vaxel-matt.js.
 import MATT from './vaxel-matt.js';
+import NORMAL from './vaxel-normal.js';
+import { toleranser } from './vaxel-tolerans.js';
 
 const FORBES = ['Säkerhetsbesiktning', 'Underhållsbesiktning', 'Förbesiktning i spår', 'Förbesiktning på byggplats'];
 
@@ -148,6 +150,37 @@ export const VAXELTYPER = [
   },
 ];
 
+// Måtten i den ordning de tas när man går från framkant stödräl till bakkant korsning.
+// Rak väg först, sedan läggs växeln om (x1, y1). I korsningen i och g före h.
+const ORDNING = {
+  ev: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 i g h i1 g1 h1 e e1',
+  evr: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 z q z1 q1 e e1',
+};
+
+function ordna(key, namn) {
+  const o = ORDNING[key];
+  if (!o) return namn;
+  const pos = new Map(o.split(' ').map((m, i) => [m, i]));
+  return [...namn].sort((a, b) => (pos.get(a) ?? 99) - (pos.get(b) ?? 99));
+}
+
+// Normalvärden (bilaga 8) och toleranser (bilaga 9–11) för vald modell och besiktning.
+// Ett värde med snedstreck (43/44) beror på korsningen och visas bara som förslag.
+export function autoVarden(vaxeltyp, job, data) {
+  const modell = job.vxmodell || '';
+  const normal = {}, forslag = {};
+  for (const [m, v] of Object.entries(NORMAL[modell] || {})) {
+    if (v.includes('/')) forslag[m] = v; else normal[m] = v;
+  }
+  const t = toleranser({ vaxeltyp, modell, typ: data.typ, besiktningsklass: data.besiktningsklass, radiefalt: data.radie, normal });
+  return { normal, forslag, tol: t.tol, tabeller: t.tabeller, saknas: t.saknas, harNormal: modell in NORMAL };
+}
+
+// Det svetsaren skrivit gäller före det automatiska, även en tömd ruta.
+export function effektiv(row, col, auto) {
+  return row && Object.prototype.hasOwnProperty.call(row, col) ? row[col] : (auto || '');
+}
+
 const DATA_LABELS = {
   inlaggningsar: ['Inläggningsår', 'numeric'],
   ritnr: ['Ritn.nr'],
@@ -202,10 +235,10 @@ function buildForm(t) {
       },
       {
         title: 'Mått i växeln',
-        help: 'Fyll i normalvärde, tolerans och uppmätt. Differensen räknas ut. Max 4 tecken per ruta.',
+        help: 'Normalvärde och tolerans fylls i efter växelmodell och besiktning (TRVINFRA-00017 bilaga 8–11) och går att ändra. Fyll i uppmätt, så hoppar markören vidare och differensen räknas ut.',
         items: [
           { type: 'image', src: `img/placering/${t.key}.png`, alt: `Placering mått ${t.short}, TRVINFRA-00017 bilaga 7` },
-          { type: 'measures', keys: matt.map(m => m[0]) },
+          { type: 'measures', keys: ordna(t.key, matt.map(m => m[0])), auto: (job, data) => autoVarden(t.key, job, data) },
         ],
       },
       ...t.groups.map(g => ({ title: g.title, items: checkItems(g) })),
@@ -227,10 +260,12 @@ function buildForm(t) {
         if (k === 'usp') continue;
         v[idx] = k in fromJob ? fromJob[k] : data[k];
       }
+      const auto = autoVarden(t.key, job, data);
       for (const [m, n, tol, upp, dif] of matt) {
         const row = (data.matt && data.matt[m]) || {};
-        v[n] = row.normal; v[tol] = row.tolerans; v[upp] = row.uppmatt;
-        v[dif] = diff(row.normal, row.uppmatt);
+        const normal = effektiv(row, 'normal', auto.normal[m]);
+        v[n] = normal; v[tol] = effektiv(row, 'tolerans', auto.tol[m]); v[upp] = row.uppmatt;
+        v[dif] = diff(normal, row.uppmatt);
       }
       for (const g of [...(t.markers || []), ...t.groups]) {
         for (const [, idx, kind] of g.items) v[idx] = kind === 'text' ? data[`t${idx}`] : !!data[`c${idx}`];
