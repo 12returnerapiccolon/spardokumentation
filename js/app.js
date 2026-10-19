@@ -1,6 +1,7 @@
 import * as db from './db.js';
 import { fillWord, wordInfo } from './fill-word.js';
 import { fillPdf, pdfInfo } from './fill-pdf.js';
+import { fillOverlay, isPdf } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
 import MODELLER from './forms/vaxelmodeller.js';
@@ -155,16 +156,19 @@ async function identify(file) {
   for (const form of FORMS) {
     if (await form.matches(info)) return { form, buffer };
   }
-  return { form: null, buffer };
+  const old = FORMS.find(form => form.matchesWord && form.matchesWord(info));
+  return { form: null, buffer, old };
 }
 
 async function importTemplates(files) {
   const results = [];
   for (const file of files) {
-    const { form, buffer } = await identify(file);
+    const { form, buffer, old } = await identify(file);
     if (form) {
       await db.put('templates', { key: form.key, name: file.name, added: new Date().toISOString(), data: buffer });
       results.push(`✓ ${form.title}`);
+    } else if (old) {
+      results.push(`✗ ${file.name}: Word-mallen används inte längre. Läs in PDF-mallen för ${old.code} ${old.title}.`);
     } else {
       results.push(`✗ ${file.name}: känns inte igen (stöds inte än)`);
     }
@@ -365,10 +369,14 @@ async function buildFiles(job, area) {
     const form = docForm(job, key);
     if (!form) { problems.push('Välj växeltyp för växelbesiktningsrapporten.'); continue; }
     const tpl = await db.get('templates', form.key);
-    if (!tpl) { problems.push(`Mallen för ${form.title} saknas. Läs in den under Mallar.`); continue; }
+    if (!tpl || (form.format === 'overlay' && !isPdf(tpl.data))) {
+      problems.push(`PDF-mallen för ${form.title} saknas. Läs in den under Mallar.`); continue;
+    }
     try {
       const values = form.toValues(job, job.forms[form.key] || {}, { diff });
-      const blob = form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
+      const blob = form.format === 'overlay'
+        ? await fillOverlay(tpl.data, form.layout, values, { title: `${form.code} ${form.title}` })
+        : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
       files.push(new File([blob], fileName(form, job), { type: blob.type }));
     } catch (e) {
       console.error(e);
@@ -570,7 +578,9 @@ async function templatesView() {
   render(
     h('p', {}, 'Blankettmallarna finns inte i appen. Läs in dem från Filer en gång, så sparas de i telefonen. Du kan välja flera filer samtidigt.'),
     h('ul', { class: 'list' }, FORMS.map(form => {
-      const t = templates.find(x => x.key === form.key);
+      const found = templates.find(x => x.key === form.key);
+      // En gammal Word-mall räknas inte när blanketten fylls som PDF.
+      const t = found && (form.format !== 'overlay' || isPdf(found.data)) ? found : null;
       return h('li', {}, h('div', { class: 'item' },
         h('span', { class: 'main' }, `${t ? '✓' : '○'} ${form.title}`),
         h('span', { class: 'sub' }, t ? `Inläst: ${t.name}` : `Saknas: ${form.templateHint}`)));

@@ -26,5 +26,5 @@ export async function fillPdf(templateBuffer, values) {
 
 export async function pdfInfo(buffer) {
   const pdf = await PDFLib.PDFDocument.load(buffer);
-  return { fieldNames: pdf.getForm().getFields().map(f => f.getName()) };
+  return { fieldNames: pdf.getForm().getFields().map(f => f.getName()), subject: pdf.getSubject() || '' };
 }

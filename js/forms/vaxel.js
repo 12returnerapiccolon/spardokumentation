@@ -3,6 +3,7 @@
 // document.xml. Måttabellerna kommer ur vaxel-matt.js.
 import MATT from './vaxel-matt.js';
 import NORMAL from './vaxel-normal.js';
+import LAYOUT from './vaxel-layout.js';
 import { toleranser } from './vaxel-tolerans.js';
 
 const FORBES = ['Säkerhetsbesiktning', 'Underhållsbesiktning', 'Förbesiktning i spår', 'Förbesiktning på byggplats'];
@@ -202,11 +203,18 @@ function buildForm(t) {
     key: t.key,
     code: t.code,
     title: t.title,
-    format: 'word',
-    ext: 'docx',
-    templateHint: `${t.title} (Word)`,
+    // Word-mallen skrivs ut till en tom PDF en gång. Appen skriver sedan i den på fältens platser.
+    format: 'overlay',
+    ext: 'pdf',
+    layout: LAYOUT[t.key],
+    templateHint: `${t.code} ${t.short} (PDF-mall)`,
 
-    async matches({ word }) {
+    async matches({ pdf }) {
+      return !!pdf && pdf.subject === `Spårdokumentation mall ${t.key}`;
+    },
+
+    // Den gamla Word-mallen känns igen så att appen kan be om PDF-mallen i stället.
+    matchesWord({ word }) {
       return !!word && word.fieldCount === t.fieldCount && word.text.includes(t.match);
     },
 

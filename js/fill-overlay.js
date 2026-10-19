@@ -1,0 +1,75 @@
+// Fyller en tom PDF-mall (en Word-blankett utskriven till PDF) genom att skriva text och
+// kryss på fältens platser. Platserna kommer ur en layout som tagits fram ur Word-mallen:
+// text: fältindex → [sida, x, baslinje, teckenstorlek, justering, största bredd?]
+// check: fältindex → [sida, x, y, bredd, höjd]
+
+let fontBytes;
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`Kunde inte läsa ${src}`));
+    document.head.append(s);
+  });
+}
+
+// Typsnittet behövs för tecken som ≥ och −, som PDF:ens standardtypsnitt saknar.
+async function font(pdf) {
+  if (!window.fontkit) await loadScript('vendor/fontkit.min.js');
+  if (!fontBytes) fontBytes = await (await fetch('vendor/LiberationSans-Regular.ttf')).arrayBuffer();
+  pdf.registerFontkit(window.fontkit);
+  return pdf.embedFont(fontBytes, { subset: true });
+}
+
+export function isPdf(buffer) {
+  const head = new Uint8Array(buffer, 0, 5);
+  return String.fromCharCode(...head) === '%PDF-';
+}
+
+/**
+ * values: { [fältindex]: string | boolean }, samma som för Word-mallen.
+ * Returnerar en Blob med en .pdf-fil.
+ */
+export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
+  const { PDFDocument, rgb } = PDFLib;
+  const pdf = await PDFDocument.load(blankBuffer);
+  const f = await font(pdf);
+  const pages = pdf.getPages();
+  const ink = rgb(0, 0, 0);
+
+  for (const [key, value] of Object.entries(values)) {
+    const box = layout.check[key];
+    if (box) {
+      if (!value) continue;
+      const [p, x, y, w, h] = box;
+      const page = pages[p];
+      const m = Math.min(w, h) * 0.15;
+      page.drawLine({ start: { x: x + m, y: y + m }, end: { x: x + w - m, y: y + h - m }, thickness: 0.7, color: ink });
+      page.drawLine({ start: { x: x + m, y: y + h - m }, end: { x: x + w - m, y: y + m }, thickness: 0.7, color: ink });
+      continue;
+    }
+    const pos = layout.text[key];
+    if (!pos) throw new Error(`Fält ${key} finns inte i mallen`);
+    if (value == null || value === '' || value === true || value === false) continue;
+    const [p, x, base, fullSize, align, maxWidth] = pos;
+    const text = String(value).replace(/\s+/g, ' ');
+    // Krymp texten om den inte får plats i rutan.
+    let size = fullSize;
+    let width = f.widthOfTextAtSize(text, size);
+    if (maxWidth && width > maxWidth) {
+      size = Math.max(4, size * maxWidth / width);
+      width = f.widthOfTextAtSize(text, size);
+    }
+    const left = align === 'center' ? x - width / 2 : align === 'right' ? x - width : x;
+    pages[p].drawText(text, { x: left, y: base, size, font: f, color: ink });
+  }
+
+  if (title) pdf.setTitle(title);
+  pdf.setSubject('');
+  pdf.setProducer('Spårdokumentation');
+  pdf.setCreator('Spårdokumentation');
+  const bytes = await pdf.save();
+  return new Blob([bytes], { type: 'application/pdf' });
+}
