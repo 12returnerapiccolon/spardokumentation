@@ -849,12 +849,16 @@ async function settingsView() {
     if (!profile[k] && rem[r]) profile[k] = rem[r];
   }
   const save = debounce(() => db.setSetting('profile', profile), 300);
+  // Versionen är namnet på cachen i sw.js, så att man kan se om telefonen har den senaste.
+  const version = h('p', { class: 'muted' });
+  if ('caches' in window) caches.keys().then(k => { const v = k.filter(x => /^v\d+$/.test(x)).sort((a, b) => a.slice(1) - b.slice(1)).pop(); if (v) version.textContent = `Version ${v}`; }).catch(() => {});
   render(
     h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
     h('h2', {}, 'Förval för nya jobb'),
     h('div', { class: 'card' }, sharedInputs(profile, (k, v) => { profile[k] = v; save(); }, { only: PROFILE_KEYS })),
     h('h2', {}, 'Om appen'),
     h('p', { class: 'muted' }, 'Allt du fyller i och alla mallar sparas bara i den här telefonen. Inget skickas till någon server. Filerna lämnar telefonen först när du delar dem.'),
+    version,
   );
 }
 
@@ -882,6 +886,15 @@ window.addEventListener('DOMContentLoaded', () => {
   db.persist();
   route();
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('sw.js');
+    // En ny version tar över direkt (skipWaiting i sw.js). Ladda då om sidan så att den
+    // inte fortsätter med gamla filer. Första installationen laddar inte om.
+    if (navigator.serviceWorker.controller) {
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload(); } });
+    }
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // En app på hemskärmen laddas sällan om; leta efter uppdateringar när den öppnas igen.
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+    });
   }
 });
