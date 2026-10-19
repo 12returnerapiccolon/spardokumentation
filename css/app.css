@@ -239,6 +239,7 @@ details[open] summary { margin-bottom: 12px; }
   min-width: 0;
   max-width: 100%;
   line-height: 1.4;
+  height: 48px; /* samma höjd i Safari som i andra webbläsare */
 }
 .field input[type="date"]::-webkit-date-and-time-value, .field input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
 .field { min-width: 0; }
@@ -290,7 +291,8 @@ details[open] summary { margin-bottom: 12px; }
 
 .row.datum { align-items: end; }
 .row.datum .field { flex: 1 1 auto; min-width: 0; }
-.check.natt { flex: 0 0 auto; margin-bottom: 4px; white-space: nowrap; }
+/* Samma höjd och nederkant som datumrutan bredvid, så att rutan står mitt för den. */
+.check.natt { flex: 0 0 auto; margin-bottom: 12px; height: 48px; min-height: 0; align-self: flex-end; white-space: nowrap; }
 
 /* Upprepade rader, t.ex. svetsar */
 .rowcard { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 12px; }
