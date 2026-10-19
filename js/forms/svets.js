@@ -54,7 +54,7 @@ export default {
     {
       title: 'Huvud',
       items: [
-        { type: 'text', key: 'enhet', label: 'Företag/enhet', remember: true },
+        { type: 'shared', label: 'Företag/enhet', value: job => job.enhet || '' },
         { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric' },
         { type: 'text', key: 'kundao', label: 'Kundens Ao nr' },
         { type: 'text', key: 'bessy', label: 'Bessy anm/Ofelia' },
@@ -100,9 +100,10 @@ export default {
     },
     {
       title: 'Svetsansvarig och kommentarer',
+      help: 'Företag/enhet och svetsansvarig ändras under Inställningar.',
       items: [
-        { type: 'text', key: 'ansvarig', label: 'Svetsansvarig', remember: true },
-        { type: 'text', key: 'telefon', label: 'Telefonnr', inputmode: 'tel', remember: true },
+        { type: 'shared', label: 'Svetsansvarig', value: job => job.svetsansvarig || '' },
+        { type: 'shared', label: 'Telefonnr', value: job => job.svetsansvarig_tel || '' },
         { type: 'textarea', key: 'kommentar', label: 'Avvikelser eller kommentarer' },
       ],
     },
@@ -111,15 +112,16 @@ export default {
   toValues(job, data) {
     const datum = blankettDatum(job);
     const v = {
-      C2: data.enhet || '',
+      // data.* för jobb som skapades innan uppgifterna flyttades till Inställningar.
+      C2: job.enhet || data.enhet || '',
       H2: data.ao || '',
       P2: data.kundao || '',
       C4: [job.namn, job.svetsid].filter(Boolean).join(' '),
       H4: datum.slice(0, 4),
       K4: datum ? MANADER[Number(datum.slice(5, 7)) - 1] : '',
       P4: data.bessy || '',
-      R26: data.ansvarig || '',
-      R27: data.telefon || '',
+      R26: job.svetsansvarig || data.ansvarig || '',
+      R27: job.svetsansvarig_tel || data.telefon || '',
       O29: data.kommentar || '',
     };
     const auto = { dag: dag(job), plats: plats(job), km: kmm(job) };

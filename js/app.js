@@ -55,9 +55,20 @@ const SHARED = [
   { key: 'foretag', label: 'Företag / entreprenör', profile: true },
   { key: 'arbetsledare', label: 'Arbetsledare', profile: true },
   { key: 'platschef', label: 'Platschef', profile: true },
+  // Bara under Inställningar. Kopieras till jobbet när det skapas.
+  { key: 'enhet', label: 'Företag/enhet (svetsrapport)', profile: true, settingsOnly: true },
+  { key: 'svetsansvarig', label: 'Svetsansvarig', profile: true, settingsOnly: true },
+  { key: 'svetsansvarig_tel', label: 'Svetsansvarigs telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
 ];
 
 const PROFILE_KEYS = SHARED.filter(f => f.profile).map(f => f.key);
+
+// Uppgifter som bara finns under Inställningar hämtas därifrån om jobbet saknar dem,
+// t.ex. för jobb som skapades innan de fylldes i.
+async function fillFromProfile(job) {
+  const profile = await db.getSetting('profile', {});
+  for (const f of SHARED) if (f.settingsOnly && !job[f.key] && profile[f.key]) job[f.key] = profile[f.key];
+}
 
 // "John Glen Jonson" blir "JGJ".
 export function initials(name) {
@@ -220,7 +231,7 @@ async function homeView() {
 }
 
 function sharedInputs(values, onChange, opts = {}) {
-  const fields = SHARED.filter(f => !opts.only || opts.only.includes(f.key));
+  const fields = SHARED.filter(f => (opts.only ? opts.only.includes(f.key) : !f.settingsOnly));
   const out = [];
   const inputs = {};
   // Signaturen följer namnets initialer tills man skriver en egen.
@@ -282,8 +293,10 @@ function sharedInputs(values, onChange, opts = {}) {
       inputs[field.key] = h('input', {
         type: field.type || 'text', inputmode: field.inputmode, value: values[field.key] || '',
         autocomplete: 'off', autocapitalize: field.autocapitalize || 'sentences', name: field.key,
+        list: field.list ? `list-${field.key}` : null,
         oninput: e => change(field.key, e.target.value),
-      }));
+      }),
+      field.list ? h('datalist', { id: `list-${field.key}` }, field.list.map(v => h('option', { value: v }))) : null);
     if (f.key === 'datum') {
       // Nattarbete: blanketterna får nästa dags datum.
       const hint = h('p', { class: 'muted note' });
@@ -362,6 +375,7 @@ async function jobView(id) {
   const job = await db.get('jobs', id);
   if (!job) { location.hash = '#/'; return; }
   upgradeJob(job);
+  await fillFromProfile(job);
   setTitle(jobLabel(job), '#/');
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   window.onpagehide = () => save.flush();
@@ -630,6 +644,7 @@ async function formView(id, key) {
   const job = await db.get('jobs', id);
   const form = job && docForm(upgradeJob(job), key);
   if (!job || !form) { location.hash = '#/'; return; }
+  await fillFromProfile(job);
   setTitle(form.title, `#/jobb/${id}`);
   const data = job.forms[form.key] = job.forms[form.key] || {};
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
@@ -701,6 +716,11 @@ async function templatesView() {
 async function settingsView() {
   setTitle('Inställningar', '#/');
   const profile = await db.getSetting('profile', {});
+  // Uppgifterna låg först i svetsrapporten; ta med dem som redan skrivits där.
+  const rem = await db.getSetting('remember', {});
+  for (const [k, r] of [['enhet', 'svets.enhet'], ['svetsansvarig', 'svets.ansvarig'], ['svetsansvarig_tel', 'svets.telefon']]) {
+    if (!profile[k] && rem[r]) profile[k] = rem[r];
+  }
   const save = debounce(() => db.setSetting('profile', profile), 300);
   render(
     h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
