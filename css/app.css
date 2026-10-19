@@ -356,6 +356,13 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .matrix td.calc { color: var(--muted); font-variant-numeric: tabular-nums; }
 .matrix td.calc.warn { color: var(--danger); font-weight: 600; }
 .matrix input.warn { border-color: var(--danger); color: var(--danger); font-weight: 600; background: rgba(180, 35, 24, .1); }
-.matrix td.with-sign { display: flex; gap: 2px; align-items: center; }
-.matrix td.with-sign input { min-width: 2.8em; }
+.matrix .with-sign { display: flex; gap: 2px; align-items: center; }
+.matrix .with-sign input { min-width: 2.8em; }
 .matrix button.sign { flex: none; width: 30px; height: 40px; border: 1px solid var(--line); border-radius: 6px; background: var(--shared); color: var(--text); font-size: 18px; padding: 0; }
+.matrix tbody.span tr { height: 23px; }
+.matrix tbody.span td, .matrix tbody.span th { border-bottom: 0; }
+.matrix tbody.span tr.top > th, .matrix tbody.span tr.top > td:not(.calc) { border-top: 1px solid var(--line); }
+.matrix tbody.span td.calc { border-top: 1px solid var(--line); border-left: 1px solid var(--line); cursor: pointer; }
+.matrix tbody.span td.calc.tom { background: repeating-linear-gradient(-30deg, transparent 0 8px, var(--line) 8px 9px); cursor: default; }
+.matrix tbody th.mark { color: var(--accent-text); background: var(--accent); border-radius: 6px; }
+.matrix tbody th.dim { color: var(--line); }

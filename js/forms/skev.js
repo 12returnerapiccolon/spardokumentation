@@ -86,9 +86,9 @@ export default {
     },
     {
       title: 'Mätpunkter',
-      help: 'Mätpunkt varannan meter, 0–36 m. Ändring per 6 m = rälsförhöjningen 6 m längre fram minus den i punkten (skevning), ramptal = 6000 / ändringen. Rött är utanför UH2 för vald hastighetsklass. Rutan hoppar vidare när spårvidden har fyra siffror och rälsförhöjningen två; annars trycker du Nästa.',
+      help: 'Mätpunkt varannan meter, 0–36 m. Ändring per 6 m = rälsförhöjningen 6 m längre fram minus den i punkten (skevning), ramptal = 6000 / ändringen. Rött är utanför UH2 för vald hastighetsklass. Som på blanketten står ändringen mitt emellan de två mittersta punkterna; tryck på den för att se vilka punkter den räknas från. Rutan hoppar vidare när spårvidden har fyra siffror och rälsförhöjningen två; annars trycker du Nästa.',
       items: [{
-        type: 'matrix', key: 'punkter', rows: PUNKTER, rowHead: 'm', rowLabel: meter,
+        type: 'matrix', key: 'punkter', rows: PUNKTER, rowHead: 'm', rowLabel: meter, span: 3,
         cols: [
           { key: 'sv', label: 'Spårvidd (mm)', warn: utanforSv, klar: klarSv },
           { key: 'rf', label: 'Rälsförh. (mm)', sign: true, warn: utanforRf, klar: klarRf },

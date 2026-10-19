@@ -497,6 +497,7 @@ function renderItem(item, data, onChange, job) {
       // blir röd. Rutorna fylls rad för rad: Enter, eller klar(värde, data) när värdet är
       // komplett, går till nästa ruta på raden och sedan till första rutan på raden under.
       // sign: knapp ± bredvid rutan, eftersom telefonens sifferknappsats saknar minustecken.
+      // span: de uträknade kolumnerna gäller punkt i till i + span och står förskjutna mellan dem.
       const list = data[item.key] = data[item.key] || [];
       const cells = [];
       const refresh = () => cells.forEach(({ el, c, i }) => {
@@ -508,26 +509,57 @@ function renderItem(item, data, onChange, job) {
         const el = table.querySelector(`input[data-col="${nc}"][data-row="${ni}"]`);
         if (el) el.focus(); else input.blur();
       };
-      const table = h('table', { class: 'matrix' },
-        h('thead', {}, h('tr', {}, h('th', {}, item.rowHead), item.cols.map(c => h('th', {}, c.label)), (item.calc || []).map(c => h('th', { class: 'calc' }, c.label)))),
-        h('tbody', {}, Array.from({ length: item.rows }, (_, i) => h('tr', {},
+      const inputCell = (c, ci, i, attrs = {}) => {
+        const spara = value => { list[i] = { ...(list[i] || {}), [c.key]: value }; onChange(item.key, list); };
+        const input = h('input', {
+          type: 'text', inputmode: c.inputmode || 'decimal', enterkeyhint: 'next', autocomplete: 'off',
+          value: list[i]?.[c.key] ?? '', 'aria-label': `${c.label} ${item.rowLabel(i)}`, 'data-col': ci, 'data-row': i,
+          oninput: e => { spara(e.target.value); if (c.klar?.(e.target.value, data)) nasta(ci, i, e.target); },
+          onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); nasta(ci, i, e.target); } },
+        });
+        cells.push({ el: input, c: { warn: c.warn }, i });
+        const tecken = c.sign ? h('button', {
+          type: 'button', class: 'sign', 'aria-label': 'Byt tecken',
+          onclick: () => { input.value = input.value.startsWith('-') ? input.value.slice(1) : `-${input.value}`; spara(input.value); },
+        }, '±') : null;
+        return h('td', attrs, c.sign ? h('div', { class: 'with-sign' }, input, tecken) : input);
+      };
+      const head = h('thead', {}, h('tr', {}, h('th', {}, item.rowHead), item.cols.map(c => h('th', {}, c.label)), (item.calc || []).map(c => h('th', { class: 'calc' }, c.label))));
+      let body;
+      if (item.span) {
+        // Som på blanketten: varje punkt är två halvrader och de uträknade kolumnerna är
+        // förskjutna en halv rad. Värdet för punkt k (k till k + span) står mitt emellan de två
+        // mittersta punkterna. Tryck på ett värde för att se vilka punkter det räknas från.
+        const rader = [];
+        const markera = k => table.querySelectorAll('tbody th').forEach((th, p) => {
+          th.classList.toggle('mark', k != null && (p === k || p === k + item.span));
+          th.classList.toggle('dim', k != null && p > k && p < k + item.span);
+        });
+        let vald = null;
+        for (let i = 0; i < item.rows; i++) {
+          rader.push(h('tr', { class: 'top' },
+            h('th', { rowspan: 2 }, item.rowLabel(i)),
+            item.cols.map((c, ci) => inputCell(c, ci, i, { rowspan: 2 })),
+            i === 0 ? (item.calc || []).map(() => h('td', { class: 'calc tom' })) : null));
+          const k = i - Math.floor(item.span / 2);
+          const giltig = k >= 0 && k + item.span < item.rows;
+          rader.push(h('tr', { class: 'bottom' }, (item.calc || []).map(c => {
+            const td = h('td', { class: 'calc' + (giltig ? '' : ' tom'), rowspan: i < item.rows - 1 ? 2 : 1 });
+            if (giltig) {
+              cells.push({ el: td, c, i: k });
+              td.onclick = () => { vald = vald === k ? null : k; markera(vald); };
+            }
+            return td;
+          })));
+        }
+        body = h('tbody', { class: 'span' }, rader);
+      } else {
+        body = h('tbody', {}, Array.from({ length: item.rows }, (_, i) => h('tr', {},
           h('th', {}, item.rowLabel(i)),
-          item.cols.map((c, ci) => {
-            const spara = value => { list[i] = { ...(list[i] || {}), [c.key]: value }; onChange(item.key, list); };
-            const input = h('input', {
-              type: 'text', inputmode: c.inputmode || 'decimal', enterkeyhint: 'next', autocomplete: 'off',
-              value: list[i]?.[c.key] ?? '', 'aria-label': `${c.label} ${item.rowLabel(i)}`, 'data-col': ci, 'data-row': i,
-              oninput: e => { spara(e.target.value); if (c.klar?.(e.target.value, data)) nasta(ci, i, e.target); },
-              onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); nasta(ci, i, e.target); } },
-            });
-            cells.push({ el: input, c: { warn: c.warn }, i });
-            const tecken = c.sign ? h('button', {
-              type: 'button', class: 'sign', 'aria-label': 'Byt tecken',
-              onclick: () => { input.value = input.value.startsWith('-') ? input.value.slice(1) : `-${input.value}`; spara(input.value); },
-            }, '±') : null;
-            return h('td', { class: c.sign ? 'with-sign' : null }, input, tecken);
-          }),
-          (item.calc || []).map(c => { const td = h('td', { class: 'calc' }); cells.push({ el: td, c, i }); return td; })))));
+          item.cols.map((c, ci) => inputCell(c, ci, i)),
+          (item.calc || []).map(c => { const td = h('td', { class: 'calc' }); cells.push({ el: td, c, i }); return td; }))));
+      }
+      const table = h('table', { class: 'matrix' }, head, body);
       refresh();
       // Räknas om när något ändras, även fält utanför tabellen (se formView).
       const wrap = h('div', { class: 'matrix-wrap' }, table);
