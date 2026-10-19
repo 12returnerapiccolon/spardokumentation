@@ -8,6 +8,7 @@ import svets from './forms/svets.js';
 import heta from './forms/heta.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
+import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 
 const FORMS = [...VAXELFORMS, oversyn1481, svets, heta];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
@@ -452,26 +453,44 @@ function renderItem(item, data, onChange, job) {
         placeholder: item.placeholder ? item.placeholder(job, data) : null, 'data-ph': item.placeholder ? '' : null,
         oninput: e => onChange(item.key, e.target.value) });
       if (item.placeholder) input.refreshPh = () => { input.placeholder = item.placeholder(job, data); };
-      // geo: knapp som lägger till telefonens position (WGS84) efter texten.
-      const geo = item.geo ? h('button', {
-        type: 'button', class: 'link',
-        onclick: e => {
-          const btn = e.currentTarget;
-          if (!navigator.geolocation) { alert('Telefonen kan inte ge någon position här.'); return; }
-          btn.textContent = 'Hämtar position …';
-          navigator.geolocation.getCurrentPosition(pos => {
-            const { latitude: lat, longitude: lon, accuracy } = pos.coords;
-            const koord = `N ${lat.toFixed(5)} E ${lon.toFixed(5)}`;
-            const base = (input.value || input.placeholder || '').replace(/,?\s*N \d+\.\d+ E \d+\.\d+$/, '');
-            input.value = base ? `${base}, ${koord}` : koord;
-            onChange(item.key, input.value);
-            btn.textContent = `📍 Position hämtad (±${Math.round(accuracy)} m). Hämta igen`;
-          }, err => {
-            btn.textContent = '📍 Hämta min position';
-            alert(err.code === 1 ? 'Appen fick inte använda platstjänster. Tillåt det för Safari under Inställningar > Integritet > Platstjänster.' : 'Kunde inte hämta positionen. Försök igen.');
-          }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
-        },
-      }, '📍 Hämta min position') : null;
+      // geo: knappar som lägger till adress och koordinater efter texten, från telefonens
+      // position eller en plats som väljs på kartan. Det som lades till sist byts ut.
+      let geo = null;
+      if (item.geo) {
+        const status = h('p', { class: 'muted note', hidden: true });
+        const suffixKey = `${item.key}_geo`;
+        const apply = async (pos, kalla) => {
+          status.hidden = false;
+          status.textContent = 'Söker adress …';
+          const adr = await adress(pos.lat, pos.lon);
+          const suffix = [adr, koordinater(pos.lat, pos.lon)].filter(Boolean).join(', ');
+          let base = input.value || input.placeholder || '';
+          const old = data[suffixKey];
+          if (old && base.endsWith(old)) base = base.slice(0, -old.length).replace(/,\s*$/, '');
+          input.value = base ? `${base}, ${suffix}` : suffix;
+          onChange(suffixKey, suffix);
+          onChange(item.key, input.value);
+          status.textContent = `${kalla}${pos.accuracy ? ` (±${Math.round(pos.accuracy)} m)` : ''}.${adr ? '' : ' Ingen adress hittades, bara koordinater.'}`;
+        };
+        const egen = h('button', {
+          type: 'button', class: 'button',
+          onclick: async () => {
+            status.hidden = false; status.textContent = 'Hämtar position …';
+            try { await apply(await minPosition(), 'Telefonens position'); } catch (e) { status.textContent = e.message; }
+          },
+        }, '📍 Min position');
+        const karta = h('button', {
+          type: 'button', class: 'button',
+          onclick: async () => {
+            const m = (input.value || '').match(/N (\d+\.\d+) E (\d+\.\d+)/);
+            try {
+              const pos = await valjPaKarta(m ? { lat: Number(m[1]), lon: Number(m[2]) } : null);
+              if (pos) await apply(pos, 'Plats vald på kartan');
+            } catch (e) { alert(e.message); }
+          },
+        }, '🗺 Välj på karta');
+        geo = h('div', {}, h('div', { class: 'row geo' }, egen, karta), status);
+      }
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
         input, geo,
         item.list ? h('datalist', { id: listId }, item.list.map(v => h('option', { value: v }))) : null);

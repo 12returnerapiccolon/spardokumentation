@@ -295,3 +295,15 @@ button.link.danger { color: var(--danger); }
 button.link.inline { padding: 0; font-size: inherit; text-decoration: underline; }
 .check.sub { padding-left: 36px; }
 .note.rule { white-space: pre-line; font-size: 13px; margin: -4px 0 12px 36px; }
+
+/* Plats: knappar och karta */
+.row.geo { margin-top: 8px; }
+.row.geo .button { flex: 1; min-height: 44px; }
+.map-overlay { background: #000; }
+.map-overlay .map { position: absolute; inset: 0; }
+.map-crosshair { position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; margin: -18px 0 0 -18px; z-index: 1000; pointer-events: none;
+  background: linear-gradient(var(--danger), var(--danger)) center / 2px 100% no-repeat, linear-gradient(var(--danger), var(--danger)) center / 100% 2px no-repeat; }
+.map-hint { position: absolute; top: calc(env(safe-area-inset-top) + 8px); left: 12px; right: 12px; z-index: 1000; margin: 0; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,.92); color: #222; font-size: 14px; }
+.map-bar { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom) + 12px); z-index: 1000; display: flex; gap: 8px; }
+.map-bar .button { flex: 1; }
+.map-bar .button:nth-child(2) { flex: 0 0 52px; }
