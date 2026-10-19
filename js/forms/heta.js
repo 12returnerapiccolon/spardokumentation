@@ -48,8 +48,6 @@ const brandvakter = (job, data) => ARBETARE
   .map(([key], n) => data[key] ?? (n === 0 ? job.namn : ''))
   .join(', ');
 
-const plats = job => [job.driftplats, job.vxnr ? `vx ${job.vxnr}` : job.spar && `spår ${job.spar}`, job.km && `km ${job.km}+${String(job.m || 0).padStart(3, '0')}`, job.bandel && `bandel ${job.bandel}`].filter(Boolean).join(', ');
-
 export default {
   key: 'heta',
   code: 'DOK 2859',
@@ -66,9 +64,8 @@ export default {
   sections: [
     {
       title: 'Arbetsplats och arbetsmetod',
-      help: 'Grå text hämtas från jobbet.',
       items: [
-        { type: 'text', key: 'plats', label: 'Arbetsplats/Larmadress', placeholder: plats, geo: true },
+        { type: 'text', key: 'plats', label: 'Arbetsplats/Larmadress', geo: true },
         { type: 'group', label: 'Arbetsmetod', items: [
           ...METOD.map(([key, label]) => ({ type: 'check', key, label, defaultValue: key === 'svetsning' })),
           { type: 'text', key: 'annatText', label: 'Annat, vad (t.ex. gasol/syre/termit)' },
@@ -131,7 +128,7 @@ export default {
     // Fält med förval: det svetsaren skrivit går före.
     const val = (key, def) => (data[key] !== undefined ? data[key] : def);
     const v = {
-      plats: data.plats || plats(job),
+      plats: data.plats || '',
       annat: data.annatText || '',
       franDatum: val('franDatum', blankettDatum(job)),
       franKl: data.franKl || '',
