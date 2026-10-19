@@ -122,10 +122,10 @@ const EGEN = [
 
 const ROLLER = [
   ['projektledare', 'TRV Projektledare', 4, job => job.projektledare || '', job => job.projektledare_tel || ''],
-  ['platschef', 'Entreprenör Platschef', 5, job => job.platschef || ''],
-  ['arbetsledare', 'Ibruktagande-/arbetsledare', 6, job => job.arbetsledare || ''],
+  ['platschef', 'Entreprenör Platschef', 5, job => job.platschef || '', job => job.platschef_tel || ''],
+  ['arbetsledare', 'Ibruktagande-/arbetsledare', 6, job => job.arbetsledare || '', job => job.arbetsledare_tel || ''],
   ['besiktningsman', 'Ibruktagandebesiktningsman', 7],
-  ['bankontrollant', 'Bankontrollant', 8, job => job.namn || ''],
+  ['bankontrollant', 'Bankontrollant', 8, job => job.namn || '', job => job.namn_tel || ''],
 ];
 // Bankontrollanten besiktigar och signerar. Finns en besiktningsman på jobbet tas
 // bankontrollanten bort och besiktningsmannen signerar i stället (2026-10-19).

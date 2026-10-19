@@ -53,10 +53,13 @@ const SHARED = [
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
   { key: 'namn', label: 'Ditt namn', profile: true },
+  { key: 'namn_tel', label: 'Ditt telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
   { key: 'svetsid', label: 'Svets-ID', profile: true, autocapitalize: 'characters' },
   { key: 'foretag', label: 'Företag / entreprenör', profile: true },
   { key: 'arbetsledare', label: 'Arbetsledare', profile: true },
+  { key: 'arbetsledare_tel', label: 'Arbetsledarens telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
   { key: 'platschef', label: 'Platschef', profile: true },
+  { key: 'platschef_tel', label: 'Platschefens telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
   // Bara under Inställningar. Kopieras till jobbet när det skapas.
   { key: 'enhet', label: 'Företag/enhet (svetsrapport)', profile: true, settingsOnly: true },
   { key: 'svetsansvarig', label: 'Svetsansvarig', profile: true, settingsOnly: true },
@@ -774,8 +777,9 @@ async function formView(id, key) {
 
   render(
     h('p', { class: 'muted' }, `${form.code}. Uppgifter i grått hämtas från jobbet.`),
-    ...form.sections.map(section => h('section', { class: 'card' },
-      h('h2', {}, section.title),
+    // Sektionerna går att fälla ihop för överblick och är öppna varje gång blanketten öppnas.
+    ...form.sections.map(section => h('details', { class: 'card section', open: true },
+      h('summary', {}, h('h2', {}, section.title)),
       section.help ? h('p', { class: 'muted' }, section.help) : null,
       renderItems(section.items, data, onChange, job))),
     h('a', { class: 'button primary big', href: `#/jobb/${id}`, onclick: () => save.flush() }, 'Klar'),
@@ -820,7 +824,7 @@ async function settingsView() {
   const profile = await db.getSetting('profile', {});
   // Uppgifterna låg först i blanketterna; ta med dem som redan skrivits där.
   const rem = await db.getSetting('remember', {});
-  for (const [k, r] of [['enhet', 'svets.enhet'], ['svetsansvarig', 'svets.ansvarig'], ['svetsansvarig_tel', 'svets.telefon'], ['projektledare', 'ibt.projektledare'], ['projektledare_tel', 'ibt.projektledareTfn']]) {
+  for (const [k, r] of [['enhet', 'svets.enhet'], ['svetsansvarig', 'svets.ansvarig'], ['svetsansvarig_tel', 'svets.telefon'], ['projektledare', 'ibt.projektledare'], ['projektledare_tel', 'ibt.projektledareTfn'], ['platschef_tel', 'ibt.platschefTfn'], ['arbetsledare_tel', 'ibt.arbetsledareTfn'], ['namn_tel', 'ibt.bankontrollantTfn']]) {
     if (!profile[k] && rem[r]) profile[k] = rem[r];
   }
   const save = debounce(() => db.setSetting('profile', profile), 300);

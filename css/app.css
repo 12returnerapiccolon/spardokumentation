@@ -222,6 +222,13 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 .files a { color: var(--accent); }
 
 details summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+/* Sektion i en blankett som går att fälla ihop. */
+details.section > summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; list-style: none; }
+details.section > summary::-webkit-details-marker { display: none; }
+details.section > summary h2 { margin: 0; }
+details.section > summary::after { content: '›'; color: var(--muted); font-size: 24px; line-height: 1; transform: rotate(90deg); transition: transform .15s; }
+details.section:not([open]) > summary::after { transform: none; }
+details.section[open] > summary { margin-bottom: 8px; }
 details[open] summary { margin-bottom: 12px; }
 
 /* Safari på iPhone ger datum- och tidsfält en egen minsta bredd som spräcker rutan. */
