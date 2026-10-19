@@ -50,7 +50,6 @@ const SHARED = [
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
   { key: 'namn', label: 'Ditt namn', profile: true },
-  { key: 'signatur', label: 'Signatur (initialer)', profile: true, autocapitalize: 'characters' },
   { key: 'svetsid', label: 'Svets-ID', profile: true, autocapitalize: 'characters' },
   { key: 'foretag', label: 'Företag / entreprenör', profile: true },
   { key: 'arbetsledare', label: 'Arbetsledare', profile: true },
@@ -68,11 +67,6 @@ const PROFILE_KEYS = SHARED.filter(f => f.profile).map(f => f.key);
 async function fillFromProfile(job) {
   const profile = await db.getSetting('profile', {});
   for (const f of SHARED) if (f.settingsOnly && !job[f.key] && profile[f.key]) job[f.key] = profile[f.key];
-}
-
-// "John Glen Jonson" blir "JGJ".
-export function initials(name) {
-  return (name || '').trim().split(/[\s-]+/).filter(Boolean).map(w => w[0].toUpperCase()).join('');
 }
 
 // ---------- Hjälpfunktioner ----------
@@ -234,17 +228,7 @@ function sharedInputs(values, onChange, opts = {}) {
   const fields = SHARED.filter(f => (opts.only ? opts.only.includes(f.key) : !f.settingsOnly));
   const out = [];
   const inputs = {};
-  // Signaturen följer namnets initialer tills man skriver en egen.
-  const change = (key, value) => {
-    if (key === 'namn' && inputs.signatur) {
-      const sig = values.signatur || '';
-      if (!sig || sig === initials(values.namn)) {
-        inputs.signatur.value = initials(value);
-        onChange('signatur', inputs.signatur.value);
-      }
-    }
-    onChange(key, value);
-  };
+  const change = (key, value) => onChange(key, value);
   let modellBox;
   const renderModell = () => {
     if (!modellBox) return;
@@ -328,7 +312,6 @@ async function newJobView() {
   const profile = await db.getSetting('profile', {});
   const job = { datum: today() };
   for (const k of PROFILE_KEYS) job[k] = profile[k] || '';
-  if (!job.signatur) job.signatur = initials(job.namn);
   const chosen = new Set((await db.getSetting('lastDocs', ['vaxel', '1481'])).map(k => (k === 'ev' ? 'vaxel' : k)));
 
   render(
