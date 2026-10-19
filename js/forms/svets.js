@@ -82,6 +82,7 @@ export default {
           { type: 'text', key: 'plats', label: 'Bandel-ort-växelnummer / spår', placeholder: plats },
           {
             type: 'plus', label: 'Km + m (utan meter: nr på växelbilden)', keys: ['lagekm', 'lagem'],
+            image: { text: 'växelbilden', src: 'img/svets/vaxelbild.jpg', alt: 'Växelbild med svetsarnas nummer 1–14' },
             placeholders: [job => (job.vxnr ? '' : job.km || ''), job => (job.vxnr || !job.km ? '' : job.m || '')],
           },
           { type: 'text', key: 'fore', label: 'Före kap mm', inputmode: 'decimal', half: true },

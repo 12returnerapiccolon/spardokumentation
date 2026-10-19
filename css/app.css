@@ -292,3 +292,4 @@ button.link.danger { color: var(--danger); }
 .plus-row { display: flex; align-items: center; gap: 8px; }
 .plus-row input { flex: 1; min-width: 0; }
 .plus-sign { font-size: 20px; font-weight: 600; }
+button.link.inline { padding: 0; font-size: inherit; text-decoration: underline; }

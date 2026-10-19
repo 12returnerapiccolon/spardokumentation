@@ -487,7 +487,10 @@ function renderItem(item, data, onChange, job) {
     }
     case 'plus':
       // Två sifferrutor med + emellan, t.ex. km + m.
-      return h('div', { class: 'field plus' }, h('span', {}, item.label),
+      // image: en del av rubriken öppnar en bild, t.ex. växelbilden.
+      return h('div', { class: 'field plus' }, h('span', {}, item.image
+        ? item.label.split(item.image.text).flatMap((part, i) => (i ? [h('button', { type: 'button', class: 'link inline', onclick: () => showImage(item.image.src, item.image.alt) }, item.image.text), part] : [part]))
+        : item.label),
         h('div', { class: 'plus-row' }, item.keys.map((key, i) => [
           i ? h('span', { class: 'plus-sign' }, '+') : null,
           h('input', {
