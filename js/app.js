@@ -563,10 +563,21 @@ function renderItem(item, data, onChange, job) {
             oninput: e => onChange(key, e.target.value),
           }),
         ]).flat()));
-    case 'select':
-      return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
+    case 'select': {
+      // options: värden, eller [värde, text i listan]. info: stycken som visas när man trycker
+      // på rubriken, t.ex. vad alternativen betyder.
+      const info = item.info ? h('div', { class: 'note info', hidden: true }, item.info.map(t => h('p', {}, t))) : null;
+      const label = item.info
+        ? h('button', { type: 'button', class: 'link inline', onclick: e => { e.preventDefault(); info.hidden = !info.hidden; } }, `${item.label} ⓘ`)
+        : item.label;
+      return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, label),
+        info,
         h('select', { onchange: e => onChange(item.key, e.target.value) },
-          ['', ...item.options].map(opt => h('option', { value: opt, selected: (data[item.key] || '') === opt }, opt || '–'))));
+          ['', ...item.options].map(opt => {
+            const [value, text] = Array.isArray(opt) ? opt : [opt, opt];
+            return h('option', { value, selected: (data[item.key] || '') === value }, text || '–');
+          })));
+    }
     case 'group': {
       const body = h('div', { class: 'group-body' }, renderItems(item.items, data, onChange, job));
       if (item.toggle) {

@@ -82,6 +82,26 @@ const PUNKTER = [
     [54, 'Hägnad', 'Kap 4.7', 'Samtl. pkt under respektive obj.'],
   ]],
 ];
+// Prioritet på besiktningsanmärkningar enligt TDOK 2021:0299 Säkerhetsbesiktning – genomföra
+// (v 2.0, kap 5.4.2) och TDOK 2021:0303 Underhållsbesiktning – genomföra (v 2.0, kap 5.4.2).
+const PRIO = [
+  ['A-anm', 'A – akut, åtgärdas omedelbart'],
+  ['V-anm', 'V – inom 14 dagar'],
+  ['M-anm', 'M – inom 90 dagar'],
+  ['B-anm', 'B – före nästa besiktning'],
+  ['Å-anm', 'Å – inom tre år (underhållsbesiktning)'],
+  ['Ö-anm', 'Ö – vid lämpligt tillfälle (underhållsbesiktning)'],
+];
+const PRIO_INFO = [
+  'A: akut anmärkning som medför en omedelbar risk för olycka. Kan den inte åtgärdas direkt ska trafikledningen informeras omedelbart och nödvändiga åtgärder vidtas, inklusive eventuell avstängning av spår. Kontakta tågklareraren för avspärrning av spårområdet. Befintligt skydd får inte avslutas innan felet är åtgärdat. Rapportera enligt TDOK 2013:0143.',
+  'V: ska åtgärdas inom 14 dagar från besiktningsdatum. Vid underhållsbesiktning gäller V bara vid risk för driftsäkerhetsfel.',
+  'M: ska åtgärdas inom 90 dagar från besiktningsdatum.',
+  'B: ska åtgärdas före nästa besiktningstillfälle, eller i undantagsfall enligt andra tider i styrande dokument för komponenten.',
+  'Å (bara underhållsbesiktning): ska åtgärdas inom tre år från besiktningsdatum.',
+  'Ö (bara underhållsbesiktning): övrigt, åtgärdas vid lämpligt tillfälle (arbetsbank).',
+  'Bedömningsstödet för varje besiktningspunkt anger vilken prioritet anmärkningen bör ha, men det är besiktningsmannen som gör bedömningen. Källa: TDOK 2021:0299 och TDOK 2021:0303, kap 5.4.2.',
+];
+
 const UTFORD = 'Kontrollerad';
 const EJ = 'Inte aktuellt';
 // Kontrollpunkterna är en kryssruta (2026-10-19). Äldre jobb sparade Kontrollerad/Inte aktuellt.
@@ -197,8 +217,8 @@ export default {
           { type: 'text', key: 'text', label: 'Besiktningsanmärkning' },
           { type: 'text', key: 'kmFran', label: 'Km från', half: true },
           { type: 'text', key: 'kmTill', label: 'Km till', half: true },
-          { type: 'text', key: 'anl', label: 'Anläggning', half: true },
-          { type: 'text', key: 'prio', label: 'Prioritet', list: ['A-anm', 'V-anm', 'M-anm', 'B-anm'], half: true },
+          { type: 'text', key: 'anl', label: 'Anläggning' },
+          { type: 'select', key: 'prio', label: 'Prioritet', options: PRIO, info: PRIO_INFO },
           { type: 'text', key: 'atgardad', label: 'Anm. åtgärdad dat/sign' },
         ],
         newRow(previous, job) {
