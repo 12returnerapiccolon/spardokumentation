@@ -2,6 +2,7 @@
 // men fälten ligger på olika platser. Siffrorna är formulärfältens ordning i mallens
 // document.xml. Måttabellerna kommer ur vaxel-matt.js.
 import MATT from './vaxel-matt.js';
+import { blankettDatum } from '../datum.js';
 import NORMAL from './vaxel-normal.js';
 import LAYOUT from './vaxel-layout.js';
 import { toleranser } from './vaxel-tolerans.js';
@@ -278,7 +279,7 @@ function buildForm(t) {
       for (const g of [...(t.markers || []), ...t.groups]) {
         for (const [, idx, kind] of g.items) v[idx] = kind === 'text' ? data[`t${idx}`] : !!data[`c${idx}`];
       }
-      const [yyyy, mm, dd] = (job.datum || '').split('-');
+      const [yyyy, mm, dd] = blankettDatum(job).split('-');
       v[t.date[0]] = yyyy; v[t.date[1]] = mm; v[t.date[2]] = dd;
       v[t.sign] = job.signatur || job.namn;
       for (const k of Object.keys(v)) if (v[k] == null) v[k] = '';

@@ -5,6 +5,7 @@ import { fillOverlay, isPdf } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
 import MODELLER from './forms/vaxelmodeller.js';
+import { blankettDatum } from './datum.js';
 
 const FORMS = [...VAXELFORMS, oversyn1481];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
@@ -135,7 +136,7 @@ function fileName(form, job) {
   const parts = [form.code, form.title];
   if (job.vxnr) parts.push(`Vx ${job.vxnr}`);
   if (job.driftplats) parts.push(job.driftplats);
-  if (job.datum) parts.push(job.datum);
+  if (job.datum) parts.push(blankettDatum(job));
   return safeName(parts.join(' ')) + '.' + form.ext;
 }
 
@@ -212,7 +213,7 @@ async function homeView() {
       ? h('ul', { class: 'list' }, jobs.map(job => h('li', {},
           h('a', { href: `#/jobb/${job.id}` },
             h('span', { class: 'main' }, jobLabel(job)),
-            h('span', { class: 'sub' }, [job.datum, upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', ')].filter(Boolean).join(' · '))))))
+            h('span', { class: 'sub' }, [job.datum && (job.natt ? `${job.datum} natt` : job.datum), upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', ')].filter(Boolean).join(' · '))))))
       : h('p', { class: 'muted' }, 'Inga jobb än.'),
   );
 }
@@ -282,6 +283,22 @@ function sharedInputs(values, onChange, opts = {}) {
         autocomplete: 'off', autocapitalize: field.autocapitalize || 'sentences', name: field.key,
         oninput: e => change(field.key, e.target.value),
       }));
+    if (f.key === 'datum') {
+      // Nattarbete: blanketterna får nästa dags datum.
+      const hint = h('p', { class: 'muted note' });
+      const showHint = () => {
+        hint.textContent = values.natt && values.datum ? `Blanketterna får datum ${blankettDatum(values)}.` : '';
+        hint.hidden = !hint.textContent;
+      };
+      const field = input(f);
+      inputs.datum.addEventListener('input', () => setTimeout(showHint));
+      out.push(h('div', { class: 'row datum' }, field,
+        h('label', { class: 'check natt' },
+          h('input', { type: 'checkbox', name: 'natt', checked: !!values.natt, onchange: e => { change('natt', e.target.checked); showHint(); } }),
+          h('span', {}, 'Nattarbete'))), hint);
+      showHint();
+      continue;
+    }
     if (f.half && fields[i + 1]?.half) {
       out.push(h('div', { class: 'row' }, input(f), input(fields[i + 1])));
       i++;
@@ -423,7 +440,9 @@ function renderItem(item, data, onChange, job) {
       return h('p', { class: 'sublabel' }, item.label);
     case 'shared':
       return h('div', { class: 'field shared' }, h('span', {}, item.label),
-        h('output', {}, job[item.from] || '–'));
+        h('output', {}, item.from === 'datum'
+          ? (blankettDatum(job) ? blankettDatum(job) + (job.natt ? ' (nattarbete)' : '') : '–')
+          : job[item.from] || '–'));
     case 'text':
       return h('label', { class: 'field' }, h('span', {}, item.label),
         h('input', { type: 'text', inputmode: item.inputmode, value: data[item.key] || '', autocomplete: 'off',
