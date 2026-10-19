@@ -463,9 +463,12 @@ function measureTable(item, data, onChange, job) {
     const auto = item.auto ? item.auto(job, data) : { normal: {}, forslag: {}, tol: {}, tabeller: [], saknas: [] };
     const uppInputs = [];
     const next = input => {
-      const i = uppInputs.indexOf(input);
-      if (uppInputs[i + 1]) uppInputs[i + 1].focus(); else input.blur();
+      // Nästa mått som tas, även när man skrivit i ett grått mått.
+      const i = uppInputs.findIndex(u => u.input === input);
+      const nasta = uppInputs.slice(i + 1).find(u => u.tas);
+      if (nasta) nasta.input.focus(); else input.blur();
     };
+    const tas = m => !auto.matpunkter || auto.matpunkter.has(m);
     const cell = (m, col, out) => {
       const row = data.matt[m] || {};
       const own = Object.prototype.hasOwnProperty.call(row, col);
@@ -478,6 +481,7 @@ function measureTable(item, data, onChange, job) {
         value: own ? row[col] : (autoValue || ''),
         placeholder: col === 'normal' && auto.forslag[m] ? auto.forslag[m] : '',
         'aria-label': `${m} ${col}`,
+        tabindex: tas(m) ? null : -1,
         oninput: e => {
           const r = data.matt[m] = data.matt[m] || {};
           r[col] = e.target.value;
@@ -493,7 +497,7 @@ function measureTable(item, data, onChange, job) {
         },
         onkeydown: e => { if (e.key === 'Enter' && col === 'uppmatt') { e.preventDefault(); next(e.target); } },
       });
-      if (col === 'uppmatt') uppInputs.push(input);
+      if (col === 'uppmatt') uppInputs.push({ input, tas: tas(m) });
       return input;
     };
     const notes = [];
@@ -506,6 +510,7 @@ function measureTable(item, data, onChange, job) {
       else if (modell) notes.push('Bilagan har ingen toleranstabell för den här modellen och besiktningen.');
       if (auto.saknas.includes('besiktningsklass')) notes.push('Fyll i besiktningsklass under Växeldata för att få alla toleranser.');
       if (auto.saknas.includes('radie')) notes.push('Fyll i radie under Växeldata för att få toleranserna som beror på R ≥ 300 m.');
+      if (auto.matpunkter) notes.push('Gråa mått tas inte vid säkerhetsbesiktning och hoppas över. Du kan ändå fylla i dem.');
       if (Object.keys(auto.forslag).length) notes.push('Grå siffror med snedstreck (t.ex. 43/44) beror på korsningens utförande. Skriv rätt värde.');
     }
     wrap.replaceChildren(
@@ -515,7 +520,7 @@ function measureTable(item, data, onChange, job) {
         item.keys.map(m => {
           const row = data.matt[m] || {};
           const out = h('output', {}, diff(effektiv(row, 'normal', auto.normal[m]), row.uppmatt));
-          return h('div', { class: 'mrow' }, h('span', { class: 'mname' }, m), cell(m, 'normal', out), cell(m, 'tolerans', out), cell(m, 'uppmatt', out), out);
+          return h('div', { class: tas(m) ? 'mrow' : 'mrow skip' }, h('span', { class: 'mname' }, m), cell(m, 'normal', out), cell(m, 'tolerans', out), cell(m, 'uppmatt', out), out);
         })));
   };
   draw();

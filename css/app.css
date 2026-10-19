@@ -212,6 +212,7 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 .mrow input::placeholder { color: var(--muted); opacity: .7; }
 .measures-wrap .note { margin: 0 0 8px; }
 .mname { font-weight: 600; }
+.mrow.skip { opacity: .35; }
 .mrow output { text-align: center; color: var(--muted); }
 
 .files { padding-left: 20px; word-break: break-word; }

@@ -173,7 +173,7 @@ export function autoVarden(vaxeltyp, job, data) {
     if (v.includes('/')) forslag[m] = v; else normal[m] = v;
   }
   const t = toleranser({ vaxeltyp, modell, typ: data.typ, besiktningsklass: data.besiktningsklass, radiefalt: data.radie, normal });
-  return { normal, forslag, tol: t.tol, tabeller: t.tabeller, saknas: t.saknas, harNormal: modell in NORMAL };
+  return { normal, forslag, tol: t.tol, tabeller: t.tabeller, saknas: t.saknas, matpunkter: t.matpunkter, harNormal: modell in NORMAL };
 }
 
 // Det svetsaren skrivit gäller före det automatiska, även en tömd ruta.

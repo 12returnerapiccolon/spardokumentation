@@ -114,11 +114,12 @@ function relativ(tol, normal, modell) {
 /**
  * Toleranser för en växel. Okänd klass, radie eller (för BV50 nybyggnad) slipertyp ger flera
  * möjliga tabeller; då fylls bara de mått i där alla tabellerna är överens.
- * Returnerar { tol: {mått: värde}, tabeller: ['B10.2', …], saknas: ['besiktningsklass', 'radie'] }.
+ * Returnerar { tol: {mått: värde}, tabeller: ['B10.2', …], saknas: ['besiktningsklass', 'radie'],
+ * matpunkter: Set med måtten som tas, eller null när alla tas }.
  */
 export function toleranser({ vaxeltyp, modell, typ, besiktningsklass, radiefalt, normal = {} }) {
   const b = besiktning(typ);
-  if (!b || !modell) return { tol: {}, tabeller: [], saknas: [] };
+  if (!b || !modell) return { tol: {}, tabeller: [], saknas: [], matpunkter: null };
   const fam = familjer(modell);
   let kandidater = TABELLER.filter(tab => tab.typ === b && tab.vx.includes(vaxeltyp) && (!tab.fam || fam.has(tab.fam)));
   const saknas = [];
@@ -142,5 +143,7 @@ export function toleranser({ vaxeltyp, modell, typ, besiktningsklass, radiefalt,
       if (varden[0] != null && varden.every(x => x === varden[0])) tol[matt] = varden[0];
     }
   }
-  return { tol, tabeller: kandidater.map(tab => tab.id), saknas };
+  // Vid säkerhetsbesiktning mäts bara punkterna i tabellen.
+  const matpunkter = b === 'sak' && kandidater.length ? new Set(kandidater.flatMap(tab => Object.keys(tab.tol))) : null;
+  return { tol, tabeller: kandidater.map(tab => tab.id), saknas, matpunkter };
 }
