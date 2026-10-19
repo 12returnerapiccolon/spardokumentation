@@ -6,6 +6,15 @@ import { blankettDatum } from '../datum.js';
 import { initialer } from '../initialer.js';
 import { AVSNITT, PUNKT } from './tdok0311.js';
 
+// Datum och klockslag, underskrift och namnförtydligande står mitt i sina rutor, både i
+// höjd och sidled (2026-10-19). Raden går från y 67,3 till 95,8 på sidan 2. Läggs
+// ovanpå den genererade layouten så att det finns kvar när mallen görs om.
+const MITT = { A78: [95.1, 86], C78: [229.4, 175], G78: [386, 130] };
+const layout = {
+  ...LAYOUT,
+  text: { ...LAYOUT.text, ...Object.fromEntries(Object.entries(MITT).map(([cell, [x, maxW]]) => [cell, [1, x, 77.7, 11, 'center', maxW]])) },
+};
+
 // TRVINFRA-00271 bilaga 1, tabell B1.1. sv: får utföras av spårsvetsare.
 const ARBETEN = [
   [1, 'Arbeten i kategori 1 enligt TRVINFRA-00014'],
@@ -113,7 +122,7 @@ export default {
   title: 'Ibruktagandebesiktning banöverbyggnad',
   format: 'overlay',
   ext: 'pdf',
-  layout: LAYOUT,
+  layout,
   templateHint: 'TMALL 0824 Ibruktagandebesiktning banöverbyggnad (PDF-mall)',
 
   async matches({ pdf }) {
