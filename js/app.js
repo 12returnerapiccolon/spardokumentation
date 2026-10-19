@@ -7,11 +7,12 @@ import oversyn1481 from './forms/oversyn1481.js';
 import svets from './forms/svets.js';
 import heta from './forms/heta.js';
 import ibt from './forms/ibt.js';
+import k0737 from './forms/k0737.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 
-const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt];
+const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt, k0737];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
@@ -19,7 +20,7 @@ function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
 
-const READY = new Set(['heta', 'vaxel', '1481', 'svets', 'ibt']);
+const READY = new Set(['heta', 'vaxel', '1481', 'svets', 'ibt', '0737']);
 
 // Jobb från första prototypen hade dokumentet "ev" i stället för växeltyp.
 function upgradeJob(job) {
