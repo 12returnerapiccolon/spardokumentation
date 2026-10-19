@@ -160,8 +160,26 @@ async function identify(file) {
   return { form: null, buffer, old };
 }
 
-async function importTemplates(files) {
+// En zip-fil med mallar packas upp i appen. Word- och Excel-filer är också zip,
+// men känns igen på att de har [Content_Types].xml.
+async function unzipTemplates(files) {
+  const out = [];
+  for (const file of files) {
+    if (!/\.zip$/i.test(file.name)) { out.push(file); continue; }
+    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    if (zip.file('[Content_Types].xml')) { out.push(file); continue; }
+    for (const entry of Object.values(zip.files)) {
+      const name = entry.name.split('/').pop();
+      if (entry.dir || !name || name.startsWith('.') || entry.name.startsWith('__MACOSX/')) continue;
+      out.push(new File([await entry.async('arraybuffer')], name));
+    }
+  }
+  return out;
+}
+
+async function importTemplates(selected) {
   const results = [];
+  const files = await unzipTemplates(selected);
   for (const file of files) {
     const { form, buffer, old } = await identify(file);
     if (form) {
@@ -565,7 +583,7 @@ async function templatesView() {
   const templates = await db.getAll('templates');
   const status = h('div', { class: 'status' });
   const input = h('input', {
-    type: 'file', multiple: true, accept: '.dotx,.docx,.pdf,.xlsx,.xlsm', hidden: true,
+    type: 'file', multiple: true, accept: '.dotx,.docx,.pdf,.xlsx,.xlsm,.zip,application/zip', hidden: true,
     onchange: async e => {
       status.replaceChildren(h('p', { class: 'muted' }, 'Läser in …'));
       const results = await importTemplates(Array.from(e.target.files));
@@ -576,7 +594,7 @@ async function templatesView() {
   });
 
   render(
-    h('p', {}, 'Blankettmallarna finns inte i appen. Läs in dem från Filer en gång, så sparas de i telefonen. Du kan välja flera filer samtidigt.'),
+    h('p', {}, 'Blankettmallarna finns inte i appen. Läs in dem från Filer en gång, så sparas de i telefonen. Du kan välja flera filer samtidigt eller en zip-fil med alla mallar.'),
     h('ul', { class: 'list' }, FORMS.map(form => {
       const found = templates.find(x => x.key === form.key);
       // En gammal Word-mall räknas inte när blanketten fylls som PDF.
