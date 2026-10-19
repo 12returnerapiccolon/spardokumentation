@@ -71,7 +71,7 @@ export default {
         { type: 'text', key: 'plats', label: 'Arbetsplats/Larmadress', placeholder: plats, geo: true },
         { type: 'group', label: 'Arbetsmetod', items: [
           ...METOD.map(([key, label]) => ({ type: 'check', key, label, defaultValue: key === 'svetsning' })),
-          { type: 'text', key: 'annatText', label: 'Annat, vad' },
+          { type: 'text', key: 'annatText', label: 'Annat, vad (t.ex. gasol/syre/termit)' },
         ] },
         { type: 'radio', key: 'brandfarligt', label: 'Är arbetet brandfarligt? (3M-metoden)', options: ['Ja', 'Nej'] },
       ],
