@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v41';
+const VERSION = 'v42';
 const FILES = [
   './',
   'index.html',
@@ -38,6 +38,7 @@ const FILES = [
   'js/forms/heta.js',
   'js/forms/heta-layout.js',
   'js/forms/ibt.js',
+  'js/forms/tdok0311.js',
   'js/forms/ibt-layout.js',
   'img/svets/vaxelbild.jpg',
   'vendor/jszip.min.js',

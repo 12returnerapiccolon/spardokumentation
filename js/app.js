@@ -514,6 +514,21 @@ function renderItem(item, data, onChange, job) {
     case 'check':
       // defaultValue: ikryssad tills man ändrar den. sub: hör till punkten ovanför.
       // help: förklaring under rutan, t.ex. säkerhetsregeln för en kontrollpunkt.
+      // details: { intro, blocks } fälls ut när man trycker på texten, t.ex. kraven i en TDOK.
+      // Rutan kryssas då bara i när man trycker på själva rutan.
+      if (item.details) {
+        return h('div', { class: 'check punkt' },
+          h('label', { class: 'punkt-box' },
+            h('input', { type: 'checkbox', name: item.key, 'aria-label': item.label, checked: data[item.key] ?? item.defaultValue, onchange: e => onChange(item.key, e.target.checked) })),
+          h('details', {},
+            h('summary', {}, item.label),
+            h('div', { class: 'tdok' },
+              (item.details.intro || []).filter(Boolean).map(t => h('p', { class: 'muted' }, t)),
+              (item.details.blocks || []).map(([rubrik, stycken]) => [
+                h('h4', {}, rubrik),
+                stycken.map(t => h('p', { class: /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null }, t)),
+              ]))));
+      }
       return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },
         h('input', { type: 'checkbox', name: item.key, checked: data[item.key] ?? item.defaultValue, onchange: e => onChange(item.key, e.target.checked) }),
         h('span', {}, item.label)),

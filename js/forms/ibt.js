@@ -4,6 +4,7 @@
 import LAYOUT from './ibt-layout.js';
 import { blankettDatum } from '../datum.js';
 import { initialer } from '../initialer.js';
+import { AVSNITT, PUNKT } from './tdok0311.js';
 
 // TRVINFRA-00271 bilaga 1, tabell B1.1. sv: får utföras av spårsvetsare.
 const ARBETEN = [
@@ -74,6 +75,8 @@ const PUNKTER = [
 ];
 const UTFORD = 'Kontrollerad';
 const EJ = 'Inte aktuellt';
+// Kontrollpunkterna är en kryssruta (2026-10-19). Äldre jobb sparade Kontrollerad/Inte aktuellt.
+const kontrollerad = v => v === true || v === UTFORD;
 
 // Kontrollerade och bifogade egenkontroller. doc: förvalt Kontrollerad när jobbet har dokumentet.
 const EGEN = [
@@ -164,9 +167,10 @@ export default {
     },
     ...PUNKTER.map(([title, rows]) => ({
       title: `Kontrollpunkter: ${title}`,
-      help: title === 'Allmänt' ? 'Kontrollerad signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
+      help: title === 'Allmänt' ? 'Kryssa i punkterna som är kontrollerade. De signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld, och övriga får ett streck. Tryck på en punkt för att se vad som ska kontrolleras enligt TDOK 2021:0311. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
       items: rows.map(([r, label, enligt, moment]) => ({
-        type: 'radio', key: `k${r}`, label, options: [UTFORD, EJ], help: `${enligt}\n${moment}`,
+        type: 'check', key: `k${r}`, label,
+        details: { intro: [`Utförs enligt: ${enligt}`, `Kontrollmoment: ${moment}`], blocks: (PUNKT[r] || []).map(n => AVSNITT[n]) },
       })),
     })),
     {
@@ -250,8 +254,7 @@ export default {
     });
     for (const [, rows] of PUNKTER) {
       for (const [r] of rows) {
-        const s = data[`k${r}`];
-        v[`I${r}`] = s === UTFORD ? sign : s === EJ ? EJ : '';
+        v[`I${r}`] = kontrollerad(data[`k${r}`]) ? sign : '-';
       }
     }
     EGEN.forEach(([r, , , doc], i) => {
