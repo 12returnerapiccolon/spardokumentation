@@ -48,8 +48,9 @@ const SHARED = [
   { key: 'bandel', label: 'Bandel', inputmode: 'numeric', row: 'plats', flex: 1 },
   { key: 'driftplats', label: 'Driftplats', row: 'plats', flex: 2 },
   { key: 'spar', label: 'Spår', row: 'plats', flex: 1 },
-  { key: 'km', label: 'Km', inputmode: 'numeric', half: true },
-  { key: 'm', label: 'm', inputmode: 'numeric', half: true },
+  // Km + m som två sifferrutor med + emellan (2026-10-19). km/m är från, km2/m2 till.
+  { key: 'km', label: 'Från km+m', kind: 'kmm', keys: ['km', 'm'] },
+  { key: 'km2', label: 'Till km+m', kind: 'kmm', keys: ['km2', 'm2'] },
   { key: 'vaxeltyp', label: 'Växeltyp', kind: 'vaxeltyp' },
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
@@ -80,6 +81,9 @@ async function fillFromProfile(job) {
 }
 
 // ---------- Hjälpfunktioner ----------
+
+// Km- och m-rutor tar bara siffror.
+const siffror = v => v.replace(/\D/g, '');
 
 function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
@@ -265,6 +269,16 @@ function sharedInputs(values, onChange, opts = {}) {
     modellBox.replaceChildren(select, other);
   };
   const special = (field) => {
+    if (field.kind === 'kmm') {
+      return h('div', { class: 'field plus' }, h('span', {}, field.label),
+        h('div', { class: 'plus-row' }, field.keys.map((key, i) => [
+          i ? h('span', { class: 'plus-sign' }, '+') : null,
+          inputs[key] = h('input', {
+            type: 'text', inputmode: 'numeric', pattern: '[0-9]*', name: key, value: values[key] || '', autocomplete: 'off', 'aria-label': i ? 'm' : 'km',
+            oninput: e => { e.target.value = siffror(e.target.value); change(key, e.target.value); },
+          }),
+        ])));
+    }
     if (field.kind === 'vaxeltyp') {
       return h('label', { class: 'field' }, h('span', {}, field.label),
         h('select', {
@@ -568,9 +582,9 @@ function renderItem(item, data, onChange, job) {
         h('div', { class: 'plus-row' }, item.keys.map((key, i) => [
           i ? h('span', { class: 'plus-sign' }, '+') : null,
           h('input', {
-            type: 'text', inputmode: 'numeric', value: data[key] || '', autocomplete: 'off', 'aria-label': i ? 'm' : 'km',
+            type: 'text', inputmode: 'numeric', pattern: '[0-9]*', value: data[key] || '', autocomplete: 'off', 'aria-label': i ? 'm' : 'km',
             placeholder: item.placeholders?.[i] ? item.placeholders[i](job) : null,
-            oninput: e => onChange(key, e.target.value),
+            oninput: e => { e.target.value = siffror(e.target.value); onChange(key, e.target.value); },
           }),
         ]).flat()));
     case 'select': {

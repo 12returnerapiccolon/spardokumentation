@@ -131,7 +131,10 @@ const ROLLER = [
 // bankontrollanten bort och besiktningsmannen signerar i stället (2026-10-19).
 const besiktningsman = data => (data.besiktningsman || '').trim();
 
-const km = job => (job.km ? `${job.km}+${String(job.m || 0).padStart(3, '0')}` : '');
+const kmm = (k, m) => (k ? `${k}+${String(m || 0).padStart(3, '0')}` : '');
+const km = job => kmm(job.km, job.m);
+// Till km+m; utan till-värde gäller från-värdet.
+const kmTill = job => (job.km2 ? kmm(job.km2, job.m2) : km(job));
 const dpl = job => [job.driftplats, job.vxnr ? `vxl ${job.vxnr}` : '', job.spar ? `sp ${job.spar}` : ''].filter(Boolean).join(' / ');
 const bankontrollant = (job, data) => (besiktningsman(data) ? '' : data.bankontrollant ?? job.namn ?? '');
 const signerar = (job, data) => besiktningsman(data) || bankontrollant(job, data);
@@ -183,7 +186,7 @@ export default {
           { type: 'text', key: 'atgard', label: 'Åtgärd' },
         ],
         newRow(previous, job) {
-          return previous ? { dpl: previous.dpl, kmFran: previous.kmFran, kmTill: previous.kmTill } : { dpl: dpl(job), kmFran: km(job), kmTill: km(job) };
+          return previous ? { dpl: previous.dpl, kmFran: previous.kmFran, kmTill: previous.kmTill } : { dpl: dpl(job), kmFran: km(job), kmTill: kmTill(job) };
         },
       }],
     },
@@ -222,7 +225,7 @@ export default {
           { type: 'text', key: 'atgardad', label: 'Anm. åtgärdad dat/sign' },
         ],
         newRow(previous, job) {
-          return { kmFran: previous?.kmFran ?? km(job), kmTill: previous?.kmTill ?? km(job) };
+          return { kmFran: previous?.kmFran ?? km(job), kmTill: previous?.kmTill ?? kmTill(job) };
         },
       }],
     },
@@ -239,7 +242,7 @@ export default {
           { type: 'text', key: 'kommentar', label: 'Övrig kommentar' },
         ],
         newRow(previous, job) {
-          return { kmFran: previous?.kmFran ?? km(job), kmTill: previous?.kmTill ?? km(job), spar: previous?.spar ?? (job.spar || '') };
+          return { kmFran: previous?.kmFran ?? km(job), kmTill: previous?.kmTill ?? kmTill(job), spar: previous?.spar ?? (job.spar || '') };
         },
       }],
     },
