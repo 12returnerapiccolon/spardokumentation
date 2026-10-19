@@ -222,8 +222,8 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 details summary { cursor: pointer; font-weight: 600; min-height: 32px; }
 details[open] summary { margin-bottom: 12px; }
 
-/* Safari på iPhone ger datumfält en egen minsta bredd som spräcker rutan. */
-.field input[type="date"] {
+/* Safari på iPhone ger datum- och tidsfält en egen minsta bredd som spräcker rutan. */
+.field input[type="date"], .field input[type="time"] {
   -webkit-appearance: none;
   appearance: none;
   display: block;
@@ -231,7 +231,7 @@ details[open] summary { margin-bottom: 12px; }
   max-width: 100%;
   line-height: 1.4;
 }
-.field input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.field input[type="date"]::-webkit-date-and-time-value, .field input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
 .field { min-width: 0; }
 
 .stack > * + * { margin-top: 8px; }
