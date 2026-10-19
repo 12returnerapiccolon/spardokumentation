@@ -583,7 +583,9 @@ async function templatesView() {
   const templates = await db.getAll('templates');
   const status = h('div', { class: 'status' });
   const input = h('input', {
-    type: 'file', multiple: true, accept: '.dotx,.docx,.pdf,.xlsx,.xlsm,.zip,application/zip', hidden: true,
+    // Ingen accept-lista: iPhone låter annars inte alla filtyper väljas (t.ex. zip).
+    // Appen kontrollerar själv varje fil när den läses in.
+    type: 'file', multiple: true, hidden: true,
     onchange: async e => {
       status.replaceChildren(h('p', { class: 'muted' }, 'Läser in …'));
       const results = await importTemplates(Array.from(e.target.files));

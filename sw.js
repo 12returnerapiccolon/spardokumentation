@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v9';
+const VERSION = 'v10';
 const FILES = [
   './',
   'index.html',
@@ -56,7 +56,8 @@ self.addEventListener('activate', event => {
 // används cachen efter tre sekunder.
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
-  const network = fetch(event.request).then(response => {
+  // no-cache: fråga alltid servern, så att webbläsarens cache inte ger en gammal version.
+  const network = fetch(event.request.url, { cache: 'no-cache' }).then(response => {
     if (response.ok) {
       const copy = response.clone();
       caches.open(VERSION).then(cache => cache.put(event.request, copy));
