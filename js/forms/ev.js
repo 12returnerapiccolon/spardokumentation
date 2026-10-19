@@ -110,7 +110,7 @@ export default {
       title: 'Spårväxeln kontrollerad',
       items: [
         { type: 'shared', label: 'Datum', from: 'datum' },
-        { type: 'shared', label: 'Underskrift', from: 'namn' },
+        { type: 'shared', label: 'Underskrift', from: 'signatur' },
       ],
     },
   ],
@@ -136,7 +136,7 @@ export default {
     });
     for (const [key, index] of Object.entries(checks)) v[index] = !!data[key];
     const [yyyy, mm, dd] = (job.datum || '').split('-');
-    Object.assign(v, { 148: yyyy, 149: mm, 150: dd, 151: job.namn });
+    Object.assign(v, { 148: yyyy, 149: mm, 150: dd, 151: job.signatur || job.namn });
     for (const k of Object.keys(v)) if (v[k] == null) v[k] = '';
     return v;
   },

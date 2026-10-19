@@ -124,7 +124,7 @@ export default {
 
   toValues(job, data) {
     const v = {};
-    const head = [job.foretag, job.namn, job.datum, job.arbetsledare];
+    const head = [job.foretag, job.namn, job.datum, job.arbetsledare || job.platschef];
     const side = [job.bandel, job.driftplats, job.vxnr, job.vxmodell];
     head.forEach((x, i) => { v[`Text${i + 1}`] = x; v[`Text11.${i}.0`] = x; });
     side.forEach((x, i) => { v[`Text${i + 5}`] = x; v[`Text11.${i}.1`] = x; });
