@@ -1,18 +1,35 @@
 import * as db from './db.js';
 import { fillWord, wordInfo } from './fill-word.js';
 import { fillPdf, pdfInfo } from './fill-pdf.js';
-import ev from './forms/ev.js';
+import { VAXELTYPER, VAXELFORMS } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
+import MODELLER from './forms/vaxelmodeller.js';
 
-const FORMS = [ev, oversyn1481];
+const FORMS = [...VAXELFORMS, oversyn1481];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
+
+// Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
+function docForm(job, docKey) {
+  return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
+}
+
+const READY = new Set(['vaxel', '1481']);
+
+// Jobb från första prototypen hade dokumentet "ev" i stället för växeltyp.
+function upgradeJob(job) {
+  if (job.docs.includes('ev')) {
+    job.docs = job.docs.map(k => (k === 'ev' ? 'vaxel' : k));
+    job.vaxeltyp = job.vaxeltyp || 'ev';
+  }
+  return job;
+}
 
 // Alla dokument som ska gå att välja för ett jobb. De utan formulär kommer i senare versioner.
 const CATALOG = [
   { key: 'heta', title: 'Heta arbeten, tillstånd och kontrollista' },
   { key: 'svets', title: 'Svetsrapport / egenkontroll' },
   { key: 'skevning', title: 'Spårlägesmätning / skevningsprotokoll' },
-  { key: 'ev', title: 'Besiktningsrapport Enkel växel (TMALL 0379)' },
+  { key: 'vaxel', title: 'Växelbesiktningsrapport (efter växeltyp)' },
   { key: '1481', title: 'Översyn spårväxel (TMALL 1481)' },
   { key: 'ibt', title: 'Ibruktagande, IBT (TMALL 0824)' },
   { key: '0737', title: 'Kontrollplan stabilitetspåverkande arbete (TMALL 0737)' },
@@ -26,8 +43,9 @@ const SHARED = [
   { key: 'spar', label: 'Spår' },
   { key: 'km', label: 'Km', inputmode: 'numeric', half: true },
   { key: 'm', label: 'm', inputmode: 'numeric', half: true },
+  { key: 'vaxeltyp', label: 'Växeltyp', kind: 'vaxeltyp' },
   { key: 'vxnr', label: 'Växelnummer' },
-  { key: 'vxmodell', label: 'Växelmodell' },
+  { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'namn', label: 'Ditt namn', profile: true },
   { key: 'signatur', label: 'Signatur (initialer)', profile: true, autocapitalize: 'characters' },
   { key: 'svetsid', label: 'Svets-ID', profile: true, autocapitalize: 'characters' },
@@ -172,7 +190,7 @@ async function homeView() {
       ? h('ul', { class: 'list' }, jobs.map(job => h('li', {},
           h('a', { href: `#/jobb/${job.id}` },
             h('span', { class: 'main' }, jobLabel(job)),
-            h('span', { class: 'sub' }, [job.datum, job.docs.map(k => FORM_BY_KEY[k]?.code || '').filter(Boolean).join(', ')].filter(Boolean).join(' · '))))))
+            h('span', { class: 'sub' }, [job.datum, upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', ')].filter(Boolean).join(' · '))))))
       : h('p', { class: 'muted' }, 'Inga jobb än.'),
   );
 }
@@ -192,8 +210,49 @@ function sharedInputs(values, onChange, opts = {}) {
     }
     onChange(key, value);
   };
+  let modellBox;
+  const renderModell = () => {
+    if (!modellBox) return;
+    const list = MODELLER[values.vaxeltyp] || [];
+    const current = values.vxmodell || '';
+    const known = list.some(([m]) => m === current);
+    const other = h('input', {
+      type: 'text', value: known ? '' : current, placeholder: 'Skriv växelmodell', autocomplete: 'off', autocapitalize: 'characters',
+      hidden: known || (!current && list.length > 0), oninput: e => change('vxmodell', e.target.value),
+    });
+    const groups = ['Standard', 'Förvaltning', 'Avveckling'].map(s => [s, list.filter(x => x[1] === s)]).filter(([, l]) => l.length);
+    const select = h('select', {
+      name: 'vxmodell',
+      onchange: e => {
+        const v = e.target.value;
+        other.hidden = v !== '__annan';
+        if (v === '__annan') { other.value = ''; other.focus(); change('vxmodell', ''); } else change('vxmodell', v);
+      },
+    },
+      h('option', { value: '' }, values.vaxeltyp ? '– välj –' : 'Välj växeltyp först'),
+      groups.map(([s, l]) => h('optgroup', { label: `${s}sortiment` },
+        l.map(([m]) => h('option', { value: m, selected: m === current }, m)))),
+      h('option', { value: '__annan', selected: !!current && !known }, 'Annan (skriv själv)'));
+    modellBox.replaceChildren(select, other);
+  };
+  const special = (field) => {
+    if (field.kind === 'vaxeltyp') {
+      return h('label', { class: 'field' }, h('span', {}, field.label),
+        h('select', {
+          name: 'vaxeltyp',
+          onchange: e => { change('vaxeltyp', e.target.value); renderModell(); },
+        },
+          h('option', { value: '' }, '– välj –'),
+          VAXELTYPER.map(t => h('option', { value: t.key, selected: values.vaxeltyp === t.key }, `${t.short}, ${t.title.replace(/^.*?(Besiktningsrapport|Växelbesiktningsrapport) /, '')}`))));
+    }
+    modellBox = h('div', { class: 'stack' });
+    const el = h('div', { class: 'field' }, h('span', {}, field.label), modellBox);
+    renderModell();
+    return el;
+  };
   for (let i = 0; i < fields.length; i++) {
     const f = fields[i];
+    if (f.kind) { out.push(special(f)); continue; }
     const input = (field) => h('label', { class: 'field' + (field.half ? ' half' : '') },
       h('span', {}, field.label),
       inputs[field.key] = h('input', {
@@ -217,14 +276,15 @@ async function newJobView() {
   const job = { datum: today() };
   for (const k of PROFILE_KEYS) job[k] = profile[k] || '';
   if (!job.signatur) job.signatur = initials(job.namn);
-  const chosen = new Set(await db.getSetting('lastDocs', ['ev', '1481']));
+  const chosen = new Set((await db.getSetting('lastDocs', ['vaxel', '1481'])).map(k => (k === 'ev' ? 'vaxel' : k)));
 
   render(
     h('form', {
       onsubmit: async e => {
         e.preventDefault();
-        const docs = CATALOG.map(d => d.key).filter(k => chosen.has(k) && FORM_BY_KEY[k]);
+        const docs = CATALOG.map(d => d.key).filter(k => chosen.has(k) && READY.has(k));
         if (!docs.length) { alert('Välj minst ett dokument.'); return; }
+        if (docs.includes('vaxel') && !job.vaxeltyp) { alert('Välj växeltyp, så att rätt besiktningsrapport används.'); return; }
         const now = new Date().toISOString();
         const record = { ...job, id: uid(), docs, forms: {}, created: now, updated: now };
         await db.put('jobs', record);
@@ -235,7 +295,7 @@ async function newJobView() {
     },
       h('h2', {}, 'Vilka dokument ska fyllas i?'),
       h('div', { class: 'card' }, CATALOG.map(d => {
-        const ready = !!FORM_BY_KEY[d.key];
+        const ready = READY.has(d.key);
         return h('label', { class: 'check' + (ready ? '' : ' disabled') },
           h('input', {
             type: 'checkbox', checked: ready && chosen.has(d.key), disabled: !ready,
@@ -260,24 +320,32 @@ function formProgress(form, data) {
 async function jobView(id) {
   const job = await db.get('jobs', id);
   if (!job) { location.hash = '#/'; return; }
+  upgradeJob(job);
   setTitle(jobLabel(job), '#/');
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   window.onpagehide = () => save.flush();
   const exportArea = h('div', { class: 'export' });
+  const docItems = () => job.docs.map(k => {
+    const form = docForm(job, k);
+    if (!form) {
+      return h('li', {}, h('div', { class: 'item' },
+        h('span', { class: 'main' }, 'Växelbesiktningsrapport'),
+        h('span', { class: 'sub' }, 'Välj växeltyp under Gemensamma uppgifter')));
+    }
+    return h('li', {}, h('a', { href: `#/jobb/${id}/${k}` },
+      h('span', { class: 'main' }, `${form.title}`),
+      h('span', { class: 'sub' }, `${form.code} · ${formProgress(form, job.forms[form.key])}`)));
+  });
+  const docList = h('ul', { class: 'list' }, docItems());
 
   render(
     h('h2', {}, 'Dokument'),
-    h('ul', { class: 'list' }, job.docs.map(k => {
-      const form = FORM_BY_KEY[k];
-      return h('li', {}, h('a', { href: `#/jobb/${id}/${k}` },
-        h('span', { class: 'main' }, `${form.title}`),
-        h('span', { class: 'sub' }, `${form.code} · ${formProgress(form, job.forms[k])}`)));
-    })),
+    docList,
     h('button', { class: 'button primary big', type: 'button', onclick: () => buildFiles(job, exportArea) }, 'Skapa filer'),
     exportArea,
     h('details', { class: 'card' },
       h('summary', {}, 'Gemensamma uppgifter'),
-      sharedInputs(job, (k, v) => { job[k] = v; save(); })),
+      sharedInputs(job, (k, v) => { job[k] = v; save(); if (k === 'vaxeltyp') docList.replaceChildren(...docItems()); })),
     h('button', {
       class: 'button danger', type: 'button',
       onclick: async () => {
@@ -294,11 +362,12 @@ async function buildFiles(job, area) {
   const files = [];
   const problems = [];
   for (const key of job.docs) {
-    const form = FORM_BY_KEY[key];
-    const tpl = await db.get('templates', key);
+    const form = docForm(job, key);
+    if (!form) { problems.push('Välj växeltyp för växelbesiktningsrapporten.'); continue; }
+    const tpl = await db.get('templates', form.key);
     if (!tpl) { problems.push(`Mallen för ${form.title} saknas. Läs in den under Mallar.`); continue; }
     try {
-      const values = form.toValues(job, job.forms[key] || {}, { diff });
+      const values = form.toValues(job, job.forms[form.key] || {}, { diff });
       const blob = form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
       files.push(new File([blob], fileName(form, job), { type: blob.type }));
     } catch (e) {
@@ -367,9 +436,22 @@ function renderItem(item, data, onChange, job) {
     }
     case 'measures':
       return measureTable(item.keys, data, onChange);
+    case 'image':
+      return h('button', { type: 'button', class: 'figure', onclick: () => showImage(item.src, item.alt) },
+        h('img', { src: item.src, alt: item.alt, loading: 'lazy' }),
+        h('span', { class: 'muted' }, 'Tryck för att förstora'));
     default:
       return null;
   }
+}
+
+// Visar en bild i helskärm. Den går att rulla i sidled och nypa för att zooma.
+function showImage(src, alt) {
+  const close = () => overlay.remove();
+  const overlay = h('div', { class: 'overlay', role: 'dialog', 'aria-label': alt },
+    h('button', { type: 'button', class: 'close', onclick: close, 'aria-label': 'Stäng' }, '✕'),
+    h('div', { class: 'overlay-scroll' }, h('img', { src, alt })));
+  document.body.append(overlay);
 }
 
 function measureTable(keys, data, onChange) {
@@ -395,10 +477,10 @@ function measureTable(keys, data, onChange) {
 
 async function formView(id, key) {
   const job = await db.get('jobs', id);
-  const form = FORM_BY_KEY[key];
+  const form = job && docForm(upgradeJob(job), key);
   if (!job || !form) { location.hash = '#/'; return; }
   setTitle(form.title, `#/jobb/${id}`);
-  const data = job.forms[key] = job.forms[key] || {};
+  const data = job.forms[form.key] = job.forms[form.key] || {};
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   window.onpagehide = () => save.flush();
   const onChange = (k, v) => { data[k] = v; save(); };

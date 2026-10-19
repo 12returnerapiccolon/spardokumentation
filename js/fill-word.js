@@ -59,8 +59,7 @@ function setText(field, value) {
     target.appendChild(t);
   }
   t.setAttributeNS(XML_NS, 'xml:space', 'preserve');
-  // Mallens tomma fält är fem mellanslag. Ett tomt värde behåller det utseendet.
-  t.textContent = value === '' ? '     ' : value;
+  t.textContent = value;
 }
 
 /**
@@ -77,7 +76,8 @@ export async function fillWord(templateBuffer, values) {
     const field = fields[Number(key)];
     if (!field) throw new Error(`Fält ${key} finns inte i mallen`);
     if (field.type === 'check') setCheck(field, !!value);
-    else setText(field, value == null ? '' : String(value));
+    // Tomma fält lämnas som i mallen, så att tabellernas bredd inte ändras.
+    else if (value != null && value !== '') setText(field, String(value));
   }
   zip.file('word/document.xml', new XMLSerializer().serializeToString(doc));
   // En mall (.dotx) blir ett vanligt dokument (.docx).

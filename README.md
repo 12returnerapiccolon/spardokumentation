@@ -12,10 +12,14 @@ Webbapp för iPhone där en spårsvetsare fyller i fältdokumentation och får u
 
 | Blankett | Mallformat | Ut |
 |---|---|---|
-| TMALL 0379 Besiktningsrapport Enkel växel | .dotx (Word-formulärfält) | .docx |
+| TMALL 0379–0382, 0384–0386 Besiktningsrapporter spårväxel (EV, EVR, EKV, DKV, 3V olika/samma håll, SPK) | .dotx/.docx (Word-formulärfält) | .docx |
 | TMALL 1481 Översyn spårväxel | PDF-formulär | .pdf |
 
-Word-mallarnas formulärfält har inte unika namn, så de fylls efter sin ordning i dokumentet (se `js/forms/ev.js`). PDF-fälten fylls efter namn (se `js/forms/oversyn1481.js`).
+Vilken besiktningsrapport som används styrs av växeltypen som väljs när jobbet skapas.
+
+Word-mallarnas formulärfält har inte unika namn, så de fylls efter sin ordning i dokumentet (se `js/forms/vaxel.js`, måttabellerna i `js/forms/vaxel-matt.js`). PDF-fälten fylls efter namn (se `js/forms/oversyn1481.js`).
+
+Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilaga 2–4 (`js/forms/vaxelmodeller.js`). Bilderna i `img/placering/` är sidorna ur bilaga 7 (Placering mått), och `img/vaxelbild/` är växelbilderna ur besiktningsmallarna.
 
 ## Köra lokalt
 
