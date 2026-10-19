@@ -36,7 +36,7 @@ const REGLER = {
   9: 'Säkerhetsregel 9 – Svetsutrustning\nSvetsutrustning ska vara felfri. Acetylenflaska ska vara försedd med bakslagsskydd. Svetsbrännare ska vara försedd med backventil för bränngas och syrgas. Skyddshandske och avstängningsnyckel ska finnas.',
   10: 'Säkerhetsregel 10 – Larmning\nRäddningstjänsten/Brandkåren ska kunna larmas omedelbart. Fungerande mobiltelefon ska finnas tillgänglig om inte stationär telefon finns inom räckhåll. Den som uppdras larma ska känna till arbetsplatsens adress.',
 };
-// Kontrollpunkt → säkerhetsregel. Punkt 0 har ingen regel.
+// Kontrollpunkt → säkerhetsregel. Punkt 0 har ingen regel, och regel 2 visas bara vid 2a.
 const regel = key => REGLER[Number(key.match(/\d+/)[0])];
 
 // Hetarbetare och brandvakter: namn, certifikatkontroll, HA, BV.
@@ -92,7 +92,7 @@ export default {
       items: [
         { type: 'allcheck', label: 'Kryssa i alla kontrollpunkter', keys: PUNKTER.map(([key]) => key) },
         ...PUNKTER.flatMap(([key, label, , sub]) => [
-          { type: 'check', key, label, help: regel(key) },
+          { type: 'check', key, label, help: key === 'p2b' ? null : regel(key) },
           ...(sub ? [{ type: 'check', key: sub[0], label: sub[1], sub: true }] : []),
           ...(key === 'p2a' ? [{ type: 'text', key: 'brandvakter', label: 'Brandvaktens/vakternas namn', placeholder: brandvakter }] : []),
           ...(key === 'p2b' ? [
