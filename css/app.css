@@ -307,3 +307,5 @@ button.link.inline { padding: 0; font-size: inherit; text-decoration: underline;
 .map-bar { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom) + 12px); z-index: 1000; display: flex; gap: 8px; }
 .map-bar .button { flex: 1; }
 .map-bar .button:nth-child(2) { flex: 0 0 52px; }
+.segmented.sub { padding-left: 24px; margin-top: -4px; }
+.note.rule.radio { margin: -6px 0 16px 0; }

@@ -6,11 +6,12 @@ import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
 import svets from './forms/svets.js';
 import heta from './forms/heta.js';
+import ibt from './forms/ibt.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 
-const FORMS = [...VAXELFORMS, oversyn1481, svets, heta];
+const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
@@ -18,7 +19,7 @@ function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
 
-const READY = new Set(['heta', 'vaxel', '1481', 'svets']);
+const READY = new Set(['heta', 'vaxel', '1481', 'svets', 'ibt']);
 
 // Jobb från första prototypen hade dokumentet "ev" i stället för växeltyp.
 function upgradeJob(job) {
@@ -509,13 +510,16 @@ function renderItem(item, data, onChange, job) {
         h('span', {}, item.label)),
         item.help ? h('p', { class: 'muted note rule' }, item.help) : null];
     case 'radio': {
+      // defaultValue: förval tills man väljer själv. help: förklaring under valen.
       const name = `r_${item.key}`;
-      return h('fieldset', { class: 'segmented' },
+      const current = data[item.key] ?? (item.defaultValue ? item.defaultValue(job) : '') ?? '';
+      return [h('fieldset', { class: 'segmented' + (item.sub ? ' sub' : '') },
         item.label ? h('legend', {}, item.label) : null,
         [...item.options, ''].map(opt => h('label', {},
-          h('input', { type: 'radio', name, value: opt, checked: (data[item.key] || '') === opt,
+          h('input', { type: 'radio', name, value: opt, checked: (current || '') === opt,
             onchange: () => onChange(item.key, opt) }),
-          h('span', {}, opt || 'Inget'))));
+          h('span', {}, opt || 'Inget')))),
+        item.help ? h('p', { class: 'muted note rule radio' }, item.help) : null];
     }
     case 'plus':
       // Två sifferrutor med + emellan, t.ex. km + m.
@@ -593,7 +597,7 @@ function rowsEditor(item, data, onChange, job) {
       ? h('button', {
           type: 'button', class: 'button big',
           onclick: () => {
-            list.push(item.newRow(list[list.length - 1] || remembered[`${item.form}.${item.key}`]));
+            list.push(item.newRow(list[list.length - 1] || remembered[`${item.form}.${item.key}`], job));
             onChange(item.key, list); draw();
             wrap.querySelectorAll('.rowcard')[list.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
           },

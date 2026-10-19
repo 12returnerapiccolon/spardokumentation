@@ -4,7 +4,7 @@
 # Celler anges en och en, som område (A1:B9, alla celler som inte är sammanslagna med en
 # annan) eller som tabell (kolumner@första-sista/steg). Ger utkatalog/svets.json och utkatalog/svets-blank.pdf.
 # text: cell → [sida, x, baslinje, teckenstorlek, justering, största bredd, höjd]
-import sys, os, json, subprocess, shutil
+import sys, os, json, subprocess, shutil, zipfile, re
 import openpyxl
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import range_boundaries, get_column_letter
@@ -15,7 +15,7 @@ specs = sys.argv[5:]
 os.makedirs(out, exist_ok=True)
 work = os.path.join(out, 'work-' + key); os.makedirs(work, exist_ok=True)
 
-wb0 = openpyxl.load_workbook(src)
+wb0 = openpyxl.load_workbook(src, rich_text=True)
 ws0 = wb0[sheet]
 merged = {}
 for r in ws0.merged_cells.ranges:
@@ -51,20 +51,36 @@ for c in cells:
     info[c] = {'align': ws0[alignsrc.get(c, c)].alignment.horizontal or 'left', 'size': cell.font.sz or 10,
                'wrap': bool(cell.alignment.wrap_text) or (c in merged and merged[c][1].max_row > merged[c][1].min_row)}
 
-def marker(align, name):
-    wb = openpyxl.load_workbook(src)
+# openpyxl skriver radbrytningar i sidhuvud och sidfot som _x000a_, som LibreOffice skriver ut
+# som text. Byt tillbaka till riktiga radbrytningar.
+def save(wb, path):
+    wb.save(path)
+    tmp = path + '.tmp'
+    with zipfile.ZipFile(path) as zin, zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename.startswith('xl/worksheets/sheet'):
+                data = re.sub(rb'<headerFooter.*?</headerFooter>', lambda m: m.group(0).replace(b'_x000a_', b'&#10;'), data, flags=re.S)
+            zout.writestr(item, data)
+    os.replace(tmp, path)
+
+def marker(align, name, vertical='bottom'):
+    wb = openpyxl.load_workbook(src, rich_text=True)
     ws = wb[sheet]
     for i, c in enumerate(cells):
         ws[c].value = f'{i}'
         ws[c].number_format = '@'
         ws[c].font = Font(name='Arial', sz=4, color='FFFF0000')
-        ws[c].alignment = Alignment(horizontal=align, vertical='bottom', wrap_text=False)
+        ws[c].alignment = Alignment(horizontal=align, vertical=vertical, wrap_text=False)
     p = os.path.join(work, name + '.xlsx')
-    wb.save(p)
+    save(wb, p)
     return p
 
-paths = [marker('left', 'l'), marker('right', 'r')]
-blank = os.path.join(work, 'blank.xlsx'); shutil.copy(src, blank)
+# t: markörer överst i cellen, för att mäta höjden på celler som radbryts.
+paths = [marker('left', 'l'), marker('right', 'r'), marker('left', 't', 'top')]
+# Den tomma mallen sparas genom openpyxl precis som markörfilerna, så att sidorna skalas
+# och bryts likadant (openpyxl tar t.ex. bort sidhuvudets bild, som ändrar skalningen).
+blank = os.path.join(work, 'blank.xlsx'); save(openpyxl.load_workbook(src, rich_text=True), blank)
 subprocess.run(['soffice', '--headless', '--convert-to', 'pdf', '--outdir', work] + paths + [blank], check=True, capture_output=True)
 
 def find(name):
@@ -85,6 +101,7 @@ def find(name):
 
 L, pages = find('l')
 R, _ = find('r')
+T, _ = find('t')
 layout = {'pages': pages, 'text': {}, 'check': {}}
 missing = []
 for i, c in enumerate(cells):
@@ -97,9 +114,10 @@ for i, c in enumerate(cells):
     x = (left + right) / 2 if a in ('center', 'centerContinuous') else right if a == 'right' else left
     entry = [pn, round(x, 2), round(base, 2), info[c]['size'], 'center' if a.startswith('center') else 'right' if a == 'right' else 'left', round(right - left, 1)]
     if info[c]['wrap']:
-        r = merged[c][1] if c in merged else None
-        h = sum((ws0.row_dimensions[k].height or 15) for k in range(r.min_row, r.max_row + 1)) if r else (ws0.row_dimensions[ws0[c].row].height or 15)
-        entry.append(round(h, 1))
+        # Höjden räknas så att första raden hamnar där en överst justerad text står i cellen
+        # (fill-overlay.js: första baslinjen = baslinje + höjd - 1,5 - storlek).
+        top = T[i][3] - (info[c]['size'] - 4) * 0.8
+        entry.append(round(top - base + info[c]['size'] + 1.5, 1))
     layout['text'][c] = entry
 print(key, 'celler', len(layout['text']), '/', len(cells), 'saknas', missing, file=sys.stderr)
 json.dump(layout, open(os.path.join(out, key + '.json'), 'w'))

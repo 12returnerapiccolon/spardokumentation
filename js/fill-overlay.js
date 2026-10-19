@@ -25,7 +25,7 @@ async function font(pdf) {
 }
 
 // Radbryter text inom en ruta. Får den inte plats krymps texten.
-function drawWrapped(page, value, { x, base, size, maxWidth, height, font, color }) {
+function drawWrapped(page, value, { x, base, size, maxWidth, height, align, font, color }) {
   const lines = s => {
     const out = [];
     for (const para of value.split(/\r?\n/)) {
@@ -41,7 +41,11 @@ function drawWrapped(page, value, { x, base, size, maxWidth, height, font, color
   let s = size, l = lines(s);
   while (s > 5 && l.length * s * 1.15 > height - 2) { s -= 0.5; l = lines(s); }
   const top = base + height - 1.5;
-  l.forEach((line, i) => page.drawText(line, { x, y: top - s * (1 + i * 1.15), size: s, font, color }));
+  l.forEach((line, i) => {
+    const w = font.widthOfTextAtSize(line, s);
+    const left = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+    page.drawText(line, { x: left, y: top - s * (1 + i * 1.15), size: s, font, color });
+  });
 }
 
 export function isPdf(buffer) {
@@ -76,7 +80,7 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
     if (value == null || value === '' || value === true || value === false) continue;
     const [p, x, base, fullSize, align, maxWidth, height] = pos;
     if (height) {
-      drawWrapped(pages[p], String(value), { x, base, size: fullSize, maxWidth, height, font: f, color: ink });
+      drawWrapped(pages[p], String(value), { x, base, size: fullSize, maxWidth, height, align, font: f, color: ink });
       continue;
     }
     const text = String(value).replace(/\s+/g, ' ');
