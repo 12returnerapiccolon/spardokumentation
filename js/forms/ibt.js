@@ -89,7 +89,7 @@ const EGEN = [
 ];
 
 const ROLLER = [
-  ['projektledare', 'TRV Projektledare', 4],
+  ['projektledare', 'TRV Projektledare', 4, job => job.projektledare || '', job => job.projektledare_tel || ''],
   ['platschef', 'Entreprenör Platschef', 5, job => job.platschef || ''],
   ['arbetsledare', 'Ibruktagande-/arbetsledare', 6, job => job.arbetsledare || ''],
   ['besiktningsman', 'Ibruktagandebesiktningsman', 7],
@@ -127,12 +127,12 @@ export default {
         { type: 'text', key: 'arbete', label: 'Arbete', placeholder: () => 't.ex. Byte av isolerskarv vxl 12' },
         { type: 'text', key: 'bestnr', label: 'Beställningsnr' },
         // Besiktningsmannen gäller bara jobbet och sparas inte till nästa (namnet föreslås ändå).
-        ...ROLLER.flatMap(([key, label, , def]) => {
+        ...ROLLER.flatMap(([key, label, , def, defTfn]) => {
           const hideIf = key === 'bankontrollant' ? (job, data) => besiktningsman(data) : null;
           const remember = key !== 'besiktningsman';
           return [
             { type: 'text', key, label, defaultValue: def, remember: remember && !def, names: true, hideIf },
-            { type: 'text', key: `${key}Tfn`, label: 'Tfn', inputType: 'tel', inputmode: 'tel', remember, hideIf },
+            { type: 'text', key: `${key}Tfn`, label: 'Tfn', inputType: 'tel', inputmode: 'tel', defaultValue: defTfn, remember: remember && !defTfn, hideIf },
           ];
         }),
         { type: 'text', key: 'bandel', label: 'Bandel', inputmode: 'numeric', defaultValue: job => job.bandel || '' },
@@ -239,9 +239,9 @@ export default {
       C78: sign,
       G78: namn,
     };
-    for (const [key, , r, def] of ROLLER) {
+    for (const [key, , r, def, defTfn] of ROLLER) {
       v[`D${r}`] = val(key, def ? def(job) : '') || '';
-      v[`H${r}`] = data[`${key}Tfn`] || '';
+      v[`H${r}`] = val(`${key}Tfn`, defTfn ? defTfn(job) : '') || '';
       if (key === 'bankontrollant' && besiktningsman(data)) v[`D${r}`] = v[`H${r}`] = '';
     }
     (data.objekt || []).slice(0, 3).forEach((o, i) => {

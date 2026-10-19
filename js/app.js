@@ -61,6 +61,8 @@ const SHARED = [
   { key: 'enhet', label: 'Företag/enhet (svetsrapport)', profile: true, settingsOnly: true },
   { key: 'svetsansvarig', label: 'Svetsansvarig', profile: true, settingsOnly: true },
   { key: 'svetsansvarig_tel', label: 'Svetsansvarigs telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
+  { key: 'projektledare', label: 'TRV projektledare (IBT)', profile: true, settingsOnly: true },
+  { key: 'projektledare_tel', label: 'TRV projektledarens telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
 ];
 
 const PROFILE_KEYS = SHARED.filter(f => f.profile).map(f => f.key);
@@ -786,9 +788,9 @@ async function templatesView() {
 async function settingsView() {
   setTitle('Inställningar', '#/');
   const profile = await db.getSetting('profile', {});
-  // Uppgifterna låg först i svetsrapporten; ta med dem som redan skrivits där.
+  // Uppgifterna låg först i blanketterna; ta med dem som redan skrivits där.
   const rem = await db.getSetting('remember', {});
-  for (const [k, r] of [['enhet', 'svets.enhet'], ['svetsansvarig', 'svets.ansvarig'], ['svetsansvarig_tel', 'svets.telefon']]) {
+  for (const [k, r] of [['enhet', 'svets.enhet'], ['svetsansvarig', 'svets.ansvarig'], ['svetsansvarig_tel', 'svets.telefon'], ['projektledare', 'ibt.projektledare'], ['projektledare_tel', 'ibt.projektledareTfn']]) {
     if (!profile[k] && rem[r]) profile[k] = rem[r];
   }
   const save = debounce(() => db.setSetting('profile', profile), 300);
