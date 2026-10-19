@@ -62,7 +62,7 @@ export default {
       items: [
         // Förval från Inställningar (grått). Det som skrivs här gäller bara den här rapporten.
         { type: 'text', key: 'enhet', label: 'Företag/enhet', placeholder: job => job.enhet || '' },
-        { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric' },
+        { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric', placeholder: job => job.ao || '' },
         { type: 'text', key: 'kundao', label: 'Kundens Ao nr' },
         { type: 'text', key: 'bessy', label: 'Bessy anm/Ofelia' },
         { type: 'text', key: 'namnId', label: 'Namn och svets-ID', placeholder: job => namnId(job) },
@@ -126,7 +126,7 @@ export default {
     const v = {
       // Det som skrivits i rapporten går före Inställningar.
       C2: data.enhet || job.enhet || '',
-      H2: data.ao || '',
+      H2: data.ao || job.ao || '',
       P2: data.kundao || '',
       C4: data.namnId || namnId(job),
       H4: datum.slice(0, 4),

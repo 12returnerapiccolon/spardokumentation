@@ -75,7 +75,7 @@ export default {
           ...METOD.map(([key, label]) => ({ type: 'check', key, label, defaultValue: key === 'svetsning' })),
           { type: 'text', key: 'annatText', label: 'Annat, vad (t.ex. gasol/syre/termit)' },
         ] },
-        { type: 'radio', key: 'brandfarligt', label: 'Är arbetet brandfarligt? (3M-metoden: metod, material, miljö)', options: ['Ja', 'Nej'] },
+        { type: 'radio', key: 'brandfarligt', label: 'Är arbetet brandfarligt? (3M-metoden: metod, material, miljö)', options: ['Ja', 'Nej'], noEmpty: true },
       ],
     },
     {

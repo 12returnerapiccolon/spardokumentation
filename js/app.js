@@ -56,6 +56,8 @@ const SHARED = [
   { key: 'vaxeltyp', label: 'Växeltyp', kind: 'vaxeltyp' },
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
+  // Fyller i Eget Ao nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
+  { key: 'ao', label: 'Ao nr', inputmode: 'numeric' },
   // Personuppgifterna finns bara under Inställningar och kan ändras i de enskilda blanketterna.
   { key: 'namn', label: 'Ditt namn', profile: true, settingsOnly: true },
   { key: 'namn_tel', label: 'Ditt telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
@@ -571,11 +573,12 @@ function renderItem(item, data, onChange, job) {
     }
     case 'radio': {
       // defaultValue: förval tills man väljer själv. help: förklaring under valen.
+      // noEmpty: inget val "Inget", bara alternativen.
       const name = `r_${item.key}`;
       const current = data[item.key] ?? (item.defaultValue ? item.defaultValue(job) : '') ?? '';
       return [h('fieldset', { class: 'segmented' + (item.sub ? ' sub' : '') },
         item.label ? h('legend', {}, item.label) : null,
-        [...item.options, ''].map(opt => h('label', {},
+        [...item.options, ...(item.noEmpty ? [] : [''])].map(opt => h('label', {},
           h('input', { type: 'radio', name, value: opt, checked: (current || '') === opt,
             onchange: () => onChange(item.key, opt) }),
           h('span', {}, opt || 'Inget')))),

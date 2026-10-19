@@ -160,7 +160,7 @@ export default {
         { type: 'radio', key: 'kontrakt', label: 'Arbete i', options: ['UH-kontrakt', 'Projekt'], defaultValue: () => 'UH-kontrakt' },
         { type: 'shared', label: 'Datum för besiktning', from: 'datum' },
         { type: 'text', key: 'arbete', label: 'Arbete', placeholder: () => 't.ex. Byte av isolerskarv vxl 12' },
-        { type: 'text', key: 'bestnr', label: 'Beställningsnr' },
+        { type: 'text', key: 'bestnr', label: 'Beställningsnr', placeholder: job => job.ao || '' },
         // Besiktningsmannen gäller bara jobbet och sparas inte till nästa (namnet föreslås ändå).
         ...ROLLER.flatMap(([key, label, , def, defTfn]) => {
           const hideIf = key === 'bankontrollant' ? (job, data) => besiktningsman(data) : null;
@@ -269,7 +269,7 @@ export default {
       E2: kontrakt === 'Projekt' ? 'X' : '-',
       H2: datum,
       B3: data.arbete || '',
-      I3: data.bestnr || '',
+      I3: data.bestnr || job.ao || '',
       I9: val('bandel', job.bandel || ''),
       C15: data.sth || '',
       I15: data.tillaten || '',
