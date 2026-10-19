@@ -72,10 +72,11 @@ export default {
     {
       title: 'Huvud',
       items: [
-        { type: 'shared', label: 'Entreprenörens namn', from: 'foretag' },
+        // Förval från Inställningar (grått). Det som skrivs här gäller bara den här blanketten.
+        { type: 'text', key: 'foretag', label: 'Entreprenörens namn', placeholder: job => job.foretag || '' },
         { type: 'shared', label: 'Kontroll utförd av', from: 'namn' },
         { type: 'shared', label: 'Datum', from: 'datum' },
-        { type: 'shared', label: 'Godkänd platschef/arb.ledare', from: 'arbetsledare' },
+        { type: 'text', key: 'godkand', label: 'Godkänd platschef/arb.ledare', placeholder: job => job.arbetsledare || job.platschef || '', names: true },
         { type: 'shared', label: 'Bandel', from: 'bandel' },
         { type: 'shared', label: 'Driftplats', from: 'driftplats' },
         { type: 'shared', label: 'Växel nr', from: 'vxnr' },
@@ -125,7 +126,7 @@ export default {
 
   toValues(job, data) {
     const v = {};
-    const head = [job.foretag, job.namn, blankettDatum(job), job.arbetsledare || job.platschef];
+    const head = [data.foretag || job.foretag, job.namn, blankettDatum(job), data.godkand || job.arbetsledare || job.platschef];
     const side = [job.bandel, job.driftplats, job.vxnr, job.vxmodell];
     head.forEach((x, i) => { v[`Text${i + 1}`] = x; v[`Text11.${i}.0`] = x; });
     side.forEach((x, i) => { v[`Text${i + 5}`] = x; v[`Text11.${i}.1`] = x; });
