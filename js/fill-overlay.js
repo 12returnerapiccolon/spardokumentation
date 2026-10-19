@@ -1,6 +1,7 @@
 // Fyller en tom PDF-mall (en Word-blankett utskriven till PDF) genom att skriva text och
 // kryss på fältens platser. Platserna kommer ur en layout som tagits fram ur Word-mallen:
-// text: fältindex → [sida, x, baslinje, teckenstorlek, justering, största bredd?]
+// text: fältindex → [sida, x, baslinje, teckenstorlek, justering, största bredd?, höjd?]
+// Med höjd radbryts texten inom rutan, uppifrån (baslinjen är då rutans nederkant).
 // check: fältindex → [sida, x, y, bredd, höjd]
 
 let fontBytes;
@@ -21,6 +22,26 @@ async function font(pdf) {
   if (!fontBytes) fontBytes = await (await fetch('vendor/LiberationSans-Regular.ttf')).arrayBuffer();
   pdf.registerFontkit(window.fontkit);
   return pdf.embedFont(fontBytes, { subset: true });
+}
+
+// Radbryter text inom en ruta. Får den inte plats krymps texten.
+function drawWrapped(page, value, { x, base, size, maxWidth, height, font, color }) {
+  const lines = s => {
+    const out = [];
+    for (const para of value.split(/\r?\n/)) {
+      let line = '';
+      for (const word of para.split(/\s+/)) {
+        const next = line ? `${line} ${word}` : word;
+        if (line && font.widthOfTextAtSize(next, s) > maxWidth) { out.push(line); line = word; } else line = next;
+      }
+      out.push(line);
+    }
+    return out;
+  };
+  let s = size, l = lines(s);
+  while (s > 5 && l.length * s * 1.15 > height - 2) { s -= 0.5; l = lines(s); }
+  const top = base + height - 1.5;
+  l.forEach((line, i) => page.drawText(line, { x, y: top - s * (1 + i * 1.15), size: s, font, color }));
 }
 
 export function isPdf(buffer) {
@@ -53,7 +74,11 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
     const pos = layout.text[key];
     if (!pos) throw new Error(`Fält ${key} finns inte i mallen`);
     if (value == null || value === '' || value === true || value === false) continue;
-    const [p, x, base, fullSize, align, maxWidth] = pos;
+    const [p, x, base, fullSize, align, maxWidth, height] = pos;
+    if (height) {
+      drawWrapped(pages[p], String(value), { x, base, size: fullSize, maxWidth, height, font: f, color: ink });
+      continue;
+    }
     const text = String(value).replace(/\s+/g, ' ');
     // Krymp texten om den inte får plats i rutan.
     let size = fullSize;

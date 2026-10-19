@@ -282,3 +282,10 @@ details[open] summary { margin-bottom: 12px; }
 .row.datum { align-items: end; }
 .row.datum .field { flex: 1 1 auto; min-width: 0; }
 .check.natt { flex: 0 0 auto; margin-bottom: 4px; white-space: nowrap; }
+
+/* Upprepade rader, t.ex. svetsar */
+.rowcard { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 12px; }
+.rowhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.rows > .button { width: 100%; margin-top: 12px; }
+button.link { background: none; border: 0; padding: 8px 0; font: inherit; color: var(--accent); }
+button.link.danger { color: var(--danger); }

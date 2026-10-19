@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v12';
+const VERSION = 'v13';
 const FILES = [
   './',
   'index.html',
@@ -31,6 +31,8 @@ const FILES = [
   'img/placering/v3s.png',
   'img/placering/spk.png',
   'js/forms/oversyn1481.js',
+  'js/forms/svets.js',
+  'js/forms/svets-layout.js',
   'vendor/jszip.min.js',
   'vendor/pdf-lib.min.js',
   'vendor/fontkit.min.js',

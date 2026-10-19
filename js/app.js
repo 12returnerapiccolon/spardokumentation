@@ -4,10 +4,11 @@ import { fillPdf, pdfInfo } from './fill-pdf.js';
 import { fillOverlay, isPdf } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
+import svets from './forms/svets.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 
-const FORMS = [...VAXELFORMS, oversyn1481];
+const FORMS = [...VAXELFORMS, oversyn1481, svets];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
@@ -15,7 +16,7 @@ function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
 
-const READY = new Set(['vaxel', '1481']);
+const READY = new Set(['vaxel', '1481', 'svets']);
 
 // Jobb från första prototypen hade dokumentet "ev" i stället för växeltyp.
 function upgradeJob(job) {
@@ -351,7 +352,8 @@ async function newJobView() {
 }
 
 function formProgress(form, data) {
-  const filled = Object.entries(data || {}).filter(([k, v]) => k !== 'matt' && v !== '' && v !== false && v != null).length
+  const filled = Object.entries(data || {}).filter(([k, v]) => k !== 'matt' && !Array.isArray(v) && v !== '' && v !== false && v != null).length
+    + Object.values(data || {}).filter(Array.isArray).reduce((n, rows) => n + rows.length, 0)
     + Object.values((data && data.matt) || {}).filter(r => r.uppmatt).length;
   return filled ? `${filled} uppgifter ifyllda` : 'Inte påbörjad';
 }
@@ -440,13 +442,19 @@ function renderItem(item, data, onChange, job) {
       return h('p', { class: 'sublabel' }, item.label);
     case 'shared':
       return h('div', { class: 'field shared' }, h('span', {}, item.label),
-        h('output', {}, item.from === 'datum'
+        h('output', {}, item.value ? item.value(job) || '–' : item.from === 'datum'
           ? (blankettDatum(job) ? blankettDatum(job) + (job.natt ? ' (nattarbete)' : '') : '–')
           : job[item.from] || '–'));
-    case 'text':
-      return h('label', { class: 'field' }, h('span', {}, item.label),
-        h('input', { type: 'text', inputmode: item.inputmode, value: data[item.key] || '', autocomplete: 'off',
-          oninput: e => onChange(item.key, e.target.value) }));
+    case 'text': {
+      // list: förslag att välja bland (man kan ändå skriva något annat).
+      // placeholder: förval från jobbet, visas grått och används om rutan är tom.
+      const listId = item.list ? `list-${item.key}-${Math.random().toString(36).slice(2, 8)}` : null;
+      return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
+        h('input', { type: 'text', inputmode: item.inputmode, value: data[item.key] || '', autocomplete: 'off', list: listId,
+          placeholder: item.placeholder ? item.placeholder(job) : null,
+          oninput: e => onChange(item.key, e.target.value) }),
+        item.list ? h('datalist', { id: listId }, item.list.map(v => h('option', { value: v }))) : null);
+    }
     case 'textarea':
       return h('label', { class: 'field' }, h('span', {}, item.label),
         h('textarea', { rows: 3, oninput: e => onChange(item.key, e.target.value) }, data[item.key] || ''));
@@ -464,7 +472,7 @@ function renderItem(item, data, onChange, job) {
           h('span', {}, opt || 'Inget'))));
     }
     case 'select':
-      return h('label', { class: 'field' }, h('span', {}, item.label),
+      return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
         h('select', { onchange: e => onChange(item.key, e.target.value) },
           ['', ...item.options].map(opt => h('option', { value: opt, selected: (data[item.key] || '') === opt }, opt || '–'))));
     case 'group': {
@@ -481,6 +489,8 @@ function renderItem(item, data, onChange, job) {
     }
     case 'measures':
       return measureTable(item, data, onChange, job);
+    case 'rows':
+      return rowsEditor(item, data, onChange, job);
     case 'image':
       return h('button', { type: 'button', class: 'figure', onclick: () => showImage(item.src, item.alt) },
         h('img', { src: item.src, alt: item.alt, loading: 'lazy' }),
@@ -489,6 +499,49 @@ function renderItem(item, data, onChange, job) {
       return null;
   }
 }
+
+// Upprepade rader, t.ex. svetsar. Varje rad har samma fält. En ny rad får innehållet från
+// raden före (eller den senaste raden från ett tidigare jobb) via item.newRow.
+function rowsEditor(item, data, onChange, job) {
+  const list = data[item.key] = data[item.key] || [];
+  const wrap = h('div', { class: 'rows' });
+  const fields = row => {
+    const out = [];
+    for (let i = 0; i < item.fields.length; i++) {
+      const f = item.fields[i];
+      const one = x => renderItem(x, row, (k, v) => { row[k] = v; onChange(item.key, list); }, job);
+      if (f.half && item.fields[i + 1]?.half) { out.push(h('div', { class: 'row' }, one(f), one(item.fields[++i]))); } else out.push(one(f));
+    }
+    return out;
+  };
+  const draw = () => wrap.replaceChildren(
+    ...list.map((row, i) => h('div', { class: 'rowcard' },
+      h('div', { class: 'rowhead' },
+        h('strong', {}, `${item.rowLabel} ${i + 1}`),
+        h('button', {
+          type: 'button', class: 'link danger',
+          onclick: () => {
+            if (!confirm(`Ta bort ${item.rowLabel.toLowerCase()} ${i + 1}?`)) return;
+            list.splice(i, 1); onChange(item.key, list); draw();
+          },
+        }, 'Ta bort')),
+      fields(row))),
+    list.length < item.max
+      ? h('button', {
+          type: 'button', class: 'button big',
+          onclick: () => {
+            list.push(item.newRow(list[list.length - 1] || remembered[`${item.form}.${item.key}`]));
+            onChange(item.key, list); draw();
+            wrap.querySelectorAll('.rowcard')[list.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
+        }, item.addLabel)
+      : h('p', { class: 'muted note' }, `Blanketten har plats för ${item.max}. Gör ett nytt jobb för fler.`));
+  draw();
+  return wrap;
+}
+
+// Senast använda värden för fält med remember, se formView.
+let remembered = {};
 
 // Visar en bild i helskärm. Den går att rulla i sidled och nypa för att zooma.
 function showImage(src, alt) {
@@ -580,10 +633,25 @@ async function formView(id, key) {
   setTitle(form.title, `#/jobb/${id}`);
   const data = job.forms[form.key] = job.forms[form.key] || {};
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
-  window.onpagehide = () => save.flush();
+  // Fält med remember får förra jobbets värde, t.ex. enhet och svetsansvarig.
+  remembered = await db.getSetting('remember', {});
+  const remember = new Set();
+  const walk = items => items.forEach(i => { if (i.remember) { remember.add(i.key); i.form = form.key; } if (i.items) walk(i.items); });
+  form.sections.forEach(s => walk(s.items));
+  for (const k of remember) {
+    const r = remembered[`${form.key}.${k}`];
+    if (data[k] === undefined && r !== undefined && !(typeof r === 'object')) data[k] = r;
+  }
+  const saveRemembered = debounce(() => db.setSetting('remember', remembered), 300);
+  window.onpagehide = () => { save.flush(); saveRemembered.flush(); };
   // Tabellen räknas om när något som styr normalvärden och toleranser ändras.
   const onChange = (k, v) => {
     data[k] = v; save();
+    if (remember.has(k)) {
+      remembered[`${form.key}.${k}`] = Array.isArray(v) ? v[v.length - 1] : v;
+      if (remembered[`${form.key}.${k}`] === undefined) delete remembered[`${form.key}.${k}`];
+      saveRemembered();
+    }
     if (['typ', 'besiktningsklass', 'radie'].includes(k)) document.querySelectorAll('.measures-wrap').forEach(w => w.refresh());
   };
 
