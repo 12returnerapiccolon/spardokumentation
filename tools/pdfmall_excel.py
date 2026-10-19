@@ -53,12 +53,19 @@ for c in cells:
 
 # openpyxl skriver radbrytningar i sidhuvud och sidfot som _x000a_, som LibreOffice skriver ut
 # som text. Byt tillbaka till riktiga radbrytningar.
+# openpyxl behåller bilder men tappar textrutor och former i ritningen. Ritningarna läggs
+# tillbaka från källfilen när bildernas namn stämmer (källan ska ha ett blad).
+with zipfile.ZipFile(src) as z:
+    ritningar = {n: z.read(n) for n in z.namelist() if re.match(r'xl/drawings/drawing\d+\.xml$', n)}
+
 def save(wb, path):
     wb.save(path)
     tmp = path + '.tmp'
     with zipfile.ZipFile(path) as zin, zipfile.ZipFile(tmp, 'w', zipfile.ZIP_DEFLATED) as zout:
         for item in zin.infolist():
             data = zin.read(item.filename)
+            if item.filename in ritningar and b'<xdr:sp' in ritningar[item.filename]:
+                data = ritningar[item.filename]
             if item.filename.startswith('xl/worksheets/sheet'):
                 data = re.sub(rb'<headerFooter.*?</headerFooter>', lambda m: m.group(0).replace(b'_x000a_', b'&#10;'), data, flags=re.S)
             zout.writestr(item, data)

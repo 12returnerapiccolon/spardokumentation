@@ -8,11 +8,12 @@ import svets from './forms/svets.js';
 import heta from './forms/heta.js';
 import ibt from './forms/ibt.js';
 import k0737 from './forms/k0737.js';
+import kap from './forms/kap.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 
-const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt, k0737];
+const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt, k0737, kap];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
@@ -20,7 +21,7 @@ function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
 
-const READY = new Set(['heta', 'vaxel', '1481', 'svets', 'ibt', '0737']);
+const READY = new Set(['heta', 'vaxel', '1481', 'svets', 'ibt', '0737', 'kap']);
 
 // Jobb från första prototypen hade dokumentet "ev" i stället för växeltyp.
 function upgradeJob(job) {
@@ -40,7 +41,7 @@ const CATALOG = [
   { key: '1481', title: 'Översyn spårväxel (TMALL 1481)' },
   { key: 'ibt', title: 'Ibruktagande, IBT (TMALL 0824)' },
   { key: '0737', title: 'Kontrollplan stabilitetspåverkande arbete (TMALL 0737)' },
-  { key: 'kap', title: 'Kapmetoden, spänningsfri temperatur (valfri)' },
+  { key: 'kap', title: 'Kapmetoden, spänningsfri temperatur (TMALL 0844, valfri)' },
 ];
 
 const SHARED = [
@@ -472,6 +473,12 @@ function renderItem(item, data, onChange, job) {
         h('output', {}, item.value ? item.value(job) || '–' : item.from === 'datum'
           ? (blankettDatum(job) ? blankettDatum(job) + (job.natt ? ' (nattarbete)' : '') : '–')
           : job[item.from] || '–'));
+    case 'calc': {
+      // Uträknat värde som inte går att skriva i, t.ex. SFT. Räknas om när något ändras.
+      const out = h('output', { 'data-calc': '' }, item.value(data, job) || '–');
+      out.refreshCalc = () => { out.textContent = item.value(data, job) || '–'; };
+      return h('div', { class: 'field shared' }, h('span', {}, item.label), out);
+    }
     case 'text': {
       // list: förslag att välja bland (man kan ändå skriva något annat).
       // placeholder: förval från jobbet, visas grått och används om rutan är tom.
@@ -789,6 +796,7 @@ async function formView(id, key) {
     data[k] = v; save();
     document.querySelectorAll('input[data-ph]').forEach(el => el.refreshPh?.());
     document.querySelectorAll('[data-hideif]').forEach(el => el.refreshHide?.());
+    document.querySelectorAll('output[data-calc]').forEach(el => el.refreshCalc?.());
     if (remember.has(k)) {
       remembered[`${form.key}.${k}`] = Array.isArray(v) ? v[v.length - 1] : v;
       if (remembered[`${form.key}.${k}`] === undefined) delete remembered[`${form.key}.${k}`];
