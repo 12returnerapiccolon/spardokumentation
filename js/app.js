@@ -475,6 +475,21 @@ function renderItem(item, data, onChange, job) {
         h('output', {}, item.value ? item.value(job) || '–' : item.from === 'datum'
           ? (blankettDatum(job) ? blankettDatum(job) + (job.natt ? ' (nattarbete)' : '') : '–')
           : job[item.from] || '–'));
+    case 'info': {
+      // Text ur regelverket som fälls ut när man trycker på rubriken. summary: [vad, värde]
+      // som tabell, images: [text, bild] som knappar som visar bilden i helskärm.
+      const stycke = t => (/^K\d+$/.test(t) ? h('p', { class: 'kid' }, t)
+        : /^(Råd|Förutsättning)$/.test(t) ? h('p', { class: 'rad' }, t)
+        : /^\d+(\.\d+)* [A-ZÅÄÖ]/.test(t) ? h('h4', {}, t)
+        : h('p', { class: /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null }, t));
+      return h('details', { class: 'info-block' },
+        h('summary', {}, item.label),
+        h('div', { class: 'tdok' },
+          item.intro ? h('p', { class: 'muted' }, item.intro) : null,
+          item.summary ? h('table', { class: 'info-summary' }, item.summary.map(([a, b]) => h('tr', {}, h('th', {}, a), h('td', {}, b)))) : null,
+          (item.images || []).map(([text, src]) => h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(src, text) }, `📋 ${text}`)),
+          (item.text || []).map(stycke)));
+    }
     case 'calc': {
       // Uträknat värde som inte går att skriva i, t.ex. SFT. Räknas om när något ändras.
       const out = h('output', { 'data-calc': '' }, item.value(data, job) || '–');

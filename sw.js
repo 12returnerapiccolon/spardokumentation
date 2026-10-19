@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v60';
+const VERSION = 'v61';
 const FILES = [
   './',
   'index.html',
@@ -41,6 +41,10 @@ const FILES = [
   'js/forms/tdok0311.js',
   'js/forms/k0737.js',
   'js/forms/k0737-layout.js',
+  'js/forms/trvinfra0737.js',
+  'img/0737/k11-1.png',
+  'img/0737/k11-2.png',
+  'img/0737/k11-3.png',
   'js/forms/kap.js',
   'js/forms/kap-layout.js',
   'js/forms/ibt-layout.js',

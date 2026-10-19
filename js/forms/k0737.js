@@ -3,6 +3,7 @@
 // (k0737-layout.js). Hänvisningarna gäller TRVINFRA-00014 version 5.0 (2026-10-19).
 import LAYOUT from './k0737-layout.js';
 import { blankettDatum } from '../datum.js';
+import { SPARSYSTEM, STABILISERING, TABELLER } from './trvinfra0737.js';
 
 const SPARTYP = [['grus', 'Träsliper i grus', 'D15'], ['tramak', 'Träsliper i makadam', 'G15'], ['betong', 'Betongsliper i makadam', 'L15']];
 const KATEGORI = [['1', 'Kategori 1 – stor påverkan', 'B18'], ['2', 'Kategori 2 – mindre påverkan', 'G18'], ['3', 'Kategori 3 – obetydlig påverkan', 'K18']];
@@ -78,8 +79,11 @@ export default {
     },
     {
       title: '5. Utförd kontroll',
-      help: 'Stabilitetspåverkande arbete är avslutat enligt TRVINFRA-00014. Se även trafikering på arbetsplats enligt TRVINFRA-00012 avsnitt 7.3.11, 7.3.12, 8.2.8 och 8.2.9.',
-      items: KONTROLL.map(([key, label]) => ({ type: 'check', key, label })),
+      help: 'Stabilitetspåverkande arbete är avslutat enligt TRVINFRA-00014. Se även trafikering på arbetsplats enligt TRVINFRA-00012. Tryck på ett avsnitt för att läsa det.',
+      items: [
+        ...KONTROLL.map(([key, label]) => ({ type: 'check', key, label })),
+        ...SPARSYSTEM.map(a => ({ type: 'info', ...a })),
+      ],
     },
     {
       title: '6. Temperaturer',
@@ -96,12 +100,14 @@ export default {
       items: [
         { type: 'text', key: 'kbrt', label: 'Stabilitetshöjande åtgärd (kbrt)', inputmode: 'decimal', half: true },
         { type: 'text', key: 'sth', label: 'Sth (km/h)', inputmode: 'numeric', half: true },
+        { type: 'info', ...STABILISERING },
       ],
     },
     {
       title: '9. Tillåten hastighet',
       help: 'Beräknas med uppgifterna i punkt 1–8 och TRVINFRA-00014 kap 11, tabell K11.1–K11.3 (betongsliper, träsliper i makadam och träsliper i grus). Mallen hänvisar till de äldre tabellnumren K10.1–K10.3.',
       items: [
+        { type: 'info', ...TABELLER },
         { type: 'text', key: 'direkt', label: 'Direkt efter avslutat arbete (km/h)', inputmode: 'numeric' },
         {
           type: 'rows', key: 'efter', max: HASTIGHETER, rowLabel: 'Efter', addLabel: '+ Lägg till hastighet efter ett antal dygn',
