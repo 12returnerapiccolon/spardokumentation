@@ -13,6 +13,7 @@ import skev from './forms/skev.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
+import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler } from './bilder.js';
 import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn } from './jobb.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
@@ -480,6 +481,7 @@ async function jobView(id) {
       h('span', { class: 'sub' }, `${form.code} · ${formProgress(form, job.forms[form.key])}`)));
   });
   const docList = h('ul', { class: 'list' }, docItems());
+  const bildDel = bildSektion(id);
   const docBox = docChecks(job, k => job.docs.includes(k), (k, on) => {
     const docs = new Set(job.docs);
     on ? docs.add(k) : docs.delete(k);
@@ -492,6 +494,7 @@ async function jobView(id) {
     docList,
     h('button', { class: 'button primary big', type: 'button', onclick: () => buildFiles(job, exportArea) }, 'Skapa filer'),
     exportArea,
+    bildDel,
     h('details', { class: 'card' },
       h('summary', {}, 'Lägg till eller ta bort dokument'),
       h('p', { class: 'muted note' }, 'Det du fyllt i finns kvar om du tar bort ett dokument och lägger till det igen.'),
@@ -508,10 +511,53 @@ async function jobView(id) {
       onclick: async () => {
         if (!confirm('Ta bort jobbet från telefonen? Det går inte att ångra.')) return;
         await db.del('jobs', id);
+        await taBortAlla(id);
         location.hash = '#/';
       },
     }, 'Ta bort jobbet'),
   );
+}
+
+// Bilder i jobbet: en rad per grupp med miniatyrer och en knapp för att lägga till från kameran
+// eller bildbiblioteket. Tryck på en bild för att se den större, × tar bort den.
+function bildSektion(jobId) {
+  const box = h('details', { class: 'card bilder' });
+  const urls = [];
+  const draw = async () => {
+    urls.splice(0).forEach(u => URL.revokeObjectURL(u));
+    const bilder = await jobbetsBilder(jobId);
+    box.replaceChildren(
+      h('summary', {}, bilder.length ? `Bilder (${bilder.length})` : 'Bilder'),
+      ...BILDTYPER.map(t => {
+        const egna = bilder.filter(b => b.typ === t.key);
+        const val = h('input', {
+          type: 'file', accept: 'image/*', multiple: true, hidden: true,
+          onchange: async e => {
+            const files = [...e.target.files];
+            if (!files.length) return;
+            status.textContent = 'Sparar …';
+            try { await laggTill(jobId, t.key, files); } catch (err) { alert('Kunde inte spara bilden: ' + err.message); }
+            box.open = true; draw();
+          },
+        });
+        const status = h('span', { class: 'muted' });
+        return h('div', { class: 'bildgrupp' },
+          h('div', { class: 'bildrubrik' }, h('strong', {}, t.label), status),
+          h('div', { class: 'miniatyrer' },
+            egna.map(b => {
+              const url = URL.createObjectURL(b.data); urls.push(url);
+              return h('div', { class: 'miniatyr' },
+                h('button', { type: 'button', class: 'visa', onclick: () => showImage(url, t.label) }, h('img', { src: url, alt: t.label })),
+                h('button', { type: 'button', class: 'bort', 'aria-label': 'Ta bort bilden', onclick: async () => {
+                  if (confirm('Ta bort bilden?')) { await db.del('bilder', b.id); draw(); }
+                } }, '×'));
+            }),
+            h('button', { type: 'button', class: 'miniatyr ny', onclick: () => val.click() }, '+'), val));
+      }),
+      h('p', { class: 'muted note' }, 'Bilderna följer med som JPEG-filer när du skapar filerna.'));
+  };
+  draw();
+  return box;
 }
 
 async function buildFiles(job, area) {
@@ -537,6 +583,7 @@ async function buildFiles(job, area) {
     }
   }
 
+  try { files.push(...await bildfiler(job.id, safeName(jobLabel(job)))); } catch (e) { problems.push('Bilderna: ' + e.message); }
   const canShare = files.length && navigator.canShare && navigator.canShare({ files });
   area.replaceChildren(...[
     ...problems.map(p => h('p', { class: 'error' }, p)),

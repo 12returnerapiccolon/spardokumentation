@@ -1,6 +1,7 @@
 // Lokal lagring i telefonen (IndexedDB). Inget skickas någonstans.
 const DB_NAME = 'spardokumentation';
-const DB_VERSION = 1;
+// Version 2: bilder i jobben (2026-10-19).
+const DB_VERSION = 2;
 
 let dbPromise;
 
@@ -10,9 +11,11 @@ function open() {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = () => {
         const db = req.result;
-        db.createObjectStore('jobs', { keyPath: 'id' });
-        db.createObjectStore('templates', { keyPath: 'key' });
-        db.createObjectStore('settings', { keyPath: 'key' });
+        const finns = name => db.objectStoreNames.contains(name);
+        if (!finns('jobs')) db.createObjectStore('jobs', { keyPath: 'id' });
+        if (!finns('templates')) db.createObjectStore('templates', { keyPath: 'key' });
+        if (!finns('settings')) db.createObjectStore('settings', { keyPath: 'key' });
+        if (!finns('bilder')) db.createObjectStore('bilder', { keyPath: 'id' }).createIndex('jobId', 'jobId');
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
@@ -35,6 +38,7 @@ export const get = (store, key) => tx(store, 'readonly', s => s.get(key));
 export const getAll = (store) => tx(store, 'readonly', s => s.getAll());
 export const put = (store, value) => tx(store, 'readwrite', s => s.put(value));
 export const del = (store, key) => tx(store, 'readwrite', s => s.delete(key));
+export const getAllBy = (store, index, value) => tx(store, 'readonly', s => s.index(index).getAll(value));
 
 export async function getSetting(key, fallback) {
   const row = await get('settings', key);
