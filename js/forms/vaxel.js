@@ -256,7 +256,8 @@ function buildForm(t) {
         title: 'Spårväxeln kontrollerad',
         items: [
           { type: 'shared', label: 'Datum', from: 'datum' },
-          { type: 'shared', label: 'Underskrift', from: 'namn' },
+          // Förval: Ditt namn från Inställningar (grått). Går att skriva något annat.
+          { type: 'text', key: 'underskrift', label: 'Underskrift', placeholder: job => job.namn || '', names: true },
         ],
       },
     ],
@@ -282,7 +283,7 @@ function buildForm(t) {
       }
       const [yyyy, mm, dd] = blankettDatum(job).split('-');
       v[t.date[0]] = yyyy; v[t.date[1]] = mm; v[t.date[2]] = dd;
-      v[t.sign] = job.namn;
+      v[t.sign] = data.underskrift || job.namn;
       for (const k of Object.keys(v)) if (v[k] == null) v[k] = '';
       return v;
     },

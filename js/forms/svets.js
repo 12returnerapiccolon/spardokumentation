@@ -32,6 +32,8 @@ const EGENKONTROLL = [
 // Förval som hämtas från jobbet när svetsaren inte skrivit något eget.
 const dag = job => (blankettDatum(job) ? String(Number(blankettDatum(job).slice(8))) : '');
 const plats = job => [job.bandel, job.driftplats, job.vxnr || (job.spar && `spår ${job.spar}`)].filter(Boolean).join('-');
+// Förval: Ditt namn och svets-ID från Inställningar.
+const namnId = job => [job.namn, job.svetsid].filter(Boolean).join(' ');
 const kmm = (km, m) => `${km}+${String(m || 0).padStart(3, '0')}`;
 const jobKmm = job => (job.vxnr || !job.km ? '' : kmm(job.km, job.m));
 // Läget skrivs som km + m. Utan meter är första rutan svetsens nummer på växelbilden (1–14).
@@ -63,7 +65,7 @@ export default {
         { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric' },
         { type: 'text', key: 'kundao', label: 'Kundens Ao nr' },
         { type: 'text', key: 'bessy', label: 'Bessy anm/Ofelia' },
-        { type: 'shared', label: 'Namn och svets-ID', value: job => [job.namn, job.svetsid].filter(Boolean).join(' ') },
+        { type: 'text', key: 'namnId', label: 'Namn och svets-ID', placeholder: job => namnId(job) },
         { type: 'shared', label: 'År och månad', value: job => (blankettDatum(job) ? `${blankettDatum(job).slice(0, 4)} ${MANADER[Number(blankettDatum(job).slice(5, 7)) - 1]}` : '') },
       ],
     },
@@ -125,7 +127,7 @@ export default {
       C2: data.enhet || job.enhet || '',
       H2: data.ao || '',
       P2: data.kundao || '',
-      C4: [job.namn, job.svetsid].filter(Boolean).join(' '),
+      C4: data.namnId || namnId(job),
       H4: datum.slice(0, 4),
       K4: datum ? MANADER[Number(datum.slice(5, 7)) - 1] : '',
       P4: data.bessy || '',
