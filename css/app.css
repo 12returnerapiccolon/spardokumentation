@@ -355,6 +355,7 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .matrix input { width: 100%; min-width: 3.5em; height: 40px; text-align: center; font-size: 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
 .matrix td.calc { color: var(--muted); font-variant-numeric: tabular-nums; }
 .matrix td.calc.warn { color: var(--danger); font-weight: 600; }
+.matrix input.warn { border-color: var(--danger); color: var(--danger); font-weight: 600; background: rgba(180, 35, 24, .1); }
 .matrix td.with-sign { display: flex; gap: 2px; align-items: center; }
 .matrix td.with-sign input { min-width: 2.8em; }
 .matrix button.sign { flex: none; width: 30px; height: 40px; border: 1px solid var(--line); border-radius: 6px; background: var(--shared); color: var(--text); font-size: 18px; padding: 0; }

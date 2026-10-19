@@ -493,39 +493,46 @@ function renderItem(item, data, onChange, job) {
     }
     case 'matrix': {
       // Tabell med ett fast antal rader, t.ex. mätpunkter. cols: rutor att skriva i, calc:
-      // uträknade kolumner { label, value(list, i), warn(list, i) }. Enter går till raden under.
+      // uträknade kolumner { label, value(list, i, data), warn(list, i, data) }. En ruta med warn
+      // blir röd. Rutorna fylls rad för rad: Enter, eller klar(värde, data) när värdet är
+      // komplett, går till nästa ruta på raden och sedan till första rutan på raden under.
       // sign: knapp ± bredvid rutan, eftersom telefonens sifferknappsats saknar minustecken.
       const list = data[item.key] = data[item.key] || [];
-      const calcCells = [];
-      const refresh = () => calcCells.forEach(({ td, c, i }) => {
-        td.textContent = c.value(list, i) || '';
-        td.classList.toggle('warn', !!c.warn?.(list, i));
+      const cells = [];
+      const refresh = () => cells.forEach(({ el, c, i }) => {
+        if (c.value) el.textContent = c.value(list, i, data) || '';
+        el.classList.toggle('warn', !!c.warn?.(list, i, data));
       });
+      const nasta = (ci, i, input) => {
+        const [nc, ni] = ci + 1 < item.cols.length ? [ci + 1, i] : [0, i + 1];
+        const el = table.querySelector(`input[data-col="${nc}"][data-row="${ni}"]`);
+        if (el) el.focus(); else input.blur();
+      };
       const table = h('table', { class: 'matrix' },
         h('thead', {}, h('tr', {}, h('th', {}, item.rowHead), item.cols.map(c => h('th', {}, c.label)), (item.calc || []).map(c => h('th', { class: 'calc' }, c.label)))),
         h('tbody', {}, Array.from({ length: item.rows }, (_, i) => h('tr', {},
           h('th', {}, item.rowLabel(i)),
           item.cols.map((c, ci) => {
-            const spara = value => { list[i] = { ...(list[i] || {}), [c.key]: value }; onChange(item.key, list); refresh(); };
+            const spara = value => { list[i] = { ...(list[i] || {}), [c.key]: value }; onChange(item.key, list); };
             const input = h('input', {
               type: 'text', inputmode: c.inputmode || 'decimal', enterkeyhint: 'next', autocomplete: 'off',
               value: list[i]?.[c.key] ?? '', 'aria-label': `${c.label} ${item.rowLabel(i)}`, 'data-col': ci, 'data-row': i,
-              oninput: e => spara(e.target.value),
-              onkeydown: e => {
-                if (e.key !== 'Enter') return;
-                e.preventDefault();
-                table.querySelector(`input[data-col="${ci}"][data-row="${i + 1}"]`)?.focus() || e.target.blur();
-              },
+              oninput: e => { spara(e.target.value); if (c.klar?.(e.target.value, data)) nasta(ci, i, e.target); },
+              onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); nasta(ci, i, e.target); } },
             });
+            cells.push({ el: input, c: { warn: c.warn }, i });
             const tecken = c.sign ? h('button', {
               type: 'button', class: 'sign', 'aria-label': 'Byt tecken',
               onclick: () => { input.value = input.value.startsWith('-') ? input.value.slice(1) : `-${input.value}`; spara(input.value); },
             }, '±') : null;
             return h('td', { class: c.sign ? 'with-sign' : null }, input, tecken);
           }),
-          (item.calc || []).map(c => { const td = h('td', { class: 'calc' }); calcCells.push({ td, c, i }); return td; })))));
+          (item.calc || []).map(c => { const td = h('td', { class: 'calc' }); cells.push({ el: td, c, i }); return td; })))));
       refresh();
-      return h('div', { class: 'matrix-wrap' }, table);
+      // Räknas om när något ändras, även fält utanför tabellen (se formView).
+      const wrap = h('div', { class: 'matrix-wrap' }, table);
+      wrap.refreshMatrix = refresh;
+      return wrap;
     }
     case 'calc': {
       // Uträknat värde som inte går att skriva i, t.ex. SFT. Räknas om när något ändras.
@@ -913,6 +920,7 @@ async function formView(id, key) {
     document.querySelectorAll('input[data-ph]').forEach(el => el.refreshPh?.());
     document.querySelectorAll('[data-hideif]').forEach(el => el.refreshHide?.());
     document.querySelectorAll('output[data-calc]').forEach(el => el.refreshCalc?.());
+    document.querySelectorAll('.matrix-wrap').forEach(el => el.refreshMatrix?.());
     if (remember.has(k)) {
       remembered[`${form.key}.${k}`] = Array.isArray(v) ? v[v.length - 1] : v;
       if (remembered[`${form.key}.${k}`] === undefined) delete remembered[`${form.key}.${k}`];

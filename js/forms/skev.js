@@ -21,8 +21,34 @@ function ramptal(list, i) {
   const d = andring(list, i);
   return d == null || d === 0 ? null : Math.abs(6000 / d);
 }
-// TRVINFRA-00012 7.3.13 råd: skevning 20 mm på 6 m (ramptal 300) är UH2-gränsen för STH ≤ 80 km/h.
-const UH2_RAMPTAL = 300;
+// UH2-gränser vid obelastad mätning, TRVINFRA-00013 v2.0 avsnitt 11.3: spårvidd (+max/−min mot
+// nominell) tabell K11.15, rälsförhöjningens avvikelse från anordnad K11.18, skevning 6 m K11.19.
+const KLASSER = {
+  H5: { sth: '200 < V ≤ 250', sv: [15, 4], rf: 6, skev: 10 },
+  H4: { sth: '160 < V ≤ 200', sv: [20, 5], rf: 7, skev: 12 },
+  H3: { sth: '120 < V ≤ 160', sv: [20, 5], rf: 8, skev: 14 },
+  H2: { sth: '80 < V ≤ 120', sv: [25, 5], rf: 10, skev: 17 },
+  H1: { sth: '40 < V ≤ 80', sv: [30, 5], rf: 13, skev: 20 },
+  H0: { sth: 'V ≤ 40', sv: [30, 5], rf: 16, skev: 20 },
+};
+const klass = data => KLASSER[data.klass || 'H1'];
+const nominell = data => tal(data.nominell) ?? 1435;
+const anordnad = data => tal(data.anordnad) ?? 0;
+const utanforSv = (list, i, data) => {
+  const v = tal(list[i]?.sv); if (v == null || Number.isNaN(v)) return false;
+  const [plus, minus] = klass(data).sv; const d = v - nominell(data);
+  return d > plus || d < -minus;
+};
+const utanforRf = (list, i, data) => {
+  const v = tal(list[i]?.rf); if (v == null || Number.isNaN(v)) return false;
+  return Math.abs(v - anordnad(data)) > klass(data).rf;
+};
+const utanforSkev = (list, i, data) => { const d = andring(list, i); return d != null && Math.abs(d) > klass(data).skev; };
+// Hoppa vidare när värdet är komplett: spårvidden har fyra siffror. Rälsförhöjningen har minst två
+// siffror (lika många som den anordnade om den är större), och 0 är komplett direkt.
+const siffror = v => String(v).replace(/\D/g, '').length;
+const klarSv = v => siffror(v) >= 4 && !/[,.]$/.test(v);
+const klarRf = (v, data) => /^-?0$/.test(v) || (siffror(v) >= Math.max(2, siffror(Math.abs(anordnad(data)))) && !/[,.]$/.test(v));
 
 export default {
   key: 'skevning',
@@ -42,6 +68,14 @@ export default {
       title: 'Protokoll',
       help: 'Grå text hämtas från jobbet och Inställningar.',
       items: [
+        {
+          type: 'select', key: 'klass', label: 'Hastighetsklass (STH)', remember: true,
+          options: Object.entries(KLASSER).reverse().map(([k, v]) => [k, `${k}, ${v.sth} km/h`]),
+          info: ['Väljer vilka UH2-gränser som gäller för de röda markeringarna, enligt TRVINFRA-00013 v2.0 avsnitt 11.3 (obelastad mätning). Utan val används H1 (40 < V ≤ 80 km/h).',
+            ...Object.entries(KLASSER).reverse().map(([k, v]) => `${k} (${v.sth} km/h): spårvidd +${v.sv[0]}/−${v.sv[1]} mm, rälsförhöjning ±${v.rf} mm, skevning 6 m ${v.skev} mm.`)],
+        },
+        { type: 'text', key: 'nominell', label: 'Nominell spårvidd (mm)', inputmode: 'decimal', placeholder: () => '1435', half: true },
+        { type: 'text', key: 'anordnad', label: 'Anordnad rälsförhöjning (mm)', inputmode: 'decimal', placeholder: () => '0', half: true },
         { type: 'text', key: 'protokollforare', label: 'Protokollförare', placeholder: job => job.namn || '' },
         { type: 'text', key: 'datum', label: 'Datum', inputType: 'date', defaultValue: job => blankettDatum(job) },
         { type: 'text', key: 'plats', label: 'Bandel/driftplats', placeholder: job => [job.bandel, job.driftplats].filter(Boolean).join(' ') },
@@ -52,16 +86,16 @@ export default {
     },
     {
       title: 'Mätpunkter',
-      help: `Mätpunkt varannan meter, 0–36 m. Ändring per 6 m = rälsförhöjningen 6 m längre fram minus den i punkten, ramptal = 6000 / ändringen. Rött ramptal är under ${UH2_RAMPTAL}, dvs. skevning över 20 mm på 6 m, som är UH2-gränsen för STH ≤ 80 km/h (TRVINFRA-00012 7.3.13). Enter går till raden under.`,
+      help: 'Mätpunkt varannan meter, 0–36 m. Ändring per 6 m = rälsförhöjningen 6 m längre fram minus den i punkten (skevning), ramptal = 6000 / ändringen. Rött är utanför UH2 för vald hastighetsklass. Rutan hoppar vidare när spårvidden har fyra siffror och rälsförhöjningen två; annars trycker du Nästa.',
       items: [{
         type: 'matrix', key: 'punkter', rows: PUNKTER, rowHead: 'm', rowLabel: meter,
         cols: [
-          { key: 'sv', label: 'Spårvidd (mm)' },
-          { key: 'rf', label: 'Rälsförh. (mm)', sign: true },
+          { key: 'sv', label: 'Spårvidd (mm)', warn: utanforSv, klar: klarSv },
+          { key: 'rf', label: 'Rälsförh. (mm)', sign: true, warn: utanforRf, klar: klarRf },
         ],
         calc: [
-          { label: 'Ändr. 6 m', value: (list, i) => (andring(list, i) == null ? '' : komma(andring(list, i))) },
-          { label: 'Ramptal', value: (list, i) => (ramptal(list, i) == null ? '' : String(Math.round(ramptal(list, i)))), warn: (list, i) => ramptal(list, i) != null && ramptal(list, i) < UH2_RAMPTAL },
+          { label: 'Ändr. 6 m', value: (list, i) => (andring(list, i) == null ? '' : komma(andring(list, i))), warn: utanforSkev },
+          { label: 'Ramptal', value: (list, i) => (ramptal(list, i) == null ? '' : String(Math.round(ramptal(list, i)))), warn: utanforSkev },
         ],
       }],
     },
