@@ -227,7 +227,10 @@ export default {
       title: 'Underskrift',
       help: 'Underskriften blir initialerna och namnförtydligandet hela namnet. Det är bankontrollanten som signerar, eller besiktningsmannen om en sådan är ifylld.',
       items: [
-        { type: 'text', key: 'klockslag', label: 'Klockslag', inputType: 'time' },
+        // Datum och klockslag kan bli bara datum (2026-10-19).
+        { type: 'text', key: 'signDatum', label: 'Datum', inputType: 'date', defaultValue: job => blankettDatum(job) },
+        { type: 'check', key: 'medKlockslag', label: 'Skriv även klockslag', defaultValue: true },
+        { type: 'text', key: 'klockslag', label: 'Klockslag', inputType: 'time', hideIf: (job, data) => data.medKlockslag === false },
       ],
     },
   ],
@@ -247,7 +250,7 @@ export default {
       I9: val('bandel', job.bandel || ''),
       C15: data.sth || '',
       I15: data.tillaten || '',
-      A78: [datum, data.klockslag].filter(Boolean).join(' '),
+      A78: [val('signDatum', datum), data.medKlockslag === false ? '' : data.klockslag].filter(Boolean).join(' '),
       C78: sign,
       G78: namn,
     };
