@@ -231,7 +231,8 @@ function buildForm(t) {
           ...['inlaggningsar', 'ritnr', 'ybv', 'radie'].filter(k => k in d)
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0], inputmode: DATA_LABELS[k][1] })),
           ...(d.usp ? [{ type: 'radio', key: 'usp', label: 'Spår', options: ['USP', 'NSP'] }] : []),
-          ...['besiktningsklass', 'driftplats_v', 'driftplats_h']
+          { type: 'select', key: 'besiktningsklass', label: 'Besiktningsklass', options: ['B1', 'B2', 'B3', 'B4', 'B5'] },
+          ...['driftplats_v', 'driftplats_h']
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0] })),
         ],
       },

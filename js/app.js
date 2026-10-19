@@ -553,7 +553,7 @@ function measureTable(item, data, onChange, job) {
       if (!data.typ) notes.push('Välj besiktningstyp för att få toleranser.');
       else if (auto.tabeller.length) notes.push(`Toleranser enligt tabell ${auto.tabeller.join(' / ')}.`);
       else if (modell) notes.push('Bilagan har ingen toleranstabell för den här modellen och besiktningen.');
-      if (auto.saknas.includes('besiktningsklass')) notes.push('Fyll i besiktningsklass under Växeldata för att få alla toleranser.');
+      if (auto.saknas.includes('besiktningsklass')) notes.push('Välj besiktningsklass under Växeldata för att få alla toleranser.');
       if (auto.saknas.includes('radie')) notes.push('Fyll i radie under Växeldata för att få toleranserna som beror på R ≥ 300 m.');
       if (auto.matpunkter) notes.push('Gråa mått tas inte vid säkerhetsbesiktning och hoppas över. Du kan ändå fylla i dem.');
       if (Object.keys(auto.forslag).length) notes.push('Grå siffror med snedstreck (t.ex. 43/44) beror på korsningens utförande. Skriv rätt värde.');
