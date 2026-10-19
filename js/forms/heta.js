@@ -93,10 +93,10 @@ export default {
         ...PUNKTER.flatMap(([key, label, , sub]) => [
           { type: 'check', key, label, help: key === 'p2b' ? null : regel(key) },
           ...(sub ? [{ type: 'check', key: sub[0], label: sub[1], sub: true }] : []),
-          ...(key === 'p2a' ? [{ type: 'text', key: 'brandvakter', label: 'Brandvaktens/vakternas namn', placeholder: brandvakter }] : []),
+          ...(key === 'p2a' ? [{ type: 'text', key: 'brandvakter', label: 'Brandvaktens/vakternas namn', placeholder: brandvakter, remember: true, names: true }] : []),
           ...(key === 'p2b' ? [
             { type: 'text', key: 'langreTid', label: 'Annan, längre tid' },
-            { type: 'text', key: 'efterNamn', label: 'Brandvakt efterbevakning, namn', placeholder: brandvakter },
+            { type: 'text', key: 'efterNamn', label: 'Brandvakt efterbevakning, namn', placeholder: brandvakter, remember: true, names: true },
           ] : []),
         ]),
       ],
@@ -111,18 +111,18 @@ export default {
       title: 'Underskrifter',
       help: 'Namnen skrivs som namnförtydligande. Raden för namnteckning lämnas tom.',
       items: [
-        { type: 'text', key: 'ansvarig', label: 'Tillståndsansvarig', remember: true },
+        { type: 'text', key: 'ansvarig', label: 'Tillståndsansvarig', remember: true, names: true },
         { type: 'text', key: 'ansvarigTel', label: 'Tillståndsansvarigs telefonnummer', inputType: 'tel', inputmode: 'tel', remember: true },
         ...ARBETARE.map(([key], i) => ({
           type: 'group', label: `Hetarbetare eller brandvakt ${i + 1}`,
           items: [
-            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null },
-            { type: 'check', key: `${key}cert`, label: 'Certifikatkontroll utförd (av tillståndsansvarig)' },
-            { type: 'check', key: `${key}ha`, label: 'HA (heta arbeten)', defaultValue: i === 0 },
-            { type: 'check', key: `${key}bv`, label: 'BV (brandvakt)' },
+            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null, remember: true, names: true },
+            { type: 'check', key: `${key}cert`, label: 'Certifikatkontroll utförd (av tillståndsansvarig)', remember: true },
+            { type: 'check', key: `${key}ha`, label: 'HA (heta arbeten)', defaultValue: i === 0, remember: true },
+            { type: 'check', key: `${key}bv`, label: 'BV (brandvakt)', remember: true },
           ],
         })),
-        { type: 'text', key: 'avslut', label: 'Tillståndsansvarig vid avslut (arbetet är avslutat, efterbevakning slutförd och arbetsplatsen kontrollerad)', placeholder: () => 'Samma som ovan' },
+        { type: 'text', key: 'avslut', label: 'Tillståndsansvarig vid avslut (arbetet är avslutat, efterbevakning slutförd och arbetsplatsen kontrollerad)', placeholder: () => 'Samma som ovan', remember: true, names: true },
       ],
     },
   ],

@@ -448,10 +448,13 @@ function renderItem(item, data, onChange, job) {
       // list: förslag att välja bland (man kan ändå skriva något annat).
       // placeholder: förval från jobbet, visas grått och används om rutan är tom.
       // Förvalet kan bero på andra fält och räknas om när något ändras (se formView).
-      const listId = item.list ? `list-${item.key}-${Math.random().toString(36).slice(2, 8)}` : null;
+      // names: förslag från namn som skrivits i tidigare jobb.
+      const options = item.names ? remembered.namn || [] : item.list;
+      const listId = options ? `list-${item.key}-${Math.random().toString(36).slice(2, 8)}` : null;
       const input = h('input', { type: item.inputType || 'text', inputmode: item.inputmode, value: data[item.key] ?? (item.defaultValue ? item.defaultValue(job) : ''), autocomplete: 'off', list: listId,
         placeholder: item.placeholder ? item.placeholder(job, data) : null, 'data-ph': item.placeholder ? '' : null,
-        oninput: e => onChange(item.key, e.target.value) });
+        oninput: e => onChange(item.key, e.target.value),
+        onchange: item.names ? e => kommIhagNamn(e.target.value) : null });
       if (item.placeholder) input.refreshPh = () => { input.placeholder = item.placeholder(job, data); };
       // geo: knappar som lägger till adress och koordinater efter texten, från telefonens
       // position eller en plats som väljs på kartan. Det som lades till sist byts ut.
@@ -493,7 +496,7 @@ function renderItem(item, data, onChange, job) {
       }
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
         input, geo,
-        item.list ? h('datalist', { id: listId }, item.list.map(v => h('option', { value: v }))) : null);
+        options ? h('datalist', { id: listId }, options.map(v => h('option', { value: v }))) : null);
     }
     case 'textarea':
       return h('label', { class: 'field' }, h('span', {}, item.label),
@@ -602,6 +605,14 @@ function rowsEditor(item, data, onChange, job) {
 
 // Senast använda värden för fält med remember, se formView.
 let remembered = {};
+
+// Namn som skrivits i fält med names sparas som förslag, de senaste först.
+function kommIhagNamn(value) {
+  const namn = value.split(',').map(n => n.trim()).filter(n => n.length > 1);
+  if (!namn.length) return;
+  remembered.namn = [...new Set([...namn, ...(remembered.namn || [])])].slice(0, 30);
+  db.setSetting('remember', remembered);
+}
 
 // Visar en bild i helskärm. Den går att rulla i sidled och nypa för att zooma.
 function showImage(src, alt) {
