@@ -707,13 +707,74 @@ function kommIhagNamn(value) {
   db.setSetting('remember', remembered);
 }
 
-// Visar en bild i helskärm. Den går att rulla i sidled och nypa för att zooma.
+// Visar en bild i helskärm. Hela bilden syns först; nyp eller dubbeltryck för att zooma
+// och dra med fingret för att flytta. Sidans egen zoom används inte, den flyttar även knapparna.
 function showImage(src, alt) {
-  const close = () => overlay.remove();
+  const img = h('img', { src, alt, draggable: false });
+  const stage = h('div', { class: 'zoom-stage' }, img);
+  let s = 1, x = 0, y = 0, fit = 1;
+  const apply = () => { img.style.transform = `translate(${x}px, ${y}px) scale(${s})`; };
+  // Bilden hålls inom skärmen, och står i mitten när den är mindre än skärmen.
+  const clamp = () => {
+    const W = stage.clientWidth, H = stage.clientHeight, w = img.naturalWidth * s, ht = img.naturalHeight * s;
+    x = w <= W ? (W - w) / 2 : Math.min(0, Math.max(W - w, x));
+    y = ht <= H ? (H - ht) / 2 : Math.min(0, Math.max(H - ht, y));
+  };
+  const zoomAt = (ns, cx, cy) => {
+    ns = Math.max(fit, Math.min(fit * 10, ns));
+    x = cx - (cx - x) * ns / s; y = cy - (cy - y) * ns / s; s = ns;
+    clamp(); apply();
+  };
+  const refit = () => {
+    if (!img.naturalWidth) return;
+    fit = Math.min(stage.clientWidth / img.naturalWidth, stage.clientHeight / img.naturalHeight);
+    s = fit; clamp(); apply();
+  };
+  img.onload = refit;
+  const punkt = e => { const r = stage.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const pekare = new Map();
+  let senastTryck = 0, flyttat = false;
+  stage.onpointerdown = e => { try { stage.setPointerCapture(e.pointerId); } catch { /* syntetiska händelser */ } pekare.set(e.pointerId, punkt(e)); flyttat = false; };
+  stage.onpointermove = e => {
+    if (!pekare.has(e.pointerId)) return;
+    const [px, py] = punkt(e);
+    if (pekare.size === 1) {
+      const [ox, oy] = pekare.get(e.pointerId);
+      if (Math.abs(px - ox) + Math.abs(py - oy) > 2) flyttat = true;
+      x += px - ox; y += py - oy; clamp(); apply();
+    } else if (pekare.size === 2) {
+      const [a, b] = [...pekare.values()];
+      const annan = [...pekare.keys()].find(k => k !== e.pointerId);
+      const [qx, qy] = pekare.get(annan);
+      const fore = Math.hypot(a[0] - b[0], a[1] - b[1]) || 1;
+      const efter = Math.hypot(px - qx, py - qy) || 1;
+      const [ox, oy] = pekare.get(e.pointerId);
+      x += (px - ox) / 2; y += (py - oy) / 2;
+      zoomAt(s * efter / fore, (px + qx) / 2, (py + qy) / 2);
+      flyttat = true;
+    }
+    pekare.set(e.pointerId, [px, py]);
+  };
+  stage.onpointerup = stage.onpointercancel = e => {
+    pekare.delete(e.pointerId);
+    if (e.type !== 'pointerup' || flyttat || pekare.size) return;
+    // Dubbeltryck: zooma in där man trycker, eller tillbaka till hela bilden.
+    const nu = Date.now();
+    if (nu - senastTryck < 350) { const [px, py] = punkt(e); zoomAt(s > fit * 1.5 ? fit : fit * 3, px, py); senastTryck = 0; } else senastTryck = nu;
+  };
+  stage.onwheel = e => { e.preventDefault(); const [px, py] = punkt(e); zoomAt(s * Math.exp(-e.deltaY / 300), px, py); };
+  const knapp = (text, label, f) => h('button', { type: 'button', 'aria-label': label, onclick: () => f(stage.clientWidth / 2, stage.clientHeight / 2) }, text);
+  const close = () => { overlay.remove(); window.removeEventListener('resize', refit); };
   const overlay = h('div', { class: 'overlay', role: 'dialog', 'aria-label': alt },
     h('button', { type: 'button', class: 'close', onclick: close, 'aria-label': 'Stäng' }, '✕'),
-    h('div', { class: 'overlay-scroll' }, h('img', { src, alt })));
+    stage,
+    h('div', { class: 'zoom-tools' },
+      knapp('−', 'Zooma ut', (cx, cy) => zoomAt(s / 1.6, cx, cy)),
+      knapp('Hela', 'Visa hela bilden', () => refit()),
+      knapp('+', 'Zooma in', (cx, cy) => zoomAt(s * 1.6, cx, cy))));
   document.body.append(overlay);
+  window.addEventListener('resize', refit);
+  if (img.complete) refit();
 }
 
 // Måttabell. Normalvärde och tolerans fylls i automatiskt (grå text) tills svetsaren skriver

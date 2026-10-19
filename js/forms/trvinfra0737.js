@@ -165,7 +165,7 @@ export const STABILISERING = {
 // Punkt 9: tabellerna i TRVINFRA-00014 kapitel 11, som bilder ur dokumentet.
 export const TABELLER = {
   label: 'Tabell K11.1–K11.3 Tillåtna hastigheter (kap 11)',
-  intro: 'TRVINFRA-00014 v5.0 kapitel 11. Tryck på en tabell för att visa den i helskärm. ΔT = Tf − To från punkt 6, kbrt från punkt 2 och 7.',
+  intro: 'TRVINFRA-00014 v5.0 kapitel 11. Tryck på en tabell för att visa sidan ur dokumentet. Nyp eller dubbeltryck för att zooma och dra för att flytta. ΔT = Tf − To från punkt 6, kbrt från punkt 2 och 7.',
   images: [
     ['Tabell K11.1 Betongsliperspår i makadamballast', 'img/0737/k11-1.png'],
     ['Tabell K11.2 Träsliperspår i makadamballast', 'img/0737/k11-2.png'],
