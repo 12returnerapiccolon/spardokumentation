@@ -15,7 +15,8 @@ import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn } from './jobb.js';
 
-const FORMS = [...VAXELFORMS, oversyn1481, svets, heta, ibt, k0737, kap, skev];
+// Samma ordning som dokumenten i jobbet (CATALOG).
+const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
@@ -35,15 +36,16 @@ function upgradeJob(job) {
 }
 
 // Alla dokument som ska gå att välja för ett jobb. De utan formulär kommer i senare versioner.
+// Ordning 2026-10-19.
 const CATALOG = [
   { key: 'heta', title: 'Heta arbeten, tillstånd och kontrollista' },
   { key: 'svets', title: 'Svetsrapport / egenkontroll' },
-  { key: 'skevning', title: 'Spårlägesmätning / skevningsprotokoll (TMALL 1605)' },
+  { key: 'ibt', title: 'Ibruktagande, IBT (TMALL 0824)' },
   { key: 'vaxel', title: 'Växelbesiktningsrapport (efter växeltyp)' },
   { key: '1481', title: 'Översyn spårväxel (TMALL 1481)' },
-  { key: 'ibt', title: 'Ibruktagande, IBT (TMALL 0824)' },
+  { key: 'skevning', title: 'Spårlägesmätning / skevningsprotokoll (TMALL 1605)' },
   { key: '0737', title: 'Kontrollplan stabilitetspåverkande arbete (TMALL 0737)' },
-  { key: 'kap', title: 'Kapmetoden, spänningsfri temperatur (TMALL 0844, valfri)' },
+  { key: 'kap', title: 'Spänningsfri temperatur SFT, Kapmetoden (TMALL 0844)' },
 ];
 
 const SHARED = [
@@ -460,6 +462,7 @@ async function jobView(id) {
   const job = await db.get('jobs', id);
   if (!job) { location.hash = '#/'; return; }
   upgradeJob(job);
+  job.docs = CATALOG.map(d => d.key).filter(k => job.docs.includes(k));
   await fillFromProfile(job);
   setTitle(jobLabel(job), '#/');
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);

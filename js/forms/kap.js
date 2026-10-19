@@ -52,11 +52,11 @@ const KOPIERAS_INTE = ['m', 't', 'lf', 'le', 'anm'];
 export default {
   key: 'kap',
   code: 'TMALL 0844',
-  title: 'Spänningsfri temperatur enligt kapmetoden',
+  title: 'Spänningsfri temperatur SFT, Kapmetoden',
   format: 'overlay',
   ext: 'pdf',
   layout: LAYOUT,
-  templateHint: 'TMALL 0844 Spänningsfri temperatur enligt kapmetoden (PDF-mall)',
+  templateHint: 'TMALL 0844 Spänningsfri temperatur SFT, Kapmetoden (PDF-mall)',
 
   async matches({ pdf }) {
     return !!pdf && pdf.subject === 'Spårdokumentation mall kap';
