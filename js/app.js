@@ -495,9 +495,16 @@ function renderItem(item, data, onChange, job) {
         }, '🗺 Välj på karta');
         geo = h('div', {}, h('div', { class: 'row geo' }, egen, karta), status);
       }
-      return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
+      const field = h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, item.label),
         input, geo,
         options ? h('datalist', { id: listId }, options.map(v => h('option', { value: v }))) : null);
+      // hideIf: döljs när andra fält gör det onödigt. Räknas om när något ändras.
+      if (item.hideIf) {
+        field.dataset.hideif = '';
+        field.refreshHide = () => { field.hidden = !!item.hideIf(job, data); };
+        field.refreshHide();
+      }
+      return field;
     }
     case 'textarea':
       return h('label', { class: 'field' }, h('span', {}, item.label),
@@ -724,6 +731,7 @@ async function formView(id, key) {
   const onChange = (k, v) => {
     data[k] = v; save();
     document.querySelectorAll('input[data-ph]').forEach(el => el.refreshPh?.());
+    document.querySelectorAll('[data-hideif]').forEach(el => el.refreshHide?.());
     if (remember.has(k)) {
       remembered[`${form.key}.${k}`] = Array.isArray(v) ? v[v.length - 1] : v;
       if (remembered[`${form.key}.${k}`] === undefined) delete remembered[`${form.key}.${k}`];

@@ -95,11 +95,14 @@ const ROLLER = [
   ['besiktningsman', 'Ibruktagandebesiktningsman', 7],
   ['bankontrollant', 'Bankontrollant', 8, job => job.namn || ''],
 ];
+// Bankontrollanten besiktigar och signerar. Finns en besiktningsman på jobbet tas
+// bankontrollanten bort och besiktningsmannen signerar i stället (2026-10-19).
+const besiktningsman = data => (data.besiktningsman || '').trim();
 
 const km = job => (job.km ? `${job.km}+${String(job.m || 0).padStart(3, '0')}` : '');
 const dpl = job => [job.driftplats, job.vxnr ? `vxl ${job.vxnr}` : '', job.spar ? `sp ${job.spar}` : ''].filter(Boolean).join(' / ');
-// Bankontrollanten besiktigar och signerar. Förval: namnet i profilen.
-const bankontrollant = (job, data) => data.bankontrollant ?? job.namn ?? '';
+const bankontrollant = (job, data) => (besiktningsman(data) ? '' : data.bankontrollant ?? job.namn ?? '');
+const signerar = (job, data) => besiktningsman(data) || bankontrollant(job, data);
 
 export default {
   key: 'ibt',
@@ -123,10 +126,15 @@ export default {
         { type: 'shared', label: 'Datum för besiktning', from: 'datum' },
         { type: 'text', key: 'arbete', label: 'Arbete', placeholder: () => 't.ex. Byte av isolerskarv vxl 12' },
         { type: 'text', key: 'bestnr', label: 'Beställningsnr' },
-        ...ROLLER.flatMap(([key, label, , def]) => [
-          { type: 'text', key, label, defaultValue: def, remember: !def, names: true },
-          { type: 'text', key: `${key}Tfn`, label: 'Tfn', inputType: 'tel', inputmode: 'tel', remember: true },
-        ]),
+        // Besiktningsmannen gäller bara jobbet och sparas inte till nästa (namnet föreslås ändå).
+        ...ROLLER.flatMap(([key, label, , def]) => {
+          const hideIf = key === 'bankontrollant' ? (job, data) => besiktningsman(data) : null;
+          const remember = key !== 'besiktningsman';
+          return [
+            { type: 'text', key, label, defaultValue: def, remember: remember && !def, names: true, hideIf },
+            { type: 'text', key: `${key}Tfn`, label: 'Tfn', inputType: 'tel', inputmode: 'tel', remember, hideIf },
+          ];
+        }),
         { type: 'text', key: 'bandel', label: 'Bandel', inputmode: 'numeric', defaultValue: job => job.bandel || '' },
       ],
     },
@@ -156,7 +164,7 @@ export default {
     },
     ...PUNKTER.map(([title, rows]) => ({
       title: `Kontrollpunkter: ${title}`,
-      help: title === 'Allmänt' ? 'Kontrollerad signeras med dina initialer. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
+      help: title === 'Allmänt' ? 'Kontrollerad signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
       items: rows.map(([r, label, enligt, moment]) => ({
         type: 'radio', key: `k${r}`, label, options: [UTFORD, EJ], help: `${enligt}\n${moment}`,
       })),
@@ -205,7 +213,7 @@ export default {
     },
     {
       title: 'Underskrift',
-      help: 'Underskriften blir bankontrollantens initialer och namnförtydligandet hela namnet.',
+      help: 'Underskriften blir initialerna och namnförtydligandet hela namnet. Det är bankontrollanten som signerar, eller besiktningsmannen om en sådan är ifylld.',
       items: [
         { type: 'text', key: 'klockslag', label: 'Klockslag', inputType: 'time' },
       ],
@@ -215,7 +223,7 @@ export default {
   toValues(job, data) {
     const val = (key, def) => (data[key] !== undefined ? data[key] : def);
     const datum = blankettDatum(job);
-    const namn = bankontrollant(job, data);
+    const namn = signerar(job, data);
     const sign = initialer(namn);
     const kontrakt = val('kontrakt', 'UH-kontrakt');
     const v = {
@@ -234,6 +242,7 @@ export default {
     for (const [key, , r, def] of ROLLER) {
       v[`D${r}`] = val(key, def ? def(job) : '') || '';
       v[`H${r}`] = data[`${key}Tfn`] || '';
+      if (key === 'bankontrollant' && besiktningsman(data)) v[`D${r}`] = v[`H${r}`] = '';
     }
     (data.objekt || []).slice(0, 3).forEach((o, i) => {
       const r = 12 + i;
