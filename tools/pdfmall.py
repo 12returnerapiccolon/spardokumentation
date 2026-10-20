@@ -143,6 +143,32 @@ def unwrap_bound_sdt(xml):
 ENTRIES_DATA = [d.decode('utf-8', 'ignore') for it, d in ENTRIES if it.filename.startswith('customXml/item')]
 ENTRIES = [(it, unwrap_bound_sdt(d) if re.match(r'word/(footer|header)\d*\.xml$', it.filename) else d) for it, d in ENTRIES]
 
+# Inbäddade Visio-ritningar (Spårkorsning) visas med en EMF-förhandsbild som LibreOffice gör om
+# till en suddig bild. Rita Visio-filen själv och byt förhandsbilden mot en skarp PNG.
+def sharpen_visio_previews():
+    global ENTRIES
+    data = dict((it.filename, d) for it, d in ENTRIES)
+    rels = data['word/_rels/document.xml.rels'].decode('utf-8')
+    doc = data['word/document.xml'].decode('utf-8')
+    for ole in re.finditer(r'<o:OLEObject [^>]*ProgID="Visio[^"]*"[^>]*r:id="(rId\d+)"', doc):
+        shape = doc[doc.rindex('<v:shape id=', 0, ole.start()):ole.start()]
+        img_rid = re.search(r'<v:imagedata r:id="(rId\d+)"', shape).group(1)
+        width = float(re.search(r'width:([\d.]+)pt', shape).group(1))
+        target = lambda rid: re.search(rf'Id="{rid}"[^>]*Target="([^"]+)"|Target="([^"]+)"[^>]*Id="{rid}"', rels)
+        m = target(ole.group(1)); vsdx = 'word/' + (m.group(1) or m.group(2))
+        m = target(img_rid); old = m.group(1) or m.group(2)
+        tmp = os.path.join(work, 'visio'); os.makedirs(tmp, exist_ok=True)
+        src = os.path.join(tmp, 'ritning.vsdx'); open(src, 'wb').write(data[vsdx])
+        subprocess.run(['soffice', '--headless', '--convert-to', 'pdf', '--outdir', tmp, src], check=True, capture_output=True)
+        px = int(width / 72 * 400)
+        subprocess.run(['pdftoppm', '-png', '-singlefile', '-scale-to-x', str(px), '-scale-to-y', '-1',
+                        os.path.join(tmp, 'ritning.pdf'), os.path.join(tmp, 'ritning')], check=True)
+        new = old.rsplit('.', 1)[0] + '-skarp.png'
+        rels = rels.replace(f'Target="{old}"', f'Target="{new}"')
+        ENTRIES.append((zipfile.ZipInfo('word/' + new), open(os.path.join(tmp, 'ritning.png'), 'rb').read()))
+    ENTRIES = [(it, rels.encode('utf-8') if it.filename == 'word/_rels/document.xml.rels' else d) for it, d in ENTRIES]
+sharpen_visio_previews()
+
 def load():
     return etree.fromstring(DOCXML)
 
