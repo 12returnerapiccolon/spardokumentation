@@ -67,6 +67,17 @@ export default {
   },
 
   sections: [
+    // Avsnittens ordning i appen (2026-10-20); blanketten påverkas inte.
+    {
+      title: 'Tillståndet gäller',
+      help: 'Tillståndet ska gälla så kort tid som möjligt och normalt en dag eller ett skift.',
+      items: [
+        { type: 'text', key: 'franDatum', label: 'Från och med', inputType: 'date', defaultValue: job => job.datum || '', half: true },
+        { type: 'text', key: 'franKl', label: 'Klockan', inputType: 'time', defaultValue: job => TIDER(job)[0], half: true },
+        { type: 'text', key: 'tillDatum', label: 'Till och med', inputType: 'date', defaultValue: job => blankettDatum(job), half: true },
+        { type: 'text', key: 'tillKl', label: 'Klockan', inputType: 'time', defaultValue: job => TIDER(job)[1], half: true },
+      ],
+    },
     {
       title: 'Arbetsplats och arbetsmetod',
       items: [
@@ -79,13 +90,21 @@ export default {
       ],
     },
     {
-      title: 'Tillståndet gäller',
-      help: 'Tillståndet ska gälla så kort tid som möjligt och normalt en dag eller ett skift.',
+      title: 'Underskrifter',
+      help: 'Namnen skrivs som namnförtydligande och initialerna på raden för namnteckning.',
       items: [
-        { type: 'text', key: 'franDatum', label: 'Från och med', inputType: 'date', defaultValue: job => job.datum || '', half: true },
-        { type: 'text', key: 'franKl', label: 'Klockan', inputType: 'time', defaultValue: job => TIDER(job)[0], half: true },
-        { type: 'text', key: 'tillDatum', label: 'Till och med', inputType: 'date', defaultValue: job => blankettDatum(job), half: true },
-        { type: 'text', key: 'tillKl', label: 'Klockan', inputType: 'time', defaultValue: job => TIDER(job)[1], half: true },
+        { type: 'text', key: 'ansvarig', label: 'Tillståndsansvarig', remember: true, names: true },
+        { type: 'text', key: 'ansvarigTel', label: 'Tillståndsansvarigs telefonnummer', inputType: 'tel', inputmode: 'tel', remember: true },
+        ...ARBETARE.map(([key], i) => ({
+          type: 'group', label: `Hetarbetare eller brandvakt ${i + 1}`,
+          items: [
+            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null, remember: true, names: true },
+            { type: 'check', key: `${key}cert`, label: 'Certifikatkontroll utförd (av tillståndsansvarig)', remember: true },
+            { type: 'check', key: `${key}ha`, label: 'HA (heta arbeten)', defaultValue: i === 0, remember: true },
+            { type: 'check', key: `${key}bv`, label: 'BV (brandvakt)', remember: true },
+          ],
+        })),
+        { type: 'text', key: 'avslut', label: 'Tillståndsansvarig vid avslut (arbetet är avslutat, efterbevakning slutförd och arbetsplatsen kontrollerad)', placeholder: () => 'Samma som ovan', remember: true, names: true },
       ],
     },
     {
@@ -106,24 +125,6 @@ export default {
       title: 'Brandlarm',
       items: [
         { type: 'text', key: 'sektioner', label: 'Sektioner/adresser i det automatiska brandlarmet som är urkopplade under arbetet (använd blankett SBF 175)' },
-      ],
-    },
-    {
-      title: 'Underskrifter',
-      help: 'Namnen skrivs som namnförtydligande och initialerna på raden för namnteckning.',
-      items: [
-        { type: 'text', key: 'ansvarig', label: 'Tillståndsansvarig', remember: true, names: true },
-        { type: 'text', key: 'ansvarigTel', label: 'Tillståndsansvarigs telefonnummer', inputType: 'tel', inputmode: 'tel', remember: true },
-        ...ARBETARE.map(([key], i) => ({
-          type: 'group', label: `Hetarbetare eller brandvakt ${i + 1}`,
-          items: [
-            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null, remember: true, names: true },
-            { type: 'check', key: `${key}cert`, label: 'Certifikatkontroll utförd (av tillståndsansvarig)', remember: true },
-            { type: 'check', key: `${key}ha`, label: 'HA (heta arbeten)', defaultValue: i === 0, remember: true },
-            { type: 'check', key: `${key}bv`, label: 'BV (brandvakt)', remember: true },
-          ],
-        })),
-        { type: 'text', key: 'avslut', label: 'Tillståndsansvarig vid avslut (arbetet är avslutat, efterbevakning slutförd och arbetsplatsen kontrollerad)', placeholder: () => 'Samma som ovan', remember: true, names: true },
       ],
     },
   ],
