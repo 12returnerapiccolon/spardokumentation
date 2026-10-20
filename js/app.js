@@ -66,9 +66,9 @@ const SHARED = [
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
   // Fyller i Eget Ao nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
-  { key: 'ao', label: 'Ao nr', inputmode: 'numeric', row: 'ao', flex: 2 },
+  { key: 'ao', label: 'Ao nr', inputmode: 'numeric', row: 'ao', flex: 1, kopiera: true },
   // Står i jobbnamnet efter vecka och dag (2026-10-20). Förvalt från förra jobbet.
-  { key: 'arbetslag', label: 'Arbetslag', row: 'ao', flex: 3, placeholder: 'T.ex. Lena & Per' },
+  { key: 'arbetslag', label: 'Arbetslag', row: 'ao', flex: 1, placeholder: 'T.ex. Lena & Per' },
   // Personuppgifterna finns bara under Inställningar och kan ändras i de enskilda blanketterna.
   // group: rubriken de står under i Inställningar. Namn och telefon står på samma rad (2026-10-20).
   { key: 'namn', label: 'Namn', profile: true, settingsOnly: true, group: 'Om dig', row: 'du', flex: 3 },
@@ -477,7 +477,9 @@ function sharedInputs(values, onChange, opts = {}) {
         list: field.list ? `list-${field.key}` : null, placeholder: field.placeholder,
         oninput: e => change(field.key, e.target.value),
       }),
-      field.list ? h('datalist', { id: `list-${field.key}` }, field.list.map(v => h('option', { value: v }))) : null);
+      field.list ? h('datalist', { id: `list-${field.key}` }, field.list.map(v => h('option', { value: v }))) : null,
+      // Kopieraknapp i rutan, t.ex. för Ao nr (2026-10-20).
+      field.kopiera ? kopieraKnapp(() => inputs[field.key].value, `Kopiera ${field.label}`) : null);
     if (f.key === 'datum') {
       // Nattarbete: blanketterna får nästa dags datum (ingen förklaring visas, 2026-10-20).
       out.push(h('div', { class: 'row datum' }, input(f),
@@ -1630,17 +1632,25 @@ async function route() {
 window.addEventListener('hashchange', route);
 document.addEventListener('click', e => { if (e.target.closest('#hjalp')) { e.preventDefault(); visaHjalp(); } });
 
-// Kopiera titeln (jobbnamnet) till urklipp. Bocken visar att det gick.
-document.getElementById('kopiera').addEventListener('click', async e => {
-  const knapp = e.currentTarget;
-  const text = document.getElementById('title').textContent;
+// Kopiera till urklipp. Bocken visar att det gick.
+async function kopieraText(text, knapp) {
   try { await navigator.clipboard.writeText(text); } catch {
     const t = h('textarea', { readonly: true, style: 'position:fixed;opacity:0' }, text);
     document.body.append(t); t.select(); document.execCommand('copy'); t.remove();
   }
   knapp.classList.add('klar');
   setTimeout(() => knapp.classList.remove('klar'), 1500);
-});
+}
+function kopieraKnapp(text, etikett) {
+  const knapp = h('button', {
+    class: 'kopiera', type: 'button', 'aria-label': etikett,
+    onclick: e => { e.preventDefault(); e.stopPropagation(); kopieraText(text(), knapp); },
+  });
+  knapp.append(document.querySelector('#kopiera svg').cloneNode(true));
+  return knapp;
+}
+// Titeln (jobbnamnet) på jobbsidan.
+document.getElementById('kopiera').addEventListener('click', e => kopieraText(document.getElementById('title').textContent, e.currentTarget));
 window.addEventListener('DOMContentLoaded', () => {
   db.persist();
   route();

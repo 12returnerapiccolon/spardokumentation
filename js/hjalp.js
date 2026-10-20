@@ -105,8 +105,9 @@ export const HJALP = {
       ['Status', [
         'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du delar filerna. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
       ]],
-      ['Kopiera jobbnamnet', [
+      ['Kopiera jobbnamn och Ao nr', [
         'Knappen bredvid jobbnamnet överst kopierar namnet. Klistra in det på ämnesraden när du mejlar filerna; telefonen kan inte fylla i ämnesraden själv.',
+        'Rutan Ao nr under Uppgifter om jobbet har en likadan knapp som kopierar numret.',
       ]],
       ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',

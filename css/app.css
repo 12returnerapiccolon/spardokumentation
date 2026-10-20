@@ -473,3 +473,10 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .topbar .kopiera svg { width: 22px; height: 22px; }
 .topbar .kopiera.klar svg { display: none; }
 .topbar .kopiera.klar::after { content: '✓'; font-size: 22px; font-weight: 700; }
+/* Kopieraknapp i en ruta: ligger inuti rutans högra kant. */
+.field:has(> .kopiera) { position: relative; }
+.field > .kopiera { position: absolute; right: 4px; bottom: 4px; width: 40px; height: 40px; padding: 0; border: 0; background: none; color: var(--accent); display: flex; align-items: center; justify-content: center; }
+.field > .kopiera svg { width: 20px; height: 20px; }
+.field:has(> .kopiera) > input { padding-right: 44px; }
+.kopiera.klar svg { display: none; }
+.field > .kopiera.klar::after { content: '✓'; font-size: 20px; font-weight: 700; }
