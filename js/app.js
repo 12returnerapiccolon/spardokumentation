@@ -252,6 +252,40 @@ async function importTemplates(selected) {
 
 // ---------- Vyer ----------
 
+// Kom igång (2026-10-20): stegen för en ny svetsare. Ett steg som redan är gjort får en bock.
+async function komIgangView() {
+  setTitle('Kom igång', '#/');
+  const profile = await db.getSetting('profile', {});
+  const templates = await db.getAll('templates');
+  const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
+  const jobs = await db.getAll('jobs');
+  const senasteKopia = await db.getSetting('senasteKopia', null);
+  const steg = [
+    ['Lägg appen på hemskärmen',
+      'Öppna sidan i Safari, tryck på Dela (fyrkanten med pilen) och välj Lägg till på hemskärmen. Öppna sedan appen från ikonen. Då fungerar den utan täckning och Safari rensar inte jobben lika lätt.',
+      navigator.standalone === true, null],
+    ['Läs in blankettmallarna',
+      'Mallarna finns inte i appen. Du får zip-filen "Alla PDF-mallar" av arbetsledaren eller en kollega. Spara den i Filer och läs in den under Blankettmallar. Det behövs bara en gång, och igen om appen säger att en mall är gammal.',
+      missing.length === 0, ['#/mallar', missing.length ? `Läs in mallarna (${missing.length} saknas)` : 'Visa mallarna']],
+    ['Fyll i dina uppgifter',
+      'Ditt namn står som underskrift på blanketterna. Fyll också i telefon, svets-ID, företag och kontaktpersoner, så fylls de i automatiskt i varje jobb.',
+      !!profile.namn, ['#/installningar', 'Öppna Inställningar']],
+    ['Skapa ditt första jobb',
+      'Fyll i uppgifterna om jobbet. Appen väljer blanketterna efter dina svar. Fyll i blanketterna, ta bilder och tryck Skapa filer. Dela sedan filerna med arbetsledaren via Mail eller Teams.',
+      jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
+    ['Spara en säkerhetskopia',
+      'Jobben finns bara i telefonen. Spara en kopia i Filer då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.',
+      !!senasteKopia, ['#/installningar', 'Till säkerhetskopian']],
+  ];
+  render(
+    h('p', { class: 'muted' }, 'Så kommer du igång med appen. Steg med bock är redan gjorda.'),
+    h('ol', { class: 'steg' }, steg.map(([rubrik, text, klar, lank]) => h('li', { class: 'card' + (klar ? ' klar' : '') },
+      h('strong', {}, (klar ? '✓ ' : '') + rubrik),
+      h('p', { class: 'muted' }, text),
+      lank && !klar ? h('a', { class: 'button', href: lank[0] }, lank[1]) : null))),
+  );
+}
+
 async function homeView() {
   setTitle('Svetsjobb');
   const jobs = (await db.getAll('jobs')).sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
@@ -290,7 +324,12 @@ async function homeView() {
   };
   visaJobb();
 
+  const profil = await db.getSetting('profile', {});
   render(
+    // Ny i appen: inget namn och inga jobb än.
+    !profil.namn && !jobs.length ? h('a', { class: 'notice', href: '#/kom-igang' },
+      h('strong', {}, 'Ny i appen?'),
+      h('span', {}, 'Tryck här för att komma igång, steg för steg.')) : null,
     missing.length ? h('a', { class: 'notice', href: '#/mallar' },
       h('strong', {}, 'Läs in blankettmallarna'),
       h('span', {}, `${missing.length} av ${FORMS.length} mallar saknas i telefonen. Tryck här för att läsa in dem från Filer.`)) : null,
@@ -1435,6 +1474,7 @@ async function settingsView() {
     h('h2', {}, 'Säkerhetskopia'),
     kopiaKort(),
     h('h2', {}, 'Om appen'),
+    h('a', { class: 'button', href: '#/kom-igang' }, 'Kom igång, steg för steg'),
     h('p', { class: 'muted' }, 'Allt du fyller i och alla mallar sparas bara i den här telefonen. Inget skickas till någon server. Filerna lämnar telefonen först när du delar dem.'),
     version,
   );
@@ -1503,6 +1543,7 @@ async function route() {
     else if (parts[0] === 'jobb') await jobView(parts[1]);
     else if (parts[0] === 'mallar') await templatesView();
     else if (parts[0] === 'installningar') await settingsView();
+    else if (parts[0] === 'kom-igang') await komIgangView();
     else await homeView();
   } catch (e) {
     console.error(e);
