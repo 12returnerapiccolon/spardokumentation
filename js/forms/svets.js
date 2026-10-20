@@ -3,6 +3,7 @@
 // Värdelistorna är mallens egna rullistor.
 import LAYOUT from './svets-layout.js';
 import { blankettDatum } from '../datum.js';
+import { berakna } from './kap.js';
 
 const MANADER = ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'];
 // Mallens lista går från 30 till −10 (och saknar −7). Här finns fler grader åt båda hållen.
@@ -43,6 +44,12 @@ const lage = (row, job) => (row.lagekm ? (row.lagem ? kmm(row.lagekm, row.lagem)
 // Rader som läggs till kopierar föregående svets, utom det som skiljer mellan svetsar.
 const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter'];
 
+// SFT ur före/efter kap och rältemp, som på Spänningsfri temperatur SFT, Kapmetoden.
+function sft(row) {
+  const r = berakna({ lf: row.fore, le: row.efter, t: row.temp });
+  return r.dt === 'Utanför' ? 'Utanför' : r.sft;
+}
+
 export default {
   key: 'svets',
   code: 'DOK 2630',
@@ -74,7 +81,7 @@ export default {
     },
     {
       title: 'Svetsar',
-      help: `Blanketten har plats för ${RADER} svetsar; fler svetsar hamnar på en blankett till (del 2, 3 …). En ny svets får samma uppgifter som den förra, utom läge och kapmått. Grå text hämtas från jobbet.`,
+      help: `Blanketten har plats för ${RADER} svetsar; fler svetsar hamnar på en blankett till (del 2, 3 …). En ny svets får samma uppgifter som den förra, utom läge och kapmått. Grå text hämtas från jobbet. SFT räknas ut som på kapmetoden när före kap, efter kap och rältemp är ifyllda; den visas bara här och kommer inte med på blanketten.`,
       items: [{
         type: 'rows',
         key: 'svetsar',
@@ -94,8 +101,10 @@ export default {
           },
           { type: 'text', key: 'fore', label: 'Före kap mm', inputmode: 'decimal', half: true },
           { type: 'text', key: 'efter', label: 'Efter kap mm', inputmode: 'decimal', half: true },
-          { type: 'select', key: 'temp', label: 'Rältemp °C', options: TEMP, half: true },
-          { type: 'select', key: 'modell', label: 'Rälsmodell', options: MODELL, half: true },
+          // SFT räknas som på kapmetoden och visas bara i appen, inte på blanketten (2026-10-20).
+          { type: 'select', key: 'temp', label: 'Rältemp °C', options: TEMP, row: 3, flex: 1 },
+          { type: 'calc', label: 'SFT °C', value: sft, flex: 1 },
+          { type: 'select', key: 'modell', label: 'Rälsmodell', options: MODELL, flex: 1 },
           { type: 'select', key: 'material', label: 'Rälsmaterial', options: MATERIAL, half: true },
           { type: 'select', key: 'typ', label: 'Typ av arbete', options: ARBETE, half: true },
           { type: 'select', key: 'metod', label: 'Svetsmetod', options: METOD, half: true },

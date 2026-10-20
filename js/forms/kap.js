@@ -30,7 +30,7 @@ function avvikelse(e) {
   return -20 + i + (e - OPPNING[i]) / (OPPNING[i + 1] - OPPNING[i]);
 }
 // Blankettens värden för e, ΔT och SFT. ΔT och SFT avrundas till hela grader som i mallen.
-function berakna(row) {
+export function berakna(row) {
   const e = oppning(row);
   if (e == null) return { e: '', dt: '', sft: '' };
   const dt = avvikelse(e);
