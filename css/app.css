@@ -213,6 +213,13 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 }
 .mrow input.auto { color: var(--muted); }
 .mrow input::placeholder { color: var(--muted); opacity: .7; }
+.mrow .mval {
+  width: 100%; min-width: 0; min-height: 44px; padding: 8px 2px;
+  font: inherit; font-size: 17px; text-align: center;
+  background: none; border: 0; color: var(--text); cursor: pointer;
+}
+.mrow .mval.auto { color: var(--muted); }
+.mrow .mval.tom { color: var(--muted); opacity: .7; }
 .measures-wrap .note { margin: 0 0 8px; }
 .mname { font-weight: 600; }
 .mrow.skip { opacity: .35; }

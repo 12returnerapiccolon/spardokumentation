@@ -1224,8 +1224,20 @@ function measureTable(item, data, onChange, job) {
         },
         onkeydown: e => { if (e.key === 'Enter' && col === 'uppmatt') { e.preventDefault(); next(e.target); } },
       });
-      if (col === 'uppmatt') uppInputs.push({ input, tas: tas(m) });
-      return input;
+      if (col === 'uppmatt') { uppInputs.push({ input, tas: tas(m) }); return input; }
+      // Normalvärde och tolerans är text, inte rutor, så att telefonens nästa-/föregående-pilar
+      // bara går mellan Uppmätt (2026-10-20). Tryck på värdet för att skriva ett eget.
+      const visa = h('button', { type: 'button', class: 'mval' + (input.classList.contains('auto') ? ' auto' : ''), 'aria-label': `${m} ${col}, tryck för att ändra` });
+      const text = () => {
+        visa.textContent = input.value || input.placeholder || '–';
+        visa.classList.toggle('tom', !input.value);
+        visa.classList.toggle('auto', input.classList.contains('auto'));
+      };
+      text();
+      visa.onclick = () => { visa.replaceWith(input); input.focus(); input.select(); };
+      input.addEventListener('blur', () => { text(); input.replaceWith(visa); });
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
+      return visa;
     };
     const notes = [];
     const modell = job.vxmodell;
