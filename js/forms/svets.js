@@ -121,6 +121,9 @@ export default {
     },
   ],
 
+  // Varning innan filerna skapas (2026-10-20).
+  saknas: (job, data) => ((data.svetsar || []).length ? [] : ['inga svetsar ifyllda.']),
+
   toValues(job, data) {
     const datum = blankettDatum(job);
     const v = {

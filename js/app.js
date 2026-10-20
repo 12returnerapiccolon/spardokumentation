@@ -15,6 +15,7 @@ import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler } from './bilder.js';
 import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn } from './jobb.js';
+import { skapaKopia, lasInKopia } from './backup.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
 const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
@@ -235,19 +236,40 @@ async function homeView() {
   const jobs = (await db.getAll('jobs')).sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
   const templates = await db.getAll('templates');
   const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
+  const senasteKopia = await db.getSetting('senasteKopia', null);
+  const kopiaGammal = jobs.length && (!senasteKopia || Date.now() - new Date(senasteKopia) > 7 * 864e5);
+  // Skickade jobb flyttas till arkivet en vecka efter att de skickades (2026-10-20).
+  const arkiverat = job => job.skickad && Date.now() - new Date(job.skickad) > 7 * 864e5;
+  const lista = list => h('ul', { class: 'list' }, list.map(job => h('li', {},
+    h('a', { href: `#/jobb/${job.id}` },
+      h('span', { class: 'main' }, jobLabel(job)),
+      h('span', { class: 'sub' }, [
+        job.datum && (job.natt ? `${job.datum} natt` : job.datum),
+        upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', '),
+        job.skickad && `Skickad ${new Date(job.skickad).toLocaleDateString('sv-SE')}`,
+      ].filter(Boolean).join(' · '))))));
+  const aktiva = jobs.filter(j => !arkiverat(j));
+  const arkiv = jobs.filter(arkiverat);
 
   render(
     missing.length ? h('a', { class: 'notice', href: '#/mallar' },
       h('strong', {}, 'Läs in blankettmallarna'),
       h('span', {}, `${missing.length} av ${FORMS.length} mallar saknas i telefonen. Tryck här för att läsa in dem från Filer.`)) : null,
+    kopiaGammal ? h('a', { class: 'notice', href: '#/installningar' },
+      h('strong', {}, 'Spara en säkerhetskopia'),
+      h('span', {}, senasteKopia
+        ? `Senaste kopian är från ${new Date(senasteKopia).toLocaleDateString('sv-SE')}. Tryck här för att spara en ny i Filer.`
+        : 'Jobben finns bara i telefonen och kan försvinna om Safari rensar sin lagring. Tryck här för att spara en kopia i Filer.')) : null,
+    // navigator.standalone finns bara i Safari på iPhone och är sant när appen öppnas från hemskärmen.
+    navigator.standalone === false ? h('p', { class: 'muted note' },
+      'Tips: Lägg appen på hemskärmen (Dela > Lägg till på hemskärmen). Då rensar Safari inte jobben lika lätt.') : null,
     h('a', { class: 'button primary big', href: '#/nytt' }, '+ Nytt jobb'),
     h('h2', {}, 'Jobb'),
-    jobs.length
-      ? h('ul', { class: 'list' }, jobs.map(job => h('li', {},
-          h('a', { href: `#/jobb/${job.id}` },
-            h('span', { class: 'main' }, jobLabel(job)),
-            h('span', { class: 'sub' }, [job.datum && (job.natt ? `${job.datum} natt` : job.datum), upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', ')].filter(Boolean).join(' · '))))))
-      : h('p', { class: 'muted' }, 'Inga jobb än.'),
+    aktiva.length ? lista(aktiva) : h('p', { class: 'muted' }, arkiv.length ? 'Inga pågående jobb.' : 'Inga jobb än.'),
+    arkiv.length ? h('details', { class: 'card' },
+      h('summary', {}, `Arkiv (${arkiv.length})`),
+      h('p', { class: 'muted note' }, 'Jobb som skickades för mer än en vecka sedan.'),
+      lista(arkiv)) : null,
   );
 }
 
@@ -482,6 +504,15 @@ async function jobView(id) {
       h('span', { class: 'sub' }, `${form.code} · ${formProgress(form, job.forms[form.key])}`)));
   });
   const docList = h('ul', { class: 'list' }, docItems());
+  // Skickad: sätts när filerna delas, och kan ändras för hand (2026-10-20).
+  const skickadRad = h('div', { class: 'skickad' });
+  skickadRad.refresh = () => skickadRad.replaceChildren(
+    h('span', { class: 'muted' }, job.skickad ? `Skickad ${new Date(job.skickad).toLocaleDateString('sv-SE')}` : 'Inte skickad'),
+    h('button', { class: 'button small', type: 'button', onclick: async () => {
+      job.skickad = job.skickad ? null : new Date().toISOString();
+      await db.put('jobs', job); skickadRad.refresh();
+    } }, job.skickad ? 'Markera som inte skickad' : 'Markera som skickad'));
+  skickadRad.refresh();
   const bildDel = bildSektion(id);
   const docBox = docChecks(job, k => job.docs.includes(k), (k, on) => {
     const docs = new Set(job.docs);
@@ -493,8 +524,9 @@ async function jobView(id) {
   render(
     h('h2', {}, 'Dokument'),
     docList,
-    h('button', { class: 'button primary big', type: 'button', onclick: () => buildFiles(job, exportArea) }, 'Skapa filer'),
+    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => { skickadRad.refresh(); }) }, 'Skapa filer'),
     exportArea,
+    skickadRad,
     bildDel,
     h('details', { class: 'card' },
       h('summary', {}, 'Lägg till eller ta bort dokument'),
@@ -507,6 +539,16 @@ async function jobView(id) {
         if (k === 'vaxeltyp') docList.replaceChildren(...docItems());
         setTitle(jobLabel(job), '#/');
       }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })),
+    h('button', {
+      class: 'button big', type: 'button',
+      onclick: async () => {
+        save.flush();
+        const kopia = nyttFranJobb(job);
+        await db.put('jobs', kopia);
+        location.hash = `#/jobb/${kopia.id}`;
+      },
+    }, 'Nytt jobb från detta'),
+    h('p', { class: 'muted note' }, 'Skapar ett jobb med dagens datum och samma uppgifter om jobbet och samma dokument. Blanketterna börjar tomma.'),
     h('button', {
       class: 'button danger', type: 'button',
       onclick: async () => {
@@ -561,7 +603,68 @@ function bildSektion(jobId) {
   return box;
 }
 
-async function buildFiles(job, area) {
+// Nytt jobb med samma uppgifter och dokument, t.ex. nästa skift på samma plats (2026-10-20).
+// Blanketterna börjar tomma; det som ska följa med fylls i av sig själv (profil, sparade val).
+function nyttFranJobb(job) {
+  const now = new Date().toISOString();
+  const { id, created, updated, skickad, namnEget, forms, ...uppgifter } = job;
+  return { ...uppgifter, id: uid(), datum: today(), forms: {}, created: now, updated: now };
+}
+
+// Det som troligen saknas innan filerna skapas (2026-10-20). Bara varningar; man kan skapa ändå.
+function saknas(job) {
+  const out = [];
+  if (!job.namn) out.push('Ditt namn saknas under Inställningar, så blanketterna blir utan underskrift.');
+  for (const key of job.docs) {
+    const form = docForm(job, key);
+    if (!form) continue;
+    const data = job.forms[form.key] || {};
+    if (!Object.keys(data).length) { out.push(`${form.title}: inte påbörjad.`); continue; }
+    for (const section of form.sections || []) {
+      for (const item of section.items || []) {
+        if (item.type !== 'measures') continue;
+        const keys = typeof item.keys === 'function' ? item.keys(data) : item.keys;
+        const tomma = keys.filter(k => !data.matt?.[k]?.uppmatt).length;
+        if (tomma) out.push(`${form.title}: ${tomma} av ${keys.length} mått saknar uppmätt värde.`);
+      }
+    }
+    if (form.saknas) out.push(...form.saknas(job, data).map(t => `${form.title}: ${t}`));
+  }
+  return out;
+}
+
+function kontrollera(job, area, onSent) {
+  const lista = saknas(job);
+  if (!lista.length) { buildFiles(job, area, onSent); return; }
+  area.replaceChildren(
+    h('div', { class: 'card varning' },
+      h('strong', {}, 'Kontrollera innan du skapar filerna'),
+      h('ul', {}, lista.map(t => h('li', {}, t))),
+      h('button', { class: 'button primary big', type: 'button', onclick: () => buildFiles(job, area, onSent) }, 'Skapa filerna ändå')));
+}
+
+// Jobbets blanketter och bilder i en PDF: blanketterna i ordning, sedan en sida per bild (2026-10-20).
+async function enPdf(files, namn) {
+  const { PDFDocument, PageSizes } = PDFLib;
+  const out = await PDFDocument.create();
+  for (const f of files) {
+    const bytes = await f.arrayBuffer();
+    if (f.type === 'application/pdf') {
+      const src = await PDFDocument.load(bytes);
+      (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p));
+    } else if (f.type === 'image/jpeg') {
+      const img = await out.embedJpg(bytes);
+      const [w, hgt] = PageSizes.A4;
+      const page = out.addPage([w, hgt]);
+      const s = Math.min((w - 40) / img.width, (hgt - 40) / img.height);
+      page.drawImage(img, { x: (w - img.width * s) / 2, y: (hgt - img.height * s) / 2, width: img.width * s, height: img.height * s });
+    }
+  }
+  out.setTitle(namn);
+  return new File([await out.save()], `${namn}.pdf`, { type: 'application/pdf' });
+}
+
+async function buildFiles(job, area, onSent) {
   area.replaceChildren(h('p', { class: 'muted' }, 'Skapar filer …'));
   const files = [];
   const problems = [];
@@ -585,19 +688,30 @@ async function buildFiles(job, area) {
   }
 
   try { files.push(...await bildfiler(job.id, safeName(jobLabel(job)))); } catch (e) { problems.push('Bilderna: ' + e.message); }
-  const canShare = files.length && navigator.canShare && navigator.canShare({ files });
+  const lankar = h('ul', { class: 'files' }, files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
+  // Delade filer markerar jobbet som skickat.
+  const dela = async list => {
+    if (!(await delaFiler(list, lankar)) || job.skickad) return;
+    if (!(navigator.canShare && navigator.canShare({ files: list }))) return;
+    job.skickad = new Date().toISOString();
+    await db.put('jobs', job);
+    onSent && onSent();
+  };
   area.replaceChildren(...[
     ...problems.map(p => h('p', { class: 'error' }, p)),
-    canShare ? h('button', {
-      class: 'button primary big', type: 'button',
-      onclick: async () => {
-        // Bara filerna: med title eller text sparar iOS även en textfil, t.ex. i Filer eller Mail.
-        try { await navigator.share({ files }); }
-        catch (e) { if (e.name !== 'AbortError') alert('Kunde inte dela: ' + e.message); }
+    files.length ? h('button', { class: 'button primary big', type: 'button', onclick: () => dela(files) },
+      `Dela ${files.length === 1 ? 'filen' : `de ${files.length} filerna`} (Mail, Teams, OneDrive …)`) : null,
+    files.length > 1 ? h('button', {
+      class: 'button big', type: 'button',
+      onclick: async e => {
+        const knapp = e.currentTarget;
+        knapp.disabled = true;
+        try { await dela([await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`))]); }
+        catch (err) { alert('Kunde inte slå ihop filerna: ' + err.message); }
+        knapp.disabled = false;
       },
-    }, 'Dela filerna (Mail, Teams, OneDrive …)') : null,
-    files.length ? h('ul', { class: 'files' }, files.map(f => h('li', {},
-      h('a', { href: URL.createObjectURL(f), download: f.name }, f.name)))) : null,
+    }, 'Dela allt som en PDF') : null,
+    lankar,
   ].filter(Boolean));
 }
 
@@ -1175,10 +1289,64 @@ async function settingsView() {
     ]),
     h('h2', {}, 'Blankettmallar'),
     h('a', { class: 'button big', href: '#/mallar' }, 'Läs in och visa blankettmallar'),
+    h('h2', {}, 'Säkerhetskopia'),
+    kopiaKort(),
     h('h2', {}, 'Om appen'),
     h('p', { class: 'muted' }, 'Allt du fyller i och alla mallar sparas bara i den här telefonen. Inget skickas till någon server. Filerna lämnar telefonen först när du delar dem.'),
     version,
   );
+}
+
+// Spara alla jobb, inställningar, mallar och bilder i en fil, och läsa tillbaka dem.
+function kopiaKort() {
+  const status = h('p', { class: 'muted note' });
+  const visaSenaste = () => db.getSetting('senasteKopia', null).then(d => {
+    status.textContent = d ? `Senaste kopian sparades ${new Date(d).toLocaleDateString('sv-SE')}.` : 'Ingen kopia sparad än.';
+  });
+  visaSenaste();
+  const filer = h('ul', { class: 'files' });
+  const val = h('input', {
+    type: 'file', hidden: true,
+    onchange: async e => {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file || !confirm('Läsa in säkerhetskopian? Jobb som finns i både telefonen och kopian ersätts med kopians version.')) return;
+      try {
+        const r = await lasInKopia(file);
+        alert(`Klart. ${r.jobb} jobb lästes in.`);
+      } catch (err) { alert('Kunde inte läsa in kopian: ' + err.message); }
+    },
+  });
+  return h('div', { class: 'card' },
+    h('p', { class: 'muted note' }, 'Allt finns bara i telefonen. Spara en kopia i Filer (t.ex. iCloud Drive eller OneDrive) ibland, så kan du läsa tillbaka jobben om de försvinner eller om du byter telefon.'),
+    status,
+    h('button', {
+      class: 'button primary big', type: 'button',
+      onclick: async e => {
+        const knapp = e.currentTarget;
+        knapp.disabled = true;
+        try {
+          const file = await skapaKopia();
+          if (await delaFiler([file], filer)) { await db.setSetting('senasteKopia', new Date().toISOString()); visaSenaste(); }
+        } catch (err) { alert('Kunde inte skapa kopian: ' + err.message); }
+        knapp.disabled = false;
+      },
+    }, 'Spara säkerhetskopia'),
+    filer,
+    h('button', { class: 'button big', type: 'button', onclick: () => val.click() }, 'Läs in säkerhetskopia'),
+    val);
+}
+
+// Dela filer via iOS delningsmeny. Sant om de delades. Utan delning (t.ex. på en dator)
+// visas länkar att ladda ner i stället, och det räknas som delat.
+async function delaFiler(files, area) {
+  if (navigator.canShare && navigator.canShare({ files })) {
+    // Bara filerna: med title eller text sparar iOS även en textfil, t.ex. i Filer eller Mail.
+    try { await navigator.share({ files }); return true; }
+    catch (e) { if (e.name !== 'AbortError') alert('Kunde inte dela: ' + e.message); return false; }
+  }
+  area.replaceChildren(...files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
+  return true;
 }
 
 // ---------- Routning ----------

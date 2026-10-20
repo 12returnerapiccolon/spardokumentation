@@ -281,6 +281,9 @@ export default {
     },
   ],
 
+  // Varning innan filerna skapas (2026-10-20).
+  saknas: (job, data) => (PUNKTER.some(([, rows]) => rows.some(([r]) => kontrollerad(data[`k${r}`]))) ? [] : ['inga kontrollpunkter ikryssade.']),
+
   toValues(job, data) {
     const val = (key, def) => (data[key] !== undefined ? data[key] : def);
     const datum = blankettDatum(job);
