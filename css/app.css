@@ -76,7 +76,9 @@ body {
   justify-content: center;
 }
 
-.topbar .back { justify-content: flex-start; font-size: 36px; }
+.topbar .back { justify-content: flex-start; }
+/* Pilen ritas som symbol så att den ligger i linje med ? och kugghjulet (2026-10-20). */
+.topbar .back svg { margin-left: -6px; }
 
 main {
   max-width: 640px;
