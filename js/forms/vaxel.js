@@ -287,7 +287,11 @@ function buildForm(t) {
     },
 
     sections: [
-      { title: 'Besiktningstyp', items: [{ type: 'radio', key: 'typ', options: t.typ }] },
+      // Rullgardin utan Inget, med besiktningsklassen bredvid (2026-10-20).
+      { title: 'Besiktningstyp', items: [
+        { type: 'select', key: 'typ', label: 'Besiktningstyp', options: t.typ, noEmpty: true, row: 2, flex: 3 },
+        { type: 'select', key: 'besiktningsklass', label: 'Besiktningsklass', options: ['B1', 'B2', 'B3', 'B4', 'B5'], noEmpty: true, flex: 2 },
+      ] },
       {
         title: 'Växeldata',
         items: [
@@ -298,7 +302,6 @@ function buildForm(t) {
           ...['inlaggningsar', 'ritnr', 'ybv', 'radie'].filter(k => k in d)
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0], inputmode: DATA_LABELS[k][1] })),
           ...(d.usp != null ? [{ type: 'radio', key: 'usp', label: 'Spår', options: ['USP', 'NSP'] }] : []),
-          { type: 'select', key: 'besiktningsklass', label: 'Besiktningsklass', options: ['B1', 'B2', 'B3', 'B4', 'B5'] },
           ...['driftplats_v', 'driftplats_h']
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0] })),
         ],

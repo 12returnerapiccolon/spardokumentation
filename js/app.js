@@ -1018,8 +1018,10 @@ function renderItem(item, data, onChange, job) {
         : item.label;
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, label),
         info,
+        // noEmpty: inget tomt val; utan värde visas "– välj –", som inte går att välja tillbaka.
         h('select', { onchange: e => onChange(item.key, e.target.value) },
-          ['', ...item.options].map(opt => {
+          item.noEmpty && !data[item.key] ? h('option', { value: '', selected: true, disabled: true }, '– välj –') : null,
+          (item.noEmpty ? item.options : ['', ...item.options]).map(opt => {
             const [value, text] = Array.isArray(opt) ? opt : [opt, opt];
             return h('option', { value, selected: (data[item.key] || '') === value }, text || '–');
           })));
