@@ -590,7 +590,8 @@ async function buildFiles(job, area) {
     canShare ? h('button', {
       class: 'button primary big', type: 'button',
       onclick: async () => {
-        try { await navigator.share({ files, title: jobLabel(job) }); }
+        // Bara filerna: med title eller text sparar iOS även en textfil, t.ex. i Filer eller Mail.
+        try { await navigator.share({ files }); }
         catch (e) { if (e.name !== 'AbortError') alert('Kunde inte dela: ' + e.message); }
       },
     }, 'Dela filerna (Mail, Teams, OneDrive …)') : null,
