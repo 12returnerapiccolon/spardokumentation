@@ -1067,7 +1067,9 @@ function renderItems(items, data, onChange, job) {
       // flex: hur stor del av raden fältet tar (standard 1).
       out.push(h('div', { class: 'row' }, items.slice(i, i + n).map(x => {
         const el = renderItem(x, data, onChange, job);
-        if (x.flex && el) el.style.flex = x.flex;
+        // Kryssrutor ger [ruta, hjälptext]; flex gäller rutan.
+        const ruta = Array.isArray(el) ? el[0] : el;
+        if (x.flex && ruta) ruta.style.flex = x.flex;
         return el;
       })));
       i += n - 1;

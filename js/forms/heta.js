@@ -7,6 +7,9 @@ import { blankettDatum } from '../datum.js';
 import { initialer } from '../initialer.js';
 
 // Ordningen i appen (2026-10-20); tredje värdet är rutans plats på blanketten.
+// Namnet så brett som möjligt; certifikat och brandvakt i samma smala kolumn (2026-10-20).
+const NAMN_FLEX = '1 1 0', KRYSS_FLEX = '0 0 8em';
+
 const METOD = [['svetsning', 'Svetsning', 0], ['hetluft', 'Hetluft', 4], ['skarning', 'Skärning', 2], ['lodning', 'Lödning', 3], ['rondell', 'Rondell', 1], ['annat', 'Annat', 5]];
 
 // Kontrollpunkterna 0–10. sub är en extra ruta under punkten.
@@ -101,10 +104,10 @@ export default {
         ...ARBETARE.map(([key], i) => ({
           type: 'group', label: `Hetarbetare eller brandvakt ${i + 1}`,
           items: [
-            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null, remember: true, names: true, half: true },
-            { type: 'check', key: `${key}cert`, label: 'Certifikat kontrollerat', remember: true, half: true },
-            { type: 'check', key: `${key}ha`, label: 'HA (heta arbeten)', defaultValue: i === 0, remember: true, half: true },
-            { type: 'check', key: `${key}bv`, label: 'BV (brandvakt)', remember: true, half: true },
+            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null, remember: true, names: true, row: 2, flex: NAMN_FLEX },
+            { type: 'check', key: `${key}cert`, label: 'Certifikat kontrollerat', remember: true, flex: KRYSS_FLEX },
+            { type: 'check', key: `${key}ha`, label: 'Hetarbetare', defaultValue: i === 0, remember: true, row: 2, flex: NAMN_FLEX },
+            { type: 'check', key: `${key}bv`, label: 'Brandvakt', remember: true, flex: KRYSS_FLEX },
           ],
         })),
         { type: 'text', key: 'avslut', label: 'Tillståndsansvarig vid avslut (arbetet är avslutat, efterbevakning slutförd och arbetsplatsen kontrollerad)', placeholder: (job, data) => data.ansvarig || '', remember: true, names: true },
