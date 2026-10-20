@@ -390,6 +390,14 @@ function buildForm(t) {
       },
     ],
 
+    // Status i jobbet: mått ifyllda och hur många som ligger utanför toleransen (2026-10-20).
+    status: (job, data) => {
+      const auto = autoVarden(t.key, job, data);
+      const alla = matt.map(m => m[0]).filter(m => !auto.matpunkter || auto.matpunkter.has(m));
+      const ifyllda = alla.filter(m => data.matt?.[m]?.uppmatt).length;
+      const ute = mattUtanfor(t.key, job, data).length;
+      return { text: `${ifyllda} av ${alla.length} mått${ute ? `, ${ute} utanför tolerans` : ''}`, varning: ute > 0 };
+    },
     saknas: (job, data) => {
       const ute = mattUtanfor(t.key, job, data);
       return ute.length ? [`${ute.length === 1 ? 'måttet' : 'måtten'} ${ute.join(', ')} ligger utanför toleransen.`] : [];

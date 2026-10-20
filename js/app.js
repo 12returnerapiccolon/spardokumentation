@@ -270,8 +270,25 @@ async function homeView() {
         upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', '),
         jobStatus(job) === 'Skickat' && job.skickad && `skickat ${new Date(job.skickad).toLocaleDateString('sv-SE')}`,
       ].filter(Boolean).join(' · '))))));
-  const aktiva = jobs.filter(j => !arkiverat(j));
-  const arkiv = jobs.filter(arkiverat);
+  // Sök på namn, plats, växel, Ao nr, arbetslag eller datum (2026-10-20). Träffar i
+  // arkivet visas direkt under de pågående.
+  const sokText = job => [jobLabel(job), job.datum, job.driftplats, job.vxnr && `vx ${job.vxnr}`, job.vxnr, job.ao, job.arbetslag, job.bandel, job.spar, job.arbete, jobStatus(job)]
+    .filter(Boolean).join(' ').toLowerCase();
+  const jobbDel = h('div', {});
+  const visaJobb = (fraga = '') => {
+    const ord = fraga.toLowerCase().split(/\s+/).filter(Boolean);
+    const traff = j => ord.every(o => sokText(j).includes(o));
+    const aktiva = jobs.filter(j => !arkiverat(j) && traff(j));
+    const arkiv = jobs.filter(j => arkiverat(j) && traff(j));
+    jobbDel.replaceChildren(...[
+      aktiva.length ? lista(aktiva) : h('p', { class: 'muted' }, ord.length ? 'Inga pågående jobb matchar.' : arkiv.length ? 'Inga pågående jobb.' : 'Inga jobb än.'),
+      arkiv.length ? h('details', { class: 'card', open: ord.length > 0 },
+        h('summary', {}, `Arkiv (${arkiv.length})`),
+        h('p', { class: 'muted note' }, 'Avslutade jobb.'),
+        lista(arkiv)) : null,
+    ].filter(Boolean));
+  };
+  visaJobb();
 
   render(
     missing.length ? h('a', { class: 'notice', href: '#/mallar' },
@@ -291,11 +308,8 @@ async function homeView() {
     h('a', { class: 'button primary big', href: '#/nytt' }, '+ Nytt jobb'),
     importKnapp(),
     h('h2', {}, 'Jobb'),
-    aktiva.length ? lista(aktiva) : h('p', { class: 'muted' }, arkiv.length ? 'Inga pågående jobb.' : 'Inga jobb än.'),
-    arkiv.length ? h('details', { class: 'card' },
-      h('summary', {}, `Arkiv (${arkiv.length})`),
-      h('p', { class: 'muted note' }, 'Avslutade jobb.'),
-      lista(arkiv)) : null,
+    jobs.length > 1 ? h('input', { class: 'sok', type: 'search', placeholder: 'Sök jobb (plats, vx nr, Ao nr, datum …)', 'aria-label': 'Sök jobb', autocomplete: 'off', oninput: e => visaJobb(e.target.value) }) : null,
+    jobbDel,
   );
 }
 
@@ -494,7 +508,9 @@ async function newJobView() {
   );
 }
 
-function formProgress(form, data) {
+// Status per blankett i jobbet (2026-10-20). form.status ger egen text, t.ex. antal mått.
+function formProgress(form, data, job) {
+  if (form.status && data && Object.keys(data).length) return form.status(job, data);
   const filled = Object.entries(data || {}).filter(([k, v]) => k !== 'matt' && !Array.isArray(v) && v !== '' && v !== false && v != null).length
     + Object.values(data || {}).filter(Array.isArray).reduce((n, rows) => n + rows.length, 0)
     + Object.values((data && data.matt) || {}).filter(r => r.uppmatt).length;
@@ -520,7 +536,7 @@ async function jobView(id) {
     }
     return h('li', {}, h('a', { href: `#/jobb/${id}/${k}` },
       h('span', { class: 'main' }, `${form.title}`),
-      h('span', { class: 'sub' }, `${form.code} · ${formProgress(form, job.forms[form.key])}`)));
+      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], job))));
   });
   const docList = h('ul', { class: 'list' }, docItems());
   // Status (2026-10-20). Blir Skickat när filerna delas.
@@ -738,12 +754,18 @@ async function buildFiles(job, area, onSent) {
       problems.push(`PDF-mallen för ${form.title} saknas. Läs in den under Inställningar > Blankettmallar.`); continue;
     }
     try {
-      const values = form.toValues(job, job.forms[form.key] || {}, { diff });
-      const blob = form.format === 'overlay'
-        ? await fillOverlay(tpl.data, form.layout, values, { title: `${form.code} ${form.title}` })
-        : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
-      const ut = blob.type === 'application/pdf' ? await laggIJobb(blob, jobbText(job)) : blob;
-      files.push(new File([ut], fileName(form, job), { type: ut.type }));
+      // form.sidor: fler ifyllda blanketter när en inte räcker, t.ex. fler än 10 svetsar.
+      const data = job.forms[form.key] || {};
+      const antal = form.sidor ? form.sidor(job, data) : 1;
+      for (let sida = 0; sida < antal; sida++) {
+        const values = form.toValues(job, data, { diff, sida });
+        const blob = form.format === 'overlay'
+          ? await fillOverlay(tpl.data, form.layout, values, { title: `${form.code} ${form.title}` })
+          : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
+        const ut = blob.type === 'application/pdf' ? await laggIJobb(blob, jobbText(job)) : blob;
+        const namn = fileName(form, job);
+        files.push(new File([ut], antal > 1 ? namn.replace(/(\.\w+)$/, ` del ${sida + 1}$1`) : namn, { type: ut.type }));
+      }
     } catch (e) {
       console.error(e);
       problems.push(`${form.title}: ${e.message}`);

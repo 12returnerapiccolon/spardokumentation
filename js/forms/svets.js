@@ -74,11 +74,11 @@ export default {
     },
     {
       title: 'Svetsar',
-      help: `Blanketten har plats för ${RADER} svetsar. En ny svets får samma uppgifter som den förra, utom läge och kapmått. Grå text hämtas från jobbet.`,
+      help: `Blanketten har plats för ${RADER} svetsar; fler svetsar hamnar på en blankett till (del 2, 3 …). En ny svets får samma uppgifter som den förra, utom läge och kapmått. Grå text hämtas från jobbet.`,
       items: [{
         type: 'rows',
         key: 'svetsar',
-        max: RADER,
+        max: RADER * 5,
         rowLabel: 'Svets',
         addLabel: '+ Lägg till svets',
         remember: true,
@@ -123,9 +123,16 @@ export default {
   ],
 
   // Varning innan filerna skapas (2026-10-20).
+  // Fler än 10 svetsar ger fler blanketter (2026-10-20).
+  sidor: (job, data) => Math.max(1, Math.ceil((data.svetsar || []).length / RADER)),
+  status: (job, data) => {
+    const n = (data.svetsar || []).length;
+    const sidor = Math.ceil(n / RADER);
+    return n ? `${n} ${n === 1 ? 'svets' : 'svetsar'}${sidor > 1 ? `, ${sidor} blanketter` : ''}` : 'Inga svetsar ännu';
+  },
   saknas: (job, data) => ((data.svetsar || []).length ? [] : ['inga svetsar ifyllda.']),
 
-  toValues(job, data) {
+  toValues(job, data, { sida = 0 } = {}) {
     const datum = blankettDatum(job);
     const v = {
       // Det som skrivits i rapporten går före Inställningar.
@@ -141,7 +148,7 @@ export default {
       O29: data.kommentar || '',
     };
     const auto = { dag: dag(job), plats: plats(job) };
-    (data.svetsar || []).slice(0, RADER).forEach((row, i) => {
+    (data.svetsar || []).slice(sida * RADER, (sida + 1) * RADER).forEach((row, i) => {
       for (const [k, col] of Object.entries(COLS)) v[`${col}${6 + 2 * i}`] = (k === 'km' ? lage(row, job) : row[k] || auto[k]) || '';
     });
     for (const [key, , cell] of EGENKONTROLL) v[cell] = data[key] === true || data[key] === 'X' ? 'X' : '';

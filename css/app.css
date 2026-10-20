@@ -410,3 +410,7 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
   .status-tag.s-2 { background: #173a1c; color: #b9e6bd; }
 }
 .status-val { margin-bottom: 8px; }
+
+/* Sök i jobblistan och blankettstatus med varning (2026-10-20). */
+.sok { width: 100%; font: inherit; font-size: 17px; padding: 10px 12px; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); min-height: 44px; }
+.list .sub.varn { color: var(--danger); }
