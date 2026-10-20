@@ -88,18 +88,36 @@ def move_label_arrow(xml):
     return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
 if key == 'ekv': DOCXML = move_label_arrow(DOCXML)
 
-# En sammanslagen cell (Driv) har extra nedre marginal i sista raden. Word bryr sig inte om den,
-# men LibreOffice gör raden ovanför (Uppkörbar omläggningsanordning) lägre. Ta bort marginalen.
+# En cell (Driv) har extra nedre marginal på raden Växelvärme. Word bryr sig inte om den, men
+# LibreOffice gör raden ovanför (Uppkörbar omläggningsanordning) lägre. Ta bort marginalen.
 def drop_merged_bottom_margin(xml):
     doc = etree.fromstring(xml)
     for tcpr in doc.iter(w + 'tcPr'):
-        if tcpr.find(w + 'vMerge') is None: continue
         mar = tcpr.find(w + 'tcMar')
         if mar is None: continue
         for b in mar.findall(w + 'bottom'): mar.remove(b)
         if not len(mar): tcpr.remove(mar)
     return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
 DOCXML = drop_merged_bottom_margin(DOCXML)
+
+# 3V samma håll: LibreOffice lägger rubrikerna EK 1–3 och Driv överst i sina sammanslagna celler
+# i stället för mitt i. Lägg dem nederst och lyft dem halva cellhöjden med avstånd efter.
+def center_merged_headers(xml):
+    doc = etree.fromstring(xml)
+    trs = list(doc.iter(w + 'tr'))
+    height = lambda tr: int(tr.find(f'{w}trPr/{w}trHeight').get(w + 'val'))
+    for i, tr in enumerate(trs):
+        for tc in tr.findall(w + 'tc'):
+            pr = tc.find(w + 'tcPr'); vm = pr.find(w + 'vMerge'); va = pr.find(w + 'vAlign')
+            if vm is None or vm.get(w + 'val') != 'restart' or va is None or va.get(w + 'val') != 'center': continue
+            if i + 2 < len(trs) and trs[i + 2].find(f'.//{w}vMerge') is not None: continue  # bara två rader
+            p = tc.find(w + 'p'); sz = p.find(f'.//{w}sz')
+            text_h = (int(sz.get(w + 'val')) / 2 if sz is not None else 10) * 1.15 * 20
+            after = int((height(tr) + height(trs[i + 1]) - text_h) / 2)
+            va.set(w + 'val', 'bottom')
+            p.find(f'{w}pPr/{w}spacing').set(w + 'after', str(after))
+    return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
+if key == 'v3s': DOCXML = center_merged_headers(DOCXML)
 
 # Sidfötter med innehållskontroller kopplade till dokumentegenskaper (version, fastställd) visar
 # i LibreOffice fel datum och tappar textstorleken. Ersätt dem med vanlig text med samma format,
