@@ -19,9 +19,9 @@ DOCXML = dict((it.filename, d) for it, d in ENTRIES)['word/document.xml']
 # i rubrikraden (Inläggningsår, Växelmodell). Flytta ner dem i raden, lika högt.
 WP = '{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}'
 # EKV: vänster pil mellan ordet Driftplats och strecklinjen, höger pil ovanför sin Driftplats.
-ARROW_PT = {('ekv', 'Line 36'): 13, ('ekv', 'Line 37'): 3}
-# EVR: vänster pil ligger mot rubrikraden. Båda pilarna i samma höjd som den högra.
-ARROW_ROW_PT = {'evr': 6.65}
+ARROW_PT = {}
+# Båda pilarna i samma höjd. EVR: vänster pil låg mot rubrikraden.
+ARROW_ROW_PT = {'evr': 6.65, 'ekv': 3}
 def fix_arrows(xml):
     doc = etree.fromstring(xml)
     for tr in doc.iter(w + 'tr'):
@@ -39,9 +39,9 @@ def fix_arrows(xml):
     if key in MOVE_PICTURE: move_picture(doc, MOVE_PICTURE[key])
     return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
 
-# Växelbilden i EVR ligger 33,75 pt ovanför sin rad. LibreOffice håller den inom cellen, så den
-# hamnar för lågt och över måttabellen. Förankra den i raden ovanför med motsvarande läge.
-MOVE_PICTURE = {'evr': 'Bildobjekt 6'}
+# Växelbilden i EVR och EKV ligger ovanför sin rad. LibreOffice håller den inom cellen, så den
+# hamnar för lågt och över måttabellen. Förankra den i en rad ovanför med motsvarande läge.
+MOVE_PICTURE = {'evr': 'Bildobjekt 6', 'ekv': 'Bildobjekt 2'}
 def move_picture(doc, name):
     trs = list(doc.iter(w + 'tr'))
     for a in list(doc.iter(WP + 'anchor')):
@@ -50,13 +50,43 @@ def move_picture(doc, name):
         while run.tag != w + 'r': run = run.getparent()
         tr = run
         while tr.tag != w + 'tr': tr = tr.getparent()
-        prev = trs[trs.index(tr) - 1]
-        h = int(prev.find(f'{w}trPr/{w}trHeight').get(w + 'val')) * 635  # twips -> EMU
         pv = a.find(WP + 'positionV')[0]
-        pv.text = str(int(pv.text) + h)
+        i = trs.index(tr)
+        while True:
+            i -= 1; prev = trs[i]
+            pv.text = str(int(pv.text) + int(prev.find(f'{w}trPr/{w}trHeight').get(w + 'val')) * 635)  # twips -> EMU
+            if int(pv.text) >= 0: break
+        # Vågrätt läge räknas från cellen: justera för skillnaden mellan cellernas vänsterkant.
+        def cell_x(tc):
+            row = tc.getparent(); x = 0
+            for c in row.findall(w + 'tc'):
+                if c is tc: return x
+                x += int(c.find(f'{w}tcPr/{w}tcW').get(w + 'w'))
+        tc = run
+        while tc.tag != w + 'tc': tc = tc.getparent()
+        dst = prev.find(w + 'tc')
+        ph = a.find(WP + 'positionH')[0]
+        ph.text = str(int(ph.text) + (cell_x(tc) - cell_x(dst)) * 635)
         run.getparent().remove(run)
-        next(prev.iter(w + 'p')).append(run)
+        dst.find(w + 'p').append(run)
 DOCXML = fix_arrows(DOCXML)
+
+# EKV: pilen ligger i samma stycke som vänster "Driftplats". LibreOffice lägger då ordet överst i
+# cellen i stället för nederst. Flytta pilen till nästa cell (strecklinjen), lika långt in.
+def move_label_arrow(xml):
+    doc = etree.fromstring(xml)
+    for tr in doc.iter(w + 'tr'):
+        tcs = tr.findall(w + 'tc')
+        if len(tcs) < 2 or ''.join(t.text or '' for t in tcs[0].iter(w + 't')).strip() != 'Driftplats': continue
+        for a in list(tcs[0].iter(WP + 'anchor')):
+            run = a
+            while run.tag != w + 'r': run = run.getparent()
+            ph = a.find(WP + 'positionH')[0]
+            ph.text = str(int(ph.text) - int(tcs[0].find(f'{w}tcPr/{w}tcW').get(w + 'w')) * 635)
+            run.getparent().remove(run)
+            tcs[1].find(w + 'p').insert(1, run)
+    return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
+if key == 'ekv': DOCXML = move_label_arrow(DOCXML)
 
 # Sidfötter med innehållskontroller kopplade till dokumentegenskaper (version, fastställd) visar
 # i LibreOffice fel datum och tappar textstorleken. Ersätt dem med vanlig text med samma format,
