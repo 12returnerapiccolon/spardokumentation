@@ -17,6 +17,7 @@ import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler, bildtypUrNam
 import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn } from './jobb.js';
 import { skapaKopia, lasInKopia } from './backup.js';
 import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
+import MALLVERSIONER from './mallversioner.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
 const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
@@ -215,14 +216,31 @@ async function unzipTemplates(files) {
   return out;
 }
 
+// Versionskontroll av mallarna (2026-10-20): mallens SHA-256 jämförs med den senaste
+// versionen i mallversioner.js. Summan sparas med mallen första gången den räknas ut.
+// Utan crypto.subtle (sidan öppnad utan https) går det inte att kontrollera.
+async function mallSha(t) {
+  if (!t.sha && crypto.subtle) {
+    t.sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', t.data)), b => b.toString(16).padStart(2, '0')).join('');
+    await db.put('templates', t);
+  }
+  return t.sha;
+}
+async function gammalMall(t) {
+  const senaste = MALLVERSIONER[t.key];
+  const sha = senaste && await mallSha(t);
+  return !!sha && sha !== senaste.sha;
+}
+
 async function importTemplates(selected) {
   const results = [];
   const files = await unzipTemplates(selected);
   for (const file of files) {
     const { form, buffer, old } = await identify(file);
     if (form) {
-      await db.put('templates', { key: form.key, name: file.name, added: new Date().toISOString(), data: buffer });
-      results.push(`✓ ${form.title}`);
+      const t = { key: form.key, name: file.name, added: new Date().toISOString(), data: buffer };
+      await db.put('templates', t);
+      results.push(await gammalMall(t) ? `⚠ ${form.title}: gammal version av mallen. Läs in den senaste.` : `✓ ${form.title}`);
     } else if (old) {
       results.push(`✗ ${file.name}: Word-mallen används inte längre. Läs in PDF-mallen för ${old.code} ${old.title}.`);
     } else {
@@ -239,6 +257,7 @@ async function homeView() {
   const jobs = (await db.getAll('jobs')).sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
   const templates = await db.getAll('templates');
   const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
+  const gamla = (await Promise.all(templates.map(async t => (await gammalMall(t)) && t))).filter(Boolean);
   const senasteKopia = await db.getSetting('senasteKopia', null);
   const kopiaGammal = jobs.length && (!senasteKopia || Date.now() - new Date(senasteKopia) > 7 * 864e5);
   // Avslutade jobb ligger i arkivet (2026-10-20).
@@ -258,6 +277,9 @@ async function homeView() {
     missing.length ? h('a', { class: 'notice', href: '#/mallar' },
       h('strong', {}, 'Läs in blankettmallarna'),
       h('span', {}, `${missing.length} av ${FORMS.length} mallar saknas i telefonen. Tryck här för att läsa in dem från Filer.`)) : null,
+    gamla.length ? h('a', { class: 'notice', href: '#/mallar' },
+      h('strong', {}, 'Nya versioner av blankettmallarna'),
+      h('span', {}, `${gamla.length === 1 ? 'En mall är en gammal version' : `${gamla.length} mallar är gamla versioner`}. Tryck här och läs in de senaste mallarna.`)) : null,
     kopiaGammal ? h('a', { class: 'notice', href: '#/installningar' },
       h('strong', {}, 'Spara en säkerhetskopia'),
       h('span', {}, senasteKopia
@@ -673,8 +695,13 @@ function saknas(job) {
   return out;
 }
 
-function kontrollera(job, area, onSent) {
+async function kontrollera(job, area, onSent) {
   const lista = saknas(job);
+  for (const key of job.docs) {
+    const form = docForm(job, key);
+    const t = form && await db.get('templates', form.key);
+    if (t && await gammalMall(t)) lista.push(`${form.title}: mallen är en gammal version. Läs in den senaste under Inställningar > Blankettmallar.`);
+  }
   if (!lista.length) { buildFiles(job, area, onSent); return; }
   area.replaceChildren(
     h('div', { class: 'card varning' },
@@ -1276,6 +1303,7 @@ async function formView(id, key) {
 async function templatesView() {
   setTitle('Blankettmallar', '#/installningar');
   const templates = await db.getAll('templates');
+  const gamla = new Set((await Promise.all(templates.map(async t => (await gammalMall(t)) && t.key))).filter(Boolean));
   const status = h('div', { class: 'status' });
   const input = h('input', {
     // Ingen accept-lista: iPhone låter annars inte alla filtyper väljas (t.ex. zip).
@@ -1297,8 +1325,10 @@ async function templatesView() {
       // En gammal Word-mall räknas inte när blanketten fylls som PDF.
       const t = found && (form.format !== 'overlay' || isPdf(found.data)) ? found : null;
       return h('li', {}, h('div', { class: 'item' },
-        h('span', { class: 'main' }, `${t ? '✓' : '○'} ${form.title}`),
-        h('span', { class: 'sub' }, t ? `Inläst: ${t.name}` : `Saknas: ${form.templateHint}`)));
+        h('span', { class: 'main' }, `${!t ? '○' : gamla.has(t.key) ? '⚠' : '✓'} ${form.title}`),
+        h('span', { class: 'sub' }, !t ? `Saknas: ${form.templateHint}`
+          : gamla.has(t.key) ? `Gammal version: ${t.name}. Läs in den senaste.`
+          : `Inläst: ${t.name}${MALLVERSIONER[t.key] ? ` · version ${MALLVERSIONER[t.key].datum}` : ''}`)));
     })),
     h('button', { class: 'button primary big', type: 'button', onclick: () => input.click() }, 'Läs in mallar från Filer'),
     input,
