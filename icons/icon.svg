@@ -1,12 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
-  <rect width="180" height="180" rx="36" fill="#c2410c"/>
-  <g stroke="#fff" stroke-width="10" stroke-linecap="round">
-    <line x1="62" y1="30" x2="62" y2="150"/>
-    <line x1="118" y1="30" x2="118" y2="150"/>
-  </g>
-  <g stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".75">
-    <line x1="40" y1="55" x2="140" y2="55"/>
-    <line x1="40" y1="90" x2="140" y2="90"/>
-    <line x1="40" y1="125" x2="140" y2="125"/>
+  <defs><linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1f5f9"/><stop offset="1" stop-color="#94a3b8"/></linearGradient></defs>
+  <rect width="180" height="180" rx="36" fill="#0b0b0f"/>
+  <!-- Rälsprofil i proportionerna H 149, B 125, C 67 mm -->
+  <path fill="url(#st)" d="M61 56V45C61 33 73 27 90 27C107 27 119 33 119 45V56q0 4-4 5l-12 5q-6 2-6 6V122q0 8 10 10l29 6q4 1 4 3v4q0 3-3 3H43q-3 0-3-3v-4q0-2 4-3l29-6q10-2 10-10V72q0-4-6-6l-12-5q-4-1-4-5z"/>
+  <!-- Svetsgnista -->
+  <g transform="translate(122 33) rotate(45) scale(1.1)">
+    <path fill="#ef4444" d="M0-22 5-6 22 0 5 6 0 22-5 6-22 0-5-6z"/>
+    <circle r="5" fill="#fbbf24"/>
   </g>
 </svg>
