@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v133';
+const VERSION = 'v134';
 const FILES = [
   './',
   'index.html',

@@ -625,11 +625,12 @@ async function jobView(id) {
     const form = docForm(job, k);
     if (!form) {
       return h('li', {}, h('div', { class: 'item' },
-        h('span', { class: 'main' }, 'Växelbesiktningsrapport'),
+        h('span', { class: 'main' }, 'Besiktningsrapport växel'),
         h('span', { class: 'sub' }, 'Välj växeltyp under Uppgifter om jobbet')));
     }
     return h('li', {}, h('a', { href: `#/jobb/${id}/${k}` },
-      h('span', { class: 'main' }, `${form.title}`),
+      // Samma korta namn som sidtiteln (2026-10-20).
+      h('span', { class: 'main' }, form.kort || form.title),
       (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], job))));
   });
   const docList = h('ul', { class: 'list' }, docItems());
