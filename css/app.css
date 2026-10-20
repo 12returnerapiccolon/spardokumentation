@@ -162,6 +162,7 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 
 .row { display: flex; gap: 12px; }
 .row > .field { flex: 1; }
+.row > .check { flex: 1; min-width: 0; }
 /* Rutorna i en rad hamnar i linje även när en etikett bryts på två rader. */
 .row > .field { display: flex; flex-direction: column; justify-content: flex-end; }
 

@@ -83,7 +83,8 @@ export default {
       items: [
         { type: 'text', key: 'plats', label: 'Arbetsplats/Larmadress', geo: true },
         { type: 'group', label: 'Arbetsmetod', items: [
-          ...METOD.map(([key, label]) => ({ type: 'check', key, label, defaultValue: key === 'svetsning' })),
+          // Två kryssrutor per rad (2026-10-20).
+          ...METOD.map(([key, label]) => ({ type: 'check', key, label, defaultValue: key === 'svetsning', half: true })),
           { type: 'text', key: 'annatText', label: 'Annat, vad (t.ex. gasol/syre/termit)' },
         ] },
         { type: 'radio', key: 'brandfarligt', label: 'Är arbetet brandfarligt? (3M-metoden: metod, material, miljö)', options: ['Ja', 'Nej'], noEmpty: true },
@@ -91,20 +92,21 @@ export default {
     },
     {
       title: 'Underskrifter',
-      help: 'Namnen skrivs som namnförtydligande och initialerna på raden för namnteckning.',
+      help: 'Namnen skrivs som namnförtydligande och initialerna på raden för namnteckning. Tillståndsansvarig kontrollerar certifikaten.',
       items: [
-        { type: 'text', key: 'ansvarig', label: 'Tillståndsansvarig', remember: true, names: true },
-        { type: 'text', key: 'ansvarigTel', label: 'Tillståndsansvarigs telefonnummer', inputType: 'tel', inputmode: 'tel', remember: true },
+        // Namn och telefon på en rad, likaså namn/certifikat och HA/BV (2026-10-20).
+        { type: 'text', key: 'ansvarig', label: 'Tillståndsansvarig', remember: true, names: true, row: 2, flex: 3 },
+        { type: 'text', key: 'ansvarigTel', label: 'Telefonnr', inputType: 'tel', inputmode: 'tel', remember: true, flex: 2 },
         ...ARBETARE.map(([key], i) => ({
           type: 'group', label: `Hetarbetare eller brandvakt ${i + 1}`,
           items: [
-            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null, remember: true, names: true },
-            { type: 'check', key: `${key}cert`, label: 'Certifikatkontroll utförd (av tillståndsansvarig)', remember: true },
-            { type: 'check', key: `${key}ha`, label: 'HA (heta arbeten)', defaultValue: i === 0, remember: true },
-            { type: 'check', key: `${key}bv`, label: 'BV (brandvakt)', remember: true },
+            { type: 'text', key, label: 'Namn', defaultValue: i === 0 ? job => job.namn || '' : null, remember: true, names: true, half: true },
+            { type: 'check', key: `${key}cert`, label: 'Certifikat kontrollerat', remember: true, half: true },
+            { type: 'check', key: `${key}ha`, label: 'HA (heta arbeten)', defaultValue: i === 0, remember: true, half: true },
+            { type: 'check', key: `${key}bv`, label: 'BV (brandvakt)', remember: true, half: true },
           ],
         })),
-        { type: 'text', key: 'avslut', label: 'Tillståndsansvarig vid avslut (arbetet är avslutat, efterbevakning slutförd och arbetsplatsen kontrollerad)', placeholder: () => 'Samma som ovan', remember: true, names: true },
+        { type: 'text', key: 'avslut', label: 'Tillståndsansvarig vid avslut (arbetet är avslutat, efterbevakning slutförd och arbetsplatsen kontrollerad)', placeholder: (job, data) => data.ansvarig || '', remember: true, names: true },
       ],
     },
     {
