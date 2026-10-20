@@ -64,7 +64,9 @@ const SHARED = [
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
   // Fyller i Eget Ao nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
-  { key: 'ao', label: 'Ao nr', inputmode: 'numeric' },
+  { key: 'ao', label: 'Ao nr', inputmode: 'numeric', row: 'ao', flex: 2 },
+  // Står i jobbnamnet efter vecka och dag (2026-10-20). Förvalt från förra jobbet.
+  { key: 'arbetslag', label: 'Arbetslag', row: 'ao', flex: 3, placeholder: 'T.ex. Lena & Per' },
   // Personuppgifterna finns bara under Inställningar och kan ändras i de enskilda blanketterna.
   // group: rubriken de står under i Inställningar. Namn och telefon står på samma rad (2026-10-20).
   { key: 'namn', label: 'Namn', profile: true, settingsOnly: true, group: 'Om dig', row: 'du', flex: 3 },
@@ -239,15 +241,15 @@ async function homeView() {
   const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
   const senasteKopia = await db.getSetting('senasteKopia', null);
   const kopiaGammal = jobs.length && (!senasteKopia || Date.now() - new Date(senasteKopia) > 7 * 864e5);
-  // Skickade jobb flyttas till arkivet en vecka efter att de skickades (2026-10-20).
-  const arkiverat = job => job.skickad && Date.now() - new Date(job.skickad) > 7 * 864e5;
+  // Avslutade jobb ligger i arkivet (2026-10-20).
+  const arkiverat = job => jobStatus(job) === 'Avslutat';
   const lista = list => h('ul', { class: 'list' }, list.map(job => h('li', {},
     h('a', { href: `#/jobb/${job.id}` },
-      h('span', { class: 'main' }, jobLabel(job)),
+      h('span', { class: 'main' }, jobLabel(job), ' ', h('span', { class: `status-tag s-${STATUSAR.indexOf(jobStatus(job))}` }, jobStatus(job))),
       h('span', { class: 'sub' }, [
         job.datum && (job.natt ? `${job.datum} natt` : job.datum),
         upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', '),
-        job.skickad && `Skickad ${new Date(job.skickad).toLocaleDateString('sv-SE')}`,
+        jobStatus(job) === 'Skickat' && job.skickad && `skickat ${new Date(job.skickad).toLocaleDateString('sv-SE')}`,
       ].filter(Boolean).join(' · '))))));
   const aktiva = jobs.filter(j => !arkiverat(j));
   const arkiv = jobs.filter(arkiverat);
@@ -270,7 +272,7 @@ async function homeView() {
     aktiva.length ? lista(aktiva) : h('p', { class: 'muted' }, arkiv.length ? 'Inga pågående jobb.' : 'Inga jobb än.'),
     arkiv.length ? h('details', { class: 'card' },
       h('summary', {}, `Arkiv (${arkiv.length})`),
-      h('p', { class: 'muted note' }, 'Jobb som skickades för mer än en vecka sedan.'),
+      h('p', { class: 'muted note' }, 'Avslutade jobb.'),
       lista(arkiv)) : null,
   );
 }
@@ -338,7 +340,7 @@ function sharedInputs(values, onChange, opts = {}) {
       inputs[field.key] = h('input', {
         type: field.type || 'text', inputmode: field.inputmode, value: values[field.key] || '',
         autocomplete: 'off', autocapitalize: field.autocapitalize || 'sentences', name: field.key,
-        list: field.list ? `list-${field.key}` : null,
+        list: field.list ? `list-${field.key}` : null, placeholder: field.placeholder,
         oninput: e => change(field.key, e.target.value),
       }),
       field.list ? h('datalist', { id: `list-${field.key}` }, field.list.map(v => h('option', { value: v }))) : null);
@@ -406,7 +408,7 @@ function jobInputs(job, change, { visaVaxel }) {
   andrat.push(() => { vaxel.hidden = !visaVaxel(job); });
 
   const out = [
-    h('div', { class: 'card' }, sharedInputs(job, onChange, { only: ['datum', 'ao'] })),
+    h('div', { class: 'card' }, sharedInputs(job, onChange, { only: ['datum', 'ao', 'arbetslag'] })),
     h('div', { class: 'card' }, sharedInputs(job, onChange, { only: ['bandel', 'driftplats', 'spar'] })),
     h('div', { class: 'card' },
       h('label', { class: 'field' }, h('span', {}, 'Arbetsbeskrivning'),
@@ -447,7 +449,7 @@ function docChecks(job, checked, onToggle) {
 async function newJobView() {
   setTitle('Nytt jobb', '#/');
   const profile = await db.getSetting('profile', {});
-  const job = { datum: today() };
+  const job = { datum: today(), arbetslag: await db.getSetting('arbetslag', '') };
   for (const k of PROFILE_KEYS) job[k] = profile[k] || '';
   // Förval efter frågorna tills svetsaren kryssar i eller ur själv.
   const manuellt = new Map();
@@ -465,6 +467,7 @@ async function newJobView() {
         const record = { ...job, id: uid(), docs: valda, forms: {}, created: now, updated: now };
         await db.put('jobs', record);
         await db.setSetting('profile', Object.fromEntries(PROFILE_KEYS.map(k => [k, job[k] || ''])));
+        await db.setSetting('arbetslag', job.arbetslag || '');
         location.hash = `#/jobb/${record.id}`;
       },
     },
@@ -506,15 +509,16 @@ async function jobView(id) {
       h('span', { class: 'sub' }, `${form.code} · ${formProgress(form, job.forms[form.key])}`)));
   });
   const docList = h('ul', { class: 'list' }, docItems());
-  // Skickad: sätts när filerna delas, och kan ändras för hand (2026-10-20).
-  const skickadRad = h('div', { class: 'skickad' });
-  skickadRad.refresh = () => skickadRad.replaceChildren(
-    h('span', { class: 'muted' }, job.skickad ? `Skickad ${new Date(job.skickad).toLocaleDateString('sv-SE')}` : 'Inte skickad'),
-    h('button', { class: 'button small', type: 'button', onclick: async () => {
-      job.skickad = job.skickad ? null : new Date().toISOString();
-      await db.put('jobs', job); skickadRad.refresh();
-    } }, job.skickad ? 'Markera som inte skickad' : 'Markera som skickad'));
-  skickadRad.refresh();
+  // Status (2026-10-20). Blir Skickat när filerna delas.
+  const statusRad = h('div', { class: 'status-val' });
+  statusRad.refresh = () => statusRad.replaceChildren(...[renderItem(
+    { type: 'radio', key: 'status', label: 'Status', options: STATUSAR, noEmpty: true, defaultValue: jobStatus },
+    job, async (k, v) => {
+      job.status = v;
+      if (v === 'Skickat' && !job.skickad) job.skickad = new Date().toISOString();
+      await db.put('jobs', job);
+    }, job)].flat().filter(Boolean));
+  statusRad.refresh();
   const bildDel = bildSektion(id);
   const docBox = docChecks(job, k => job.docs.includes(k), (k, on) => {
     const docs = new Set(job.docs);
@@ -524,11 +528,11 @@ async function jobView(id) {
   });
 
   render(
+    statusRad,
     h('h2', {}, 'Dokument'),
     docList,
-    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => { skickadRad.refresh(); }) }, 'Skapa filer'),
+    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => statusRad.refresh()) }, 'Skapa filer'),
     exportArea,
-    skickadRad,
     bildDel,
     h('details', { class: 'card' },
       h('summary', {}, 'Lägg till eller ta bort dokument'),
@@ -635,11 +639,15 @@ function importKnapp() {
     val);
 }
 
+// Jobbets status (2026-10-20). Jobb från före statusen räknas som skickade om de delats.
+const STATUSAR = ['Pågående', 'Skickat', 'Avslutat'];
+const jobStatus = job => job.status || (job.skickad ? 'Skickat' : 'Pågående');
+
 // Nytt jobb med samma uppgifter och dokument, t.ex. nästa skift på samma plats (2026-10-20).
 // Blanketterna börjar tomma; det som ska följa med fylls i av sig själv (profil, sparade val).
 function nyttFranJobb(job) {
   const now = new Date().toISOString();
-  const { id, created, updated, skickad, namnEget, forms, ...uppgifter } = job;
+  const { id, created, updated, skickad, status, importerad, namnEget, forms, ...uppgifter } = job;
   return { ...uppgifter, id: uid(), datum: today(), forms: {}, created: now, updated: now };
 }
 
@@ -727,8 +735,9 @@ async function buildFiles(job, area, onSent) {
   const lankar = h('ul', { class: 'files' }, files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
   // Delade filer markerar jobbet som skickat.
   const dela = async list => {
-    if (!(await delaFiler(list, lankar)) || job.skickad) return;
+    if (!(await delaFiler(list, lankar)) || jobStatus(job) !== 'Pågående') return;
     if (!(navigator.canShare && navigator.canShare({ files: list }))) return;
+    job.status = 'Skickat';
     job.skickad = new Date().toISOString();
     await db.put('jobs', job);
     onSent && onSent();

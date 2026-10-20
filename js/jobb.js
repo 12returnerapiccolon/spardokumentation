@@ -81,7 +81,8 @@ function vecka(datum) {
 
 const DAGAR = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
 
-// V01 Mån Lnk Isolbyte, eller V01 NmTis Lnk Isolbyte för natt mot tisdag. Veckan räknas på
+// V01 Mån Lnk Isolbyte, eller V01 NmTis Lnk Isolbyte för natt mot tisdag. Arbetslaget står
+// efter dagen (2026-10-20). Veckan räknas på
 // skiftets startdag.
 export function jobbnamn(job) {
   const delar = [];
@@ -90,6 +91,7 @@ export function jobbnamn(job) {
     const dag = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
     delar.push(`V${String(vecka(job.datum)).padStart(2, '0')}`, job.natt ? `Nm${DAGAR[(dag + 1) % 7]}` : DAGAR[dag]);
   }
+  if (job.arbetslag) delar.push(job.arbetslag.trim());
   if (job.driftplats) delar.push(job.driftplats.trim());
   if (job.arbete) delar.push(job.arbete.trim());
   return delar.filter(Boolean).join(' ');

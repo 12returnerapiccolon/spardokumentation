@@ -9,7 +9,7 @@ const EGNA = ['namn', 'namn_tel', 'svetsid'];
 // bildsidor: bildgruppen för varje bildsida sist i den sammanslagna PDF:en.
 export function jobbText(job, bildsidor) {
   const kopia = { ...job };
-  for (const k of [...EGNA, 'skickad', 'importerad']) delete kopia[k];
+  for (const k of [...EGNA, 'skickad', 'status', 'importerad']) delete kopia[k];
   return JSON.stringify({ version: 1, job: kopia, ...(bildsidor?.length ? { bildsidor } : {}) });
 }
 
