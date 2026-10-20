@@ -66,9 +66,9 @@ const SHARED = [
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
   // Fyller i Eget Ao nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
-  { key: 'ao', label: 'Ao nr', inputmode: 'numeric', row: 'ao', flex: 1, kopiera: true },
+  { key: 'ao', label: 'Ao nr', inputmode: 'numeric', kopiera: true },
   // Står i jobbnamnet efter vecka och dag (2026-10-20). Förvalt från förra jobbet.
-  { key: 'arbetslag', label: 'Arbetslag', row: 'ao', flex: 1, placeholder: 'T.ex. Lena & Per' },
+  { key: 'arbetslag', label: 'Arbetslag', placeholder: 'T.ex. Lena & Per' },
   // Personuppgifterna finns bara under Inställningar och kan ändras i de enskilda blanketterna.
   // group: rubriken de står under i Inställningar. Namn och telefon står på samma rad (2026-10-20).
   { key: 'namn', label: 'Namn', profile: true, settingsOnly: true, group: 'Om dig', row: 'du', flex: 3 },
