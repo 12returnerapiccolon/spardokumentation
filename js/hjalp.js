@@ -112,7 +112,7 @@ export const HJALP = {
       ['Skapa filer', [
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',
         [
-          'Dela de … filerna: öppnar telefonens delning, så att du kan skicka filerna med Mail, Teams eller spara dem i OneDrive.',
+          'Dela de … filerna: öppnar telefonens delning, så att du kan skicka filerna med Mail, Teams eller spara dem i OneDrive. Jobbnamnet följer med och blir ämnesrad i Mail. När du sparar i Filer eller OneDrive kan det följa med en liten textfil med jobbnamnet; den kan du strunta i eller ta bort.',
           'Dela allt som en PDF: slår ihop alla blanketter och bilder till en fil. Bra när mottagaren vill ha allt samlat. Den här filen bär också hela jobbet, så att det kan importeras i en annan telefon. Skicka den bara till den som får se alla jobbets uppgifter.',
           'Länkarna under knapparna öppnar eller laddar ned en fil i taget.',
         ],

@@ -888,7 +888,7 @@ async function buildFiles(job, area, onSent) {
   const lankar = h('ul', { class: 'files' }, files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
   // Delade filer markerar jobbet som skickat.
   const dela = async list => {
-    if (!(await delaFiler(list, lankar)) || jobStatus(job) !== 'Pågående') return;
+    if (!(await delaFiler(list, lankar, jobLabel(job))) || jobStatus(job) !== 'Pågående') return;
     if (!(navigator.canShare && navigator.canShare({ files: list }))) return;
     job.status = 'Skickat';
     job.skickad = new Date().toISOString();
@@ -1592,10 +1592,11 @@ function kopiaKort() {
 
 // Dela filer via iOS delningsmeny. Sant om de delades. Utan delning (t.ex. på en dator)
 // visas länkar att ladda ner i stället, och det räknas som delat.
-async function delaFiler(files, area) {
+async function delaFiler(files, area, titel) {
   if (navigator.canShare && navigator.canShare({ files })) {
-    // Bara filerna: med title eller text sparar iOS även en textfil, t.ex. i Filer eller Mail.
-    try { await navigator.share({ files }); return true; }
+    // Jobbnamnet som titel blir ämnesrad i Mail (2026-10-20). iOS kan då lägga till en liten
+    // textfil med namnet, t.ex. i Filer; det är godtaget. Säkerhetskopian delas utan titel.
+    try { await navigator.share(titel ? { files, title: titel } : { files }); return true; }
     catch (e) { if (e.name !== 'AbortError') alert('Kunde inte dela: ' + e.message); return false; }
   }
   area.replaceChildren(...files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
