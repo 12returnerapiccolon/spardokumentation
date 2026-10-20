@@ -62,13 +62,13 @@ export default {
       items: [
         // Förval från Inställningar (grått). Det som skrivs här gäller bara den här rapporten.
         { type: 'text', key: 'enhet', label: 'Företag/enhet', placeholder: job => job.enhet || '' },
-        // Svetsansvarig under enheten och Ao-numren på en rad (2026-10-20).
+        // Svetsansvarig och eget namn under enheten, Ao-numren på en rad (2026-10-20).
         { type: 'text', key: 'ansvarig', label: 'Svetsansvarig', placeholder: job => job.svetsansvarig || '', row: 2, flex: 3 },
         { type: 'text', key: 'telefon', label: 'Telefonnr', inputmode: 'tel', placeholder: job => job.svetsansvarig_tel || '', flex: 2 },
+        { type: 'text', key: 'namnId', label: 'Namn och svets-ID', placeholder: job => namnId(job) },
         { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric', placeholder: job => job.ao || '', row: 2 },
         { type: 'text', key: 'kundao', label: 'Kundens Ao nr' },
         { type: 'text', key: 'bessy', label: 'Bessy anm/Ofelia' },
-        { type: 'text', key: 'namnId', label: 'Namn och svets-ID', placeholder: job => namnId(job) },
         { type: 'shared', label: 'År och månad', value: job => (blankettDatum(job) ? `${blankettDatum(job).slice(0, 4)} ${MANADER[Number(blankettDatum(job).slice(5, 7)) - 1]}` : '') },
       ],
     },
