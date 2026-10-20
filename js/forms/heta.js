@@ -61,6 +61,7 @@ export default {
   key: 'heta',
   code: 'DOK 2859',
   title: 'Tillstånd heta arbeten',
+  kort: 'Heta arbeten',
   format: 'overlay',
   ext: 'pdf',
   layout: LAYOUT,

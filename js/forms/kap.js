@@ -53,6 +53,7 @@ export default {
   key: 'kap',
   code: 'TMALL 0844',
   title: 'Spänningsfri temperatur SFT, Kapmetoden',
+  kort: 'SFT Kapmetoden',
   format: 'overlay',
   ext: 'pdf',
   layout: LAYOUT,

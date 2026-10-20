@@ -162,6 +162,7 @@ export default {
   key: 'ibt',
   code: 'TMALL 0824',
   title: 'Ibruktagandebesiktning banöverbyggnad',
+  kort: 'IBT',
   format: 'overlay',
   ext: 'pdf',
   layout,

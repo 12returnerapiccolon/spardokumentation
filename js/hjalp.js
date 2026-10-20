@@ -91,7 +91,7 @@ export const HJALP = {
       ['Växel', [
         'Visas när arbetet är i en växel. Välj växeltyp först; den bestämmer vilken besiktningsrapport som används. Välj sedan växelmodell ur listan, eller Annan om den saknas. Modellen ger normalvärden och toleranser.',
       ]],
-      ['Dokument och Skapa jobb', [
+      ['Blanketter och Skapa jobb', [
         'Blanketterna som behövs är förkryssade och märkta "föreslås". Kryssa i fler eller färre. Du kan ändra det i jobbet senare också.',
         'Skapa jobb sparar jobbet och öppnar det.',
       ]],
@@ -105,7 +105,7 @@ export const HJALP = {
       ['Status', [
         'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du delar filerna. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
       ]],
-      ['Dokument', [
+      ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
       ]],
       ['Skapa filer', [
@@ -122,7 +122,7 @@ export const HJALP = {
         'Bilderna följer med när du delar filerna. Saknas Efter-bilder eller rälsmärkning får du en påminnelse.',
       ]],
       ['Längre ner', [[
-        'Lägg till eller ta bort dokument: kryssa i fler blanketter eller ta bort en. Det du fyllt i finns kvar om du lägger till den igen.',
+        'Lägg till eller ta bort blanketter: kryssa i fler blanketter eller ta bort en. Det du fyllt i finns kvar om du lägger till den igen.',
         'Uppgifter om jobbet: samma uppgifter som när jobbet skapades. Ändringar här syns på alla blanketter.',
         'Nytt jobb från detta: gör ett nytt jobb med dagens datum och samma uppgifter och blanketter, men tomma blanketter. Bra när du jobbar på samma ställe flera dagar.',
         'Ta bort jobbet: tar bort jobbet, blanketterna och bilderna från telefonen. Det går inte att ångra.',

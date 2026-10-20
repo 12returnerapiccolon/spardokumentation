@@ -52,11 +52,16 @@ body {
 
 .topbar h1 {
   flex: 1;
+  min-width: 0;
   margin: 0;
   font-size: 18px;
-  white-space: nowrap;
+  line-height: 1.15;
+  /* Långa titlar som "Besiktningsrapport 3V olika håll" bryts på två rader i stället för att klippas. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .topbar a {

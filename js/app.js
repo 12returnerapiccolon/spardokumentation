@@ -532,9 +532,10 @@ function jobInputs(job, change, { visaVaxel }) {
   andrat.push(() => { vaxel.hidden = !visaVaxel(job); });
 
   const out = [
-    h('div', { class: 'card' }, sharedInputs(job, onChange, { only: ['datum', 'ao', 'arbetslag'] })),
-    h('div', { class: 'card' }, sharedInputs(job, onChange, { only: ['bandel', 'driftplats', 'spar'] })),
-    h('div', { class: 'card' },
+    // Rubriker på rutorna (2026-10-20).
+    h('div', { class: 'card' }, h('h3', {}, 'Datum och order'), sharedInputs(job, onChange, { only: ['datum', 'ao', 'arbetslag'] })),
+    h('div', { class: 'card' }, h('h3', {}, 'Plats'), sharedInputs(job, onChange, { only: ['bandel', 'driftplats', 'spar'] })),
+    h('div', { class: 'card' }, h('h3', {}, 'Arbete'),
       h('label', { class: 'field' }, h('span', {}, 'Arbetsbeskrivning'),
         h('input', { type: 'text', name: 'arbete', value: job.arbete || '', autocomplete: 'off', placeholder: 'T.ex. Isolbyte', oninput: e => onChange('arbete', e.target.value) })),
       h('label', { class: 'field' }, h('span', {}, 'Jobbnamn'), namn)),
@@ -585,7 +586,7 @@ async function newJobView() {
       onsubmit: async e => {
         e.preventDefault();
         const valda = CATALOG.map(d => d.key).filter(k => valt(k) && READY.has(k));
-        if (!valda.length) { alert('Välj minst ett dokument.'); return; }
+        if (!valda.length) { alert('Välj minst en blankett.'); return; }
         if (valda.includes('vaxel') && !job.vaxeltyp) { alert('Välj växeltyp, så att rätt besiktningsrapport används.'); return; }
         const now = new Date().toISOString();
         const record = { ...job, id: uid(), docs: valda, forms: {}, created: now, updated: now };
@@ -596,8 +597,8 @@ async function newJobView() {
       },
     },
       jobInputs(job, () => docs.refresh(), { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || valt('vaxel') }),
-      h('h2', {}, 'Dokument'),
-      h('p', { class: 'muted' }, 'Förvalda efter svaren ovan. Du kan kryssa i fler eller färre, och lägga till eller ta bort dokument senare.'),
+      h('h2', {}, 'Blanketter'),
+      h('p', { class: 'muted' }, 'Förvalda efter svaren ovan. Du kan kryssa i fler eller färre, och lägga till eller ta bort blanketter senare.'),
       docs,
       h('button', { class: 'button primary big', type: 'submit' }, 'Skapa jobb'),
     ),
@@ -655,14 +656,14 @@ async function jobView(id) {
 
   render(
     statusRad,
-    h('h2', {}, 'Dokument'),
+    h('h2', {}, 'Blanketter'),
     docList,
     h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => statusRad.refresh()) }, 'Skapa filer'),
     exportArea,
     bildDel,
     h('details', { class: 'card' },
-      h('summary', {}, 'Lägg till eller ta bort dokument'),
-      h('p', { class: 'muted note' }, 'Det du fyllt i finns kvar om du tar bort ett dokument och lägger till det igen.'),
+      h('summary', {}, 'Lägg till eller ta bort blanketter'),
+      h('p', { class: 'muted note' }, 'Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen.'),
       docBox),
     h('details', { class: 'card' },
       h('summary', {}, 'Uppgifter om jobbet'),
@@ -680,7 +681,7 @@ async function jobView(id) {
         location.hash = `#/jobb/${kopia.id}`;
       },
     }, 'Nytt jobb från detta'),
-    h('p', { class: 'muted note' }, 'Skapar ett jobb med dagens datum och samma uppgifter om jobbet och samma dokument. Blanketterna börjar tomma.'),
+    h('p', { class: 'muted note' }, 'Skapar ett jobb med dagens datum och samma uppgifter om jobbet och samma blanketter. Blanketterna börjar tomma.'),
     h('button', {
       class: 'button danger', type: 'button',
       onclick: async () => {
@@ -1413,7 +1414,8 @@ async function formView(id, key) {
   if (!job || !form) { location.hash = '#/'; return; }
   hjalpNyckel = blankettHjalp(form.key, VAXELTYPER.map(t => t.key));
   await fillFromProfile(job);
-  setTitle(form.title, `#/jobb/${id}`);
+  // Kort titel överst så att den inte klipps; hela namnet står på raden under (2026-10-20).
+  setTitle(form.kort || form.title, `#/jobb/${id}`);
   const data = job.forms[form.key] = job.forms[form.key] || {};
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   // Fält med remember får förra jobbets värde, t.ex. enhet och svetsansvarig.
@@ -1455,7 +1457,7 @@ async function formView(id, key) {
   };
 
   render(
-    h('p', { class: 'muted' }, `${form.code}. Uppgifter i grått hämtas från jobbet.`),
+    h('p', { class: 'muted' }, `${form.code} ${form.title}. Uppgifter i grått hämtas från jobbet.`),
     // Sektionerna går att fälla ihop för överblick och är öppna varje gång blanketten öppnas.
     ...form.sections.map(section => h('details', { class: 'card section', open: !section.closed },
       h('summary', {}, h('h2', {}, section.title)),

@@ -54,6 +54,7 @@ export default {
   key: 'skevning',
   code: 'TMALL 1605',
   title: 'Skevningsprotokoll spårläge',
+  kort: 'Skevningsprotokoll',
   format: 'overlay',
   ext: 'pdf',
   layout: LAYOUT,

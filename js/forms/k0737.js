@@ -32,6 +32,7 @@ export default {
   key: '0737',
   code: 'TMALL 0737',
   title: 'Kontrollplan stabilitetspåverkande arbete',
+  kort: 'BASTAB',
   format: 'overlay',
   ext: 'pdf',
   layout: LAYOUT,

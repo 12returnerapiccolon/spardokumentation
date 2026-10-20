@@ -322,6 +322,7 @@ function buildForm(t) {
     key: t.key,
     code: t.code,
     title: t.title,
+    kort: `Besiktningsrapport ${t.short}`,
     // Word-mallen skrivs ut till en tom PDF en gång. Appen skriver sedan i den på fältens platser.
     format: 'overlay',
     ext: 'pdf',
