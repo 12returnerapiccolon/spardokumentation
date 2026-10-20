@@ -260,12 +260,16 @@ async function komIgangView() {
   const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
   const jobs = await db.getAll('jobs');
   const senasteKopia = await db.getSetting('senasteKopia', null);
+  // Öppnad från hemskärmen: navigator.standalone på iPhone, display-mode på Android.
+  const hemskarm = navigator.standalone === true || window.matchMedia?.('(display-mode: standalone)').matches;
   const steg = [
     ['Lägg appen på hemskärmen',
-      'Öppna sidan i Safari, tryck på Dela (fyrkanten med pilen) och välj Lägg till på hemskärmen. Öppna sedan appen från ikonen. Då fungerar den utan täckning och Safari rensar inte jobben lika lätt.',
-      navigator.standalone === true, null],
+      ['iPhone: öppna sidan i Safari, tryck på Dela (fyrkanten med pilen) och välj Lägg till på hemskärmen.',
+        'Android: öppna sidan i Chrome, tryck på menyn ⋮ uppe till höger och välj Installera app eller Lägg till på startskärmen.',
+        'Öppna sedan appen från ikonen. Då fungerar den utan täckning och jobben rensas inte lika lätt.'],
+      hemskarm, null],
     ['Läs in blankettmallarna',
-      'Mallarna finns inte i appen. Du får zip-filen "Alla PDF-mallar" av arbetsledaren eller en kollega. Spara den i Filer och läs in den under Blankettmallar. Det behövs bara en gång, och igen om appen säger att en mall är gammal.',
+      'Mallarna finns inte i appen. Du får zip-filen "Alla PDF-mallar" av arbetsledaren eller en kollega. Spara den i telefonen (Filer på iPhone, Filer eller Hämtade filer på Android) och läs in den under Blankettmallar. Det behövs bara en gång, och igen om appen säger att en mall är gammal.',
       missing.length === 0, ['#/mallar', missing.length ? `Läs in mallarna (${missing.length} saknas)` : 'Visa mallarna']],
     ['Fyll i dina uppgifter',
       'Ditt namn står som underskrift på blanketterna. Fyll också i telefon, svets-ID, företag och kontaktpersoner, så fylls de i automatiskt i varje jobb.',
@@ -274,14 +278,14 @@ async function komIgangView() {
       'Fyll i uppgifterna om jobbet. Appen väljer blanketterna efter dina svar. Fyll i blanketterna, ta bilder och tryck Skapa filer. Dela sedan filerna med arbetsledaren via Mail eller Teams.',
       jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
     ['Spara en säkerhetskopia',
-      'Jobben finns bara i telefonen. Spara en kopia i Filer då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.',
+      'Jobben finns bara i telefonen. Spara en kopia i telefonens filer då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.',
       !!senasteKopia, ['#/installningar', 'Till säkerhetskopian']],
   ];
   render(
     h('p', { class: 'muted' }, 'Så kommer du igång med appen. Steg med bock är redan gjorda.'),
     h('ol', { class: 'steg' }, steg.map(([rubrik, text, klar, lank]) => h('li', { class: 'card' + (klar ? ' klar' : '') },
       h('strong', {}, (klar ? '✓ ' : '') + rubrik),
-      h('p', { class: 'muted' }, text),
+      [text].flat().map(t => h('p', { class: 'muted' }, t)),
       lank && !klar ? h('a', { class: 'button', href: lank[0] }, lank[1]) : null))),
   );
 }
