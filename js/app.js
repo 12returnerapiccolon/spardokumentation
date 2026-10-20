@@ -18,6 +18,7 @@ import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn 
 import { skapaKopia, lasInKopia } from './backup.js';
 import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
 import MALLVERSIONER from './mallversioner.js';
+import { HJALP, blankettHjalp } from './hjalp.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
 const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
@@ -121,6 +122,25 @@ const view = () => document.getElementById('view');
 
 function render(...nodes) {
   view().replaceChildren(...nodes.flat().filter(n => n != null && n !== false));
+}
+
+// Hjälpen för sidan som visas (?-knappen uppe till höger, 2026-10-20).
+let hjalpNyckel = 'start';
+function visaHjalp() {
+  const hj = HJALP[hjalpNyckel] || HJALP.start;
+  const stycke = t => (Array.isArray(t) ? h('ul', {}, t.map(x => h('li', {}, x))) : h('p', {}, t));
+  const stang = () => { overlay.remove(); document.removeEventListener('keydown', esc); };
+  const esc = e => { if (e.key === 'Escape') stang(); };
+  const overlay = h('div', { class: 'hjalp-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Hjälp: ${hj.titel}` },
+    h('div', { class: 'hjalp-huvud' },
+      h('h2', {}, `Hjälp: ${hj.titel}`),
+      h('button', { type: 'button', class: 'hjalp-stang', 'aria-label': 'Stäng hjälpen', onclick: stang }, '✕')),
+    h('div', { class: 'hjalp-text' },
+      h('p', { class: 'hjalp-intro' }, hj.intro),
+      hj.delar.map(([rubrik, stycken]) => h('section', {}, h('h3', {}, rubrik), stycken.map(stycke))),
+      hjalpNyckel !== 'kom-igang' ? h('p', { class: 'muted' }, h('a', { href: '#/kom-igang', onclick: stang }, 'Ny i appen? Se Kom igång, steg för steg.')) : null));
+  document.addEventListener('keydown', esc);
+  document.body.append(overlay);
 }
 
 function setTitle(text, back) {
@@ -1389,6 +1409,7 @@ async function formView(id, key) {
   const job = await db.get('jobs', id);
   const form = job && docForm(upgradeJob(job), key);
   if (!job || !form) { location.hash = '#/'; return; }
+  hjalpNyckel = blankettHjalp(form.key, VAXELTYPER.map(t => t.key));
   await fillFromProfile(job);
   setTitle(form.title, `#/jobb/${id}`);
   const data = job.forms[form.key] = job.forms[form.key] || {};
@@ -1572,6 +1593,8 @@ async function delaFiler(files, area) {
 async function route() {
   window.onpagehide = null;
   const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  document.querySelector('.hjalp-overlay')?.remove();
+  hjalpNyckel = parts[0] === 'jobb' ? 'jobb' : HJALP[parts[0]] ? parts[0] : 'start';
   try {
     if (parts[0] === 'nytt') await newJobView();
     else if (parts[0] === 'jobb' && parts[2]) await formView(parts[1], parts[2]);
@@ -1588,6 +1611,7 @@ async function route() {
 }
 
 window.addEventListener('hashchange', route);
+document.addEventListener('click', e => { if (e.target.closest('#hjalp')) { e.preventDefault(); visaHjalp(); } });
 window.addEventListener('DOMContentLoaded', () => {
   db.persist();
   route();

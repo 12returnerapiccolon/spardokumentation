@@ -421,3 +421,27 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .steg li strong { display: block; font-size: 18px; margin-bottom: 4px; }
 .steg li.klar strong { color: var(--accent); }
 .steg li .button { margin-top: 8px; }
+
+/* Hjälp: ?-knappen bredvid kugghjulet och hjälpsidan över allt annat (2026-10-20). */
+.topbar a.hjalp {
+  min-width: 30px; min-height: 30px; width: 30px; height: 30px; margin: 7px;
+  border: 2px solid var(--accent); border-radius: 50%;
+  font-size: 18px; font-weight: 700;
+}
+.hjalp-overlay {
+  position: fixed; inset: 0; z-index: 50; overflow-y: auto;
+  background: var(--bg); color: var(--text);
+  padding: env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 24px);
+}
+.hjalp-huvud {
+  position: sticky; top: 0; display: flex; align-items: center; gap: 8px;
+  max-width: 640px; margin: 0 auto; padding: 8px 16px; background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.hjalp-huvud h2 { flex: 1; margin: 0; font-size: 18px; text-transform: none; letter-spacing: 0; color: var(--text); }
+.hjalp-stang { min-width: 44px; min-height: 44px; font-size: 22px; background: none; border: 0; color: var(--accent); cursor: pointer; }
+.hjalp-text { max-width: 640px; margin: 0 auto; padding: 8px 16px; line-height: 1.5; }
+.hjalp-text .hjalp-intro { font-size: 17px; }
+.hjalp-text h3 { margin: 20px 0 6px; font-size: 16px; }
+.hjalp-text p, .hjalp-text li { margin: 0 0 8px; }
+.hjalp-text ul { padding-left: 20px; margin: 0 0 8px; }
+.hjalp-text a { color: var(--accent); }
