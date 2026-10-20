@@ -555,13 +555,23 @@ function jobInputs(job, change, { visaVaxel }) {
 }
 
 // Dokumenten som kryssrutor. checked(key) och onToggle(key, på). Föreslagna dokument märks.
+// Kort namn som sidtiteln, mallnummer och hela namnet i liten text under (2026-10-20).
+function dokNamn(job, d, foreslas) {
+  const form = docForm(job, d.key);
+  const kort = form ? form.kort || form.title : 'Besiktningsrapport växel';
+  const hel = form ? `${form.code} ${form.title}` : 'Mallen väljs efter växeltyp';
+  return h('span', { class: 'doknamn' },
+    kort, foreslas ? h('small', { class: 'forslag' }, ' föreslås') : null,
+    h('small', { class: 'hel' }, hel));
+}
+
 function docChecks(job, checked, onToggle) {
   const box = h('div', { class: 'card' });
   const draw = () => {
     const forslag = foreslagnaDokument(job);
     box.replaceChildren(...CATALOG.map(d => h('label', { class: 'check' },
       h('input', { type: 'checkbox', name: `doc_${d.key}`, checked: checked(d.key), onchange: e => { onToggle(d.key, e.target.checked); draw(); } }),
-      h('span', {}, d.title, forslag.has(d.key) ? h('small', { class: 'forslag' }, ' föreslås') : null))));
+      dokNamn(job, d, forslag.has(d.key)))));
   };
   draw();
   box.refresh = draw;
