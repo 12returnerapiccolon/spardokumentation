@@ -172,6 +172,24 @@ export default {
   },
 
   sections: [
+    // Kontaktuppgifterna i ett eget avsnitt överst, minimerat från start (2026-10-20).
+    {
+      title: 'Kontaktuppgifter',
+      closed: true,
+      help: 'Namn och telefon hämtas från Inställningar och går att ändra här.',
+      items: [
+        // Besiktningsmannen gäller bara jobbet och sparas inte till nästa (namnet föreslås ändå).
+        ...ROLLER.flatMap(([key, label, , def, defTfn]) => {
+          const hideIf = key === 'bankontrollant' ? (job, data) => besiktningsman(data) : null;
+          const remember = key !== 'besiktningsman';
+          return [
+            // Namn och telefon på samma rad (2026-10-20).
+            { type: 'text', key, label, defaultValue: def, remember: remember && !def, names: true, hideIf, row: 2 },
+            { type: 'text', key: `${key}Tfn`, label: 'Telefon', inputType: 'tel', inputmode: 'tel', defaultValue: defTfn, remember: remember && !defTfn, hideIf },
+          ];
+        }),
+      ],
+    },
     {
       title: 'Arbete',
       help: 'Grå text hämtas från jobbet.',
@@ -184,16 +202,6 @@ export default {
         { type: 'shared', label: 'Datum för besiktning', from: 'datum', row: 2 },
         { type: 'text', key: 'bestnr', label: 'Beställningsnr', placeholder: job => job.ao || '' },
         { type: 'text', key: 'arbete', label: 'Arbete', placeholder: () => 't.ex. Byte av isolerskarv vxl 12' },
-        // Besiktningsmannen gäller bara jobbet och sparas inte till nästa (namnet föreslås ändå).
-        ...ROLLER.flatMap(([key, label, , def, defTfn]) => {
-          const hideIf = key === 'bankontrollant' ? (job, data) => besiktningsman(data) : null;
-          const remember = key !== 'besiktningsman';
-          return [
-            // Namn och telefon på samma rad (2026-10-20).
-            { type: 'text', key, label, defaultValue: def, remember: remember && !def, names: true, hideIf, row: 2 },
-            { type: 'text', key: `${key}Tfn`, label: 'Telefon', inputType: 'tel', inputmode: 'tel', defaultValue: defTfn, remember: remember && !defTfn, hideIf },
-          ];
-        }),
       ],
     },
     {
