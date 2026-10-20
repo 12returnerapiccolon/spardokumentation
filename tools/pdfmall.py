@@ -34,6 +34,30 @@ def fix_arrows(xml):
     return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
 DOCXML = fix_arrows(DOCXML)
 
+# Sidfötter med innehållskontroller kopplade till dokumentegenskaper (version, fastställd) visar
+# i LibreOffice fel datum och tappar textstorleken. Ersätt dem med vanlig text med samma format,
+# med värdet som Word visar (ur customXml).
+def unwrap_bound_sdt(xml):
+    doc = etree.fromstring(xml)
+    for sdt in list(doc.iter(w + 'sdt')):
+        bind = sdt.find(f'{w}sdtPr/{w}dataBinding')
+        content = sdt.find(w + 'sdtContent')
+        if bind is None or content is None: continue
+        tag = bind.get(w + 'xpath').split(':')[-1].split('[')[0]
+        val = next((m.group(1) for d in ENTRIES_DATA if (m := re.search(rf'<\w*:?{tag}\b[^>]*>([^<]*)<', d))), None)
+        runs = content.findall(w + 'r')
+        if val is not None and runs:
+            if sdt.find(f'{w}sdtPr/{w}date') is not None: val = val[:10]
+            ts = [t for r in runs for t in r.iter(w + 't')]
+            for t in ts: t.text = ''
+            if ts: ts[0].text = val
+        parent = sdt.getparent(); i = parent.index(sdt)
+        parent.remove(sdt)
+        for k, r in enumerate(list(content)): parent.insert(i + k, r)
+    return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
+ENTRIES_DATA = [d.decode('utf-8', 'ignore') for it, d in ENTRIES if it.filename.startswith('customXml/item')]
+ENTRIES = [(it, unwrap_bound_sdt(d) if re.match(r'word/(footer|header)\d*\.xml$', it.filename) else d) for it, d in ENTRIES]
+
 def load():
     return etree.fromstring(DOCXML)
 

@@ -93,6 +93,10 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
       width = f.widthOfTextAtSize(text, size);
     }
     const left = align === 'center' ? x - width / 2 : align === 'right' ? x - width : x;
+    // På prickade linjer täcks prickarna under texten så att den inte ser överstruken ut.
+    if (layout.tackPrickar?.includes(key)) {
+      pages[p].drawRectangle({ x: left - 2, y: base - 1.5, width: width + 4, height: size * 0.9 + 1.5, color: rgb(1, 1, 1) });
+    }
     pages[p].drawText(text, { x: left, y: base, size, font: f, color: ink });
   }
 
