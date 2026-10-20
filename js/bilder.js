@@ -63,12 +63,26 @@ export function bildtypUrNamn(namn) {
   return t ? t.key : 'fore';
 }
 
-// Bilder från ett importerat jobb (2026-10-20). De är redan JPEG och sparas som de är;
-// jobbets tidigare bilder ersätts.
-export async function ersattBilder(jobId, bilder) {
-  await taBortAlla(jobId);
+// Bildens innehåll som text, för att känna igen samma bild igen.
+async function fingeravtryck(blob) {
+  const buf = await blob.arrayBuffer();
+  if (crypto.subtle) return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', buf)), b => b.toString(16).padStart(2, '0')).join('');
+  return `${buf.byteLength}:${Array.from(new Uint8Array(buf, 0, Math.min(4096, buf.byteLength))).join(',')}`;
+}
+
+// Bilder från ett importerat jobb läggs till bland jobbets bilder (2026-10-20). De är
+// redan JPEG och sparas som de är. En bild som redan finns i jobbet, eller två gånger i
+// importen, hoppas över. Svarar med antalet nya bilder.
+export async function laggTillImporterade(jobId, bilder) {
+  const finns = new Set(await Promise.all((await jobbetsBilder(jobId)).map(b => fingeravtryck(b.data))));
   const start = Date.now();
+  let nya = 0;
   for (const [i, b] of bilder.entries()) {
+    const fa = await fingeravtryck(b.data);
+    if (finns.has(fa)) continue;
+    finns.add(fa);
     await db.put('bilder', { id: crypto.randomUUID ? crypto.randomUUID() : String(start + i) + Math.random(), jobId, typ: b.typ, data: b.data, added: new Date(start + i).toISOString() });
+    nya++;
   }
+  return nya;
 }

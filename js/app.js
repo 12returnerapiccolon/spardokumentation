@@ -13,7 +13,7 @@ import skev from './forms/skev.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
-import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler, bildtypUrNamn, ersattBilder } from './bilder.js';
+import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler, bildtypUrNamn, laggTillImporterade } from './bilder.js';
 import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn } from './jobb.js';
 import { skapaKopia, lasInKopia } from './backup.js';
 import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
@@ -623,10 +623,10 @@ function importKnapp() {
       const jpg = files.filter(f => /\.jpe?g$/i.test(f.name)).sort((a, b) => a.name.localeCompare(b.name, 'sv', { numeric: true }));
       if (jpg.length) bilder = jpg.map(f => ({ typ: bildtypUrNamn(f.name), data: f }));
       const finns = await db.get('jobs', job.id);
-      if (finns && !confirm(`Jobbet ${jobLabel(finns)} finns redan i telefonen. Ersätta det med det importerade?`)) return;
+      if (finns && !confirm(`Jobbet ${jobLabel(finns)} finns redan i telefonen. Ersätta uppgifterna med de importerade? Bilderna läggs till bland dem som redan finns.`)) return;
       const now = new Date().toISOString();
       await db.put('jobs', { ...job, forms: job.forms || {}, docs: job.docs || [], importerad: now, updated: now });
-      if (bilder.length) await ersattBilder(job.id, bilder);
+      if (bilder.length) await laggTillImporterade(job.id, bilder);
       location.hash = `#/jobb/${job.id}`;
     },
   });
