@@ -424,10 +424,11 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 
 /* Hjälp: ?-knappen bredvid kugghjulet och hjälpsidan över allt annat (2026-10-20). */
 .topbar a.hjalp {
-  min-width: 30px; min-height: 30px; width: 30px; height: 30px; margin: 7px;
+  min-width: 26px; min-height: 26px; width: 26px; height: 26px; margin: 9px;
   border: 2px solid var(--accent); border-radius: 50%;
-  font-size: 18px; font-weight: 700;
+  font-size: 16px; font-weight: 700;
 }
+.topbar a.menu { font-size: 34px; }
 .hjalp-overlay {
   position: fixed; inset: 0; z-index: 50; overflow-y: auto;
   background: var(--bg); color: var(--text);
