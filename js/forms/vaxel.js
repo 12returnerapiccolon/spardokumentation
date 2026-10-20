@@ -203,18 +203,32 @@ function normalModell(vaxeltyp, modell) {
   return modell;
 }
 
-// Måtten i den ordning de tas när man går från framkant stödräl till bakkant korsning.
-// Rak väg först, sedan läggs växeln om (x1, y1). I korsningen i och g före h.
+// Måtten i den ordning de tas när man går från framkant stödräl (FSK) till bakkant korsning (BKS).
+// Rak väg först, sedan läggs växeln om (x1, y1). I korsningen i och g före h (2026-10-19).
+// Växlar med A- och B-ände: grupperna (|) tas från A-änden som standard och vänds när man börjar
+// från B-änden. Ordningen följer måttens placering i blankettens växelbild (2026-10-20).
 const ORDNING = {
   ev: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 i g h i1 g1 h1 e e1',
   evr: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 z q z1 q1 e e1',
   evk: 'a b x y x1 y1 c c1 r r1 t t1 u u1 d d1 i g h i1 g1 e',
+  v3o: 'a b x x1 c c1 b1 t1 x2 x3 d1 d2 i1 g1 h i2 g h2 d i3 g3 h1 i g2 h3 e1 t t2 d3 d4 i4 g4 h4 i5 g5 h5 e e2',
+  v3s: 'a b x x1 c c1 b1 x2 x3 c2 c3 d d1 i g h i1 g1 h2 d2 i2 g2 h1 i3 g3 h3 e t t1 d3 d4 i4 g4 h4 i5 g5 h5 e1 e2',
+  ekv: 'e e1 | i g h i1 g1 h1 | b b1 | x x1 | c c1 c2 | k k1 h3 h2 | k2 k3 h4 h5 | c5 c6 c7 | x2 x3 | b2 b3 | i2 g2 h6 i3 g3 h7 | e2 e3',
+  dkv: 'e e1 | i g h i1 g1 h1 | b b1 | x x1 x2 x3 | c c1 c2 c3 | k k1 h3 h2 | k2 k3 h4 h5 | c4 c5 c6 c7 | x4 x5 x6 x7 | b2 b3 | i2 g2 h6 i3 g3 h7 | e2 e3',
+  spk: 'e e1 | i g h i1 g1 h1 | b b1 | k k1 h3 h2 | k2 k3 h4 h5 | b2 b3 | i2 g2 h6 i3 g3 h7 | e2 e3',
+  spkk: 'g5 i2 g3 g4 i3 g6 | b b1 | k k1 h3 h2 | k2 k3 h4 h5 | b2 b3 | g7 i4 g9 g10 i5 g8',
 };
+// Växlarna där man kan välja vilken ände man börjar mäta från.
+const AENDE = 'A-änden';
+const BENDE = 'B-änden';
+const harAnde = key => (ORDNING[key] || '').includes('|');
 
-function ordna(key, namn) {
+function ordna(key, namn, start) {
   const o = ORDNING[key];
   if (!o) return namn;
-  const pos = new Map(o.split(' ').map((m, i) => [m, i]));
+  let grupper = o.split('|').map(g => g.trim().split(/\s+/));
+  if (start === BENDE) grupper = grupper.reverse();
+  const pos = new Map(grupper.flat().map((m, i) => [m, i]));
   return [...namn].sort((a, b) => (pos.get(a) ?? 99) - (pos.get(b) ?? 99));
 }
 
@@ -303,7 +317,8 @@ function buildForm(t) {
           t.bild
             ? { type: 'image', src: t.bild, alt: `Växelbild ${t.short}` }
             : { type: 'image', src: `img/placering/${t.key}.png`, alt: `Placering mått ${t.short}, TRVINFRA-00017 bilaga 7` },
-          { type: 'measures', keys: ordna(t.key, matt.map(m => m[0])), auto: (job, data) => autoVarden(t.key, job, data) },
+          ...(harAnde(t.key) ? [{ type: 'radio', key: 'start', label: 'Börja mäta från', options: [AENDE, BENDE], noEmpty: true, defaultValue: () => AENDE }] : []),
+          { type: 'measures', keys: data => ordna(t.key, matt.map(m => m[0]), data.start), auto: (job, data) => autoVarden(t.key, job, data) },
         ],
       },
       ...t.groups.map(g => ({ title: g.title, items: checkItems(g) })),

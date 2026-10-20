@@ -1050,7 +1050,7 @@ function measureTable(item, data, onChange, job) {
       ...notes.map(n => h('p', { class: 'muted note' }, n)),
       h('div', { class: 'measures' },
         h('div', { class: 'mrow head' }, h('span', {}, 'Mått'), h('span', {}, 'Normal'), h('span', {}, 'Tolerans'), h('span', {}, 'Uppmätt'), h('span', {}, 'Diff')),
-        item.keys.map(m => {
+        (typeof item.keys === 'function' ? item.keys(data) : item.keys).map(m => {
           const row = data.matt[m] || {};
           const out = h('output', {}, diff(effektiv(row, 'normal', auto.normal[m]), row.uppmatt));
           return h('div', { class: tas(m) ? 'mrow' : 'mrow skip' }, h('span', { class: 'mname' }, m), cell(m, 'normal', out), cell(m, 'tolerans', out), cell(m, 'uppmatt', out), out);
@@ -1092,7 +1092,7 @@ async function formView(id, key) {
       if (remembered[`${form.key}.${k}`] === undefined) delete remembered[`${form.key}.${k}`];
       saveRemembered();
     }
-    if (['typ', 'besiktningsklass', 'radie'].includes(k)) document.querySelectorAll('.measures-wrap').forEach(w => w.refresh());
+    if (['typ', 'besiktningsklass', 'radie', 'start'].includes(k)) document.querySelectorAll('.measures-wrap').forEach(w => w.refresh());
   };
 
   render(
