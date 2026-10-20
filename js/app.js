@@ -987,13 +987,19 @@ function renderItem(item, data, onChange, job) {
       // noEmpty: inget val "Inget", bara alternativen.
       const name = `r_${item.key}`;
       const current = data[item.key] ?? (item.defaultValue ? item.defaultValue(job) : '') ?? '';
-      return [h('fieldset', { class: 'segmented' + (item.sub ? ' sub' : '') },
+      const set = h('fieldset', { class: 'segmented' + (item.sub ? ' sub' : '') },
         item.label ? h('legend', {}, item.label) : null,
         [...item.options, ...(item.noEmpty ? [] : [''])].map(opt => h('label', {},
           h('input', { type: 'radio', name, value: opt, checked: (current || '') === opt,
             onchange: () => onChange(item.key, opt) }),
-          h('span', {}, opt || 'Inget')))),
-        item.help ? h('p', { class: 'muted note rule radio' }, item.help) : null];
+          h('span', {}, opt || 'Inget'))));
+      // hideIf som för textrutor.
+      if (item.hideIf) {
+        set.dataset.hideif = '';
+        set.refreshHide = () => { set.hidden = !!item.hideIf(job, data); };
+        set.refreshHide();
+      }
+      return [set, item.help ? h('p', { class: 'muted note rule radio' }, item.help) : null];
     }
     case 'plus':
       // Två sifferrutor med + emellan, t.ex. km + m.
@@ -1300,7 +1306,7 @@ async function formView(id, key) {
       if (remembered[`${form.key}.${k}`] === undefined) delete remembered[`${form.key}.${k}`];
       saveRemembered();
     }
-    if (['typ', 'besiktningsklass', 'radie', 'start'].includes(k)) document.querySelectorAll('.measures-wrap').forEach(w => w.refresh());
+    if (['typ', 'besiktningsklass', 'radie', 'start', 'ordning'].includes(k)) document.querySelectorAll('.measures-wrap').forEach(w => w.refresh());
   };
 
   render(

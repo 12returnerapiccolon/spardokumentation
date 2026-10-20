@@ -219,6 +219,8 @@ const ORDNING = {
   spkk: 'g5 i2 g3 g4 i3 g6 | b b1 | k k1 h3 h2 | k2 k3 h4 h5 | b2 b3 | g7 i4 g9 g10 i5 g8',
 };
 // Växlarna där man kan välja vilken ände man börjar mäta från.
+const I_VAXELN = 'I växeln';
+const RAPPORTEN = 'Besiktningsrapport';
 const AENDE = 'A-änden';
 const BENDE = 'B-änden';
 const harAnde = key => (ORDNING[key] || '').includes('|');
@@ -260,8 +262,19 @@ const DATA_LABELS = {
   driftplats_h: ['Driftplats åt höger i växelbilden (B-ände)'],
 };
 
+// Måtten i besiktningsrapportens ordning: efter var Uppmätt-rutan står på blanketten,
+// uppifrån och ned och från vänster till höger.
+function rapportOrdning(key, matt) {
+  const pos = idx => LAYOUT[key]?.text?.[idx] || [0, 0, 0];
+  return [...matt].sort((a, b) => {
+    const [pa, xa, ya] = pos(a[3]), [pb, xb, yb] = pos(b[3]);
+    return pa - pb || (Math.abs(ya - yb) > 2 ? yb - ya : xa - xb);
+  }).map(m => m[0]);
+}
+
 function buildForm(t) {
   const matt = MATT[t.key];
+  const iRapporten = rapportOrdning(t.key, matt);
   const d = t.data;
   const checkItems = g => g.items.map(([label, idx, kind]) => kind === 'text'
     ? { type: 'text', key: `t${idx}`, label }
@@ -322,8 +335,10 @@ function buildForm(t) {
           t.bild
             ? { type: 'image', src: t.bild, alt: `Växelbild ${t.short}` }
             : { type: 'image', src: `img/placering/${t.key}.png`, alt: `Placering mått ${t.short}, TRVINFRA-00017 bilaga 7` },
-          ...(harAnde(t.key) ? [{ type: 'radio', key: 'start', label: 'Börja mäta från', options: [AENDE, BENDE], noEmpty: true, defaultValue: () => AENDE }] : []),
-          { type: 'measures', keys: data => ordna(t.key, matt.map(m => m[0]), data.start), auto: (job, data) => autoVarden(t.key, job, data) },
+          // Måtten i den ordning de tas i växeln eller som de står i besiktningsrapporten (2026-10-20).
+          { type: 'radio', key: 'ordning', label: 'Måttordning', options: [I_VAXELN, RAPPORTEN], noEmpty: true, remember: true, defaultValue: () => I_VAXELN },
+          ...(harAnde(t.key) ? [{ type: 'radio', key: 'start', label: 'Börja mäta från', options: [AENDE, BENDE], noEmpty: true, defaultValue: () => AENDE, hideIf: (job, data) => data.ordning === RAPPORTEN }] : []),
+          { type: 'measures', keys: data => (data.ordning === RAPPORTEN ? iRapporten : ordna(t.key, matt.map(m => m[0]), data.start)), auto: (job, data) => autoVarden(t.key, job, data) },
         ],
       },
       ...t.groups.map(g => ({ title: g.title, items: checkItems(g) })),
