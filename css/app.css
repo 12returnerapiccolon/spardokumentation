@@ -163,6 +163,8 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 .row { display: flex; gap: 12px; }
 .row > .field { flex: 1; }
 .row > .check { flex: 1; min-width: 0; }
+/* Kryssruta bredvid en textruta: i höjd med rutan, inte med etiketten ovanför. */
+.row:has(> .field) > .check { align-self: flex-end; margin-bottom: 12px; }
 /* Rutorna i en rad hamnar i linje även när en etikett bryts på två rader. */
 .row > .field { display: flex; flex-direction: column; justify-content: flex-end; }
 
