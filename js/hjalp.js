@@ -74,17 +74,17 @@ export const HJALP = {
     titel: 'Nytt jobb',
     intro: 'Här skapar du ett jobb. Uppgifterna fylls i automatiskt på alla blanketter, så du skriver dem bara en gång.',
     delar: [
-      ['Datum, Ao nr och arbetslag', [
+      ['Datum och order', [
         'Datum är dagen skiftet börjar. Kryssa i Nattarbete om du jobbar natt; då får blanketterna nästa dags datum.',
         'Ao nr blir förval för Eget Ao nr på svetsrapporten och Beställningsnr på IBT och kontrollplanen.',
         'Arbetslag förvalt från förra jobbet och kommer med i jobbnamnet.',
       ]],
-      ['Plats och arbete', [
+      ['Plats', [
         'Bandel, Driftplats/Sträcka och Spår hamnar på alla blanketter.',
-        'Arbetsbeskrivning, t.ex. Isolbyte, blir en del av jobbnamnet. Jobbnamnet skapas av vecka, dag, arbetslag, plats och arbetsbeskrivning, och visas grått. Skriv ett eget namn om du vill.',
         'Från och Till km+m: läget för arbetet. Till behövs bara om arbetet går över en sträcka.',
       ]],
-      ['Vad jobbet innehåller', [
+      ['Arbete', [
+        'Arbetsbeskrivning, t.ex. Isolbyte, blir en del av jobbnamnet. Jobbnamnet skapas av vecka, dag, arbetslag, plats och arbetsbeskrivning, och visas grått. Skriv ett eget namn om du vill.',
         'Kryssa i det som gäller: Hett arbete, Svetsning, Arbete i växel och Växelrevision. Svaren styr vilka blanketter som föreslås.',
         'Typ av arbete väljs enligt TRVINFRA-00271 bilaga 1. Appen visar då vem som får ibruktaga och om spårlägesmätningen ska vara belastad eller obelastad.',
       ]],
@@ -107,6 +107,7 @@ export const HJALP = {
       ]],
       ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
+        'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
       ]],
       ['Skapa filer', [
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',

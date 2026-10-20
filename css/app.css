@@ -461,3 +461,4 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
   .logo-gnista { fill: #fde047; }
   .logo-mitt { fill: #fff; }
 }
+.card > .check + .field { margin-top: 12px; }
