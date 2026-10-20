@@ -13,7 +13,7 @@ import skev from './forms/skev.js';
 import MODELLER from './forms/vaxelmodeller.js';
 import { blankettDatum } from './datum.js';
 import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
-import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler } from './bilder.js';
+import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler, bildtypUrNamn, ersattBilder } from './bilder.js';
 import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn } from './jobb.js';
 import { skapaKopia, lasInKopia } from './backup.js';
 import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
@@ -612,13 +612,21 @@ function importKnapp() {
     onchange: async e => {
       const files = [...e.target.files];
       e.target.value = '';
-      let job = null;
-      for (const f of files) if ((job = await lasJobb(f))) break;
-      if (!job || !job.id) { alert('Filen innehåller inget jobb. Välj en PDF som skapats i appen.'); return; }
+      // Bilder följer med som JPEG-filer bredvid PDF:erna, eller som sidor i den sammanslagna PDF:en.
+      let job = null, bilder = [];
+      for (const f of files.filter(f => !/\.jpe?g$/i.test(f.name))) {
+        const r = await lasJobb(f);
+        if (!r || !r.job.id) continue;
+        if (!job || r.bilder.length > bilder.length) ({ job, bilder } = r);
+      }
+      if (!job) { alert('Filen innehåller inget jobb. Välj en PDF som skapats i appen.'); return; }
+      const jpg = files.filter(f => /\.jpe?g$/i.test(f.name)).sort((a, b) => a.name.localeCompare(b.name, 'sv', { numeric: true }));
+      if (jpg.length) bilder = jpg.map(f => ({ typ: bildtypUrNamn(f.name), data: f }));
       const finns = await db.get('jobs', job.id);
       if (finns && !confirm(`Jobbet ${jobLabel(finns)} finns redan i telefonen. Ersätta det med det importerade?`)) return;
       const now = new Date().toISOString();
       await db.put('jobs', { ...job, forms: job.forms || {}, docs: job.docs || [], importerad: now, updated: now });
+      if (bilder.length) await ersattBilder(job.id, bilder);
       location.hash = `#/jobb/${job.id}`;
     },
   });
@@ -668,7 +676,8 @@ function kontrollera(job, area, onSent) {
 }
 
 // Jobbets blanketter och bilder i en PDF: blanketterna i ordning, sedan en sida per bild (2026-10-20).
-async function enPdf(files, namn, jobb) {
+async function enPdf(files, namn, job) {
+  const bildsidor = [];
   const { PDFDocument, PageSizes } = PDFLib;
   const out = await PDFDocument.create();
   for (const f of files) {
@@ -681,11 +690,12 @@ async function enPdf(files, namn, jobb) {
       const [w, hgt] = PageSizes.A4;
       const page = out.addPage([w, hgt]);
       const s = Math.min((w - 40) / img.width, (hgt - 40) / img.height);
+      bildsidor.push(bildtypUrNamn(f.name));
       page.drawImage(img, { x: (w - img.width * s) / 2, y: (hgt - img.height * s) / 2, width: img.width * s, height: img.height * s });
     }
   }
   out.setTitle(namn);
-  const blob = await laggIJobb(new Blob([await out.save()], { type: 'application/pdf' }), jobb);
+  const blob = await laggIJobb(new Blob([await out.save()], { type: 'application/pdf' }), jobbText(job, bildsidor));
   return new File([blob], `${namn}.pdf`, { type: 'application/pdf' });
 }
 
@@ -732,7 +742,7 @@ async function buildFiles(job, area, onSent) {
       onclick: async e => {
         const knapp = e.currentTarget;
         knapp.disabled = true;
-        try { await dela([await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`), jobbText(job))]); }
+        try { await dela([await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`), job)]); }
         catch (err) { alert('Kunde inte slå ihop filerna: ' + err.message); }
         knapp.disabled = false;
       },

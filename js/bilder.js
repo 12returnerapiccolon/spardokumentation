@@ -56,3 +56,19 @@ export async function bildfiler(jobId, namn) {
   return BILDTYPER.flatMap(t => bilder.filter(b => b.typ === t.key)
     .map((b, i, list) => new File([b.data], `${namn} ${t.fil || t.label}${list.length > 1 ? ` ${i + 1}` : ''}.jpg`, { type: 'image/jpeg' })));
 }
+
+// Bildgrupp ur ett filnamn som bildfiler gjort, t.ex. "… Efter 2.jpg". Okänt namn blir Före.
+export function bildtypUrNamn(namn) {
+  const t = BILDTYPER.find(t => new RegExp(` ${(t.fil || t.label).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( \\d+)?\\.jpe?g$`, 'i').test(namn));
+  return t ? t.key : 'fore';
+}
+
+// Bilder från ett importerat jobb (2026-10-20). De är redan JPEG och sparas som de är;
+// jobbets tidigare bilder ersätts.
+export async function ersattBilder(jobId, bilder) {
+  await taBortAlla(jobId);
+  const start = Date.now();
+  for (const [i, b] of bilder.entries()) {
+    await db.put('bilder', { id: crypto.randomUUID ? crypto.randomUUID() : String(start + i) + Math.random(), jobId, typ: b.typ, data: b.data, added: new Date(start + i).toISOString() });
+  }
+}
