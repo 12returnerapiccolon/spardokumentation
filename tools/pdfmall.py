@@ -39,9 +39,9 @@ def fix_arrows(xml):
     if key in MOVE_PICTURE: move_picture(doc, MOVE_PICTURE[key])
     return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
 
-# Växelbilden i EVR och EKV ligger ovanför sin rad. LibreOffice håller den inom cellen, så den
+# Växelbilden i EVR, EKV och DKV ligger ovanför sin rad. LibreOffice håller den inom cellen, så den
 # hamnar för lågt och över måttabellen. Förankra den i en rad ovanför med motsvarande läge.
-MOVE_PICTURE = {'evr': 'Bildobjekt 6', 'ekv': 'Bildobjekt 2'}
+MOVE_PICTURE = {'evr': 'Bildobjekt 6', 'ekv': 'Bildobjekt 2', 'dkv': 'Bildobjekt 0'}
 def move_picture(doc, name):
     trs = list(doc.iter(w + 'tr'))
     for a in list(doc.iter(WP + 'anchor')):
