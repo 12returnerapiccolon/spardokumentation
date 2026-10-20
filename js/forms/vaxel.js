@@ -295,12 +295,14 @@ function buildForm(t) {
       {
         title: 'Växeldata',
         items: [
-          { type: 'shared', label: 'Bandel', from: 'bandel' },
-          { type: 'shared', label: 'Vx.nr', from: 'vxnr' },
-          { type: 'shared', label: 'Trafikplats', from: 'driftplats' },
+          // Förval från jobbet (grått) som går att skriva över, på en rad (2026-10-20).
+          { type: 'text', key: 'bandel', label: 'Bandel', inputmode: 'numeric', placeholder: job => job.bandel || '', row: 3, flex: 2 },
+          { type: 'text', key: 'vxnr', label: 'Vx.nr', placeholder: job => job.vxnr || '', flex: 2 },
+          { type: 'text', key: 'trafikplats', label: 'Trafikplats', placeholder: job => job.driftplats || '', flex: 3 },
           { type: 'shared', label: 'Växelmodell', from: 'vxmodell' },
           ...['inlaggningsar', 'ritnr', 'ybv', 'radie'].filter(k => k in d)
-            .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0], inputmode: DATA_LABELS[k][1] })),
+            // Inläggningsår och Ritn. nr på samma rad (2026-10-20).
+            .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0], inputmode: DATA_LABELS[k][1], row: k === 'inlaggningsar' && 'ritnr' in d ? 2 : undefined })),
           ...(d.usp != null ? [{ type: 'radio', key: 'usp', label: 'Spår', options: ['USP', 'NSP'] }] : []),
           ...['driftplats_v', 'driftplats_h']
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0] })),
@@ -339,10 +341,11 @@ function buildForm(t) {
       const v = {};
       t.typ.forEach((label, i) => { v[i] = data.typ === label; });
       if (Array.isArray(d.usp)) { v[d.usp[0]] = data.usp === 'USP'; v[d.usp[1]] = data.usp === 'NSP'; } else if (d.usp != null) v[d.usp] = data.usp || '';
+      // Eget värde i blanketten går före jobbets.
       const fromJob = { bandel: job.bandel, vxnr: job.vxnr, trafikplats: job.driftplats, vxmodell: job.vxmodell };
       for (const [k, idx] of Object.entries(d)) {
         if (k === 'usp') continue;
-        v[idx] = k in fromJob ? fromJob[k] : data[k];
+        v[idx] = data[k] || fromJob[k];
       }
       const auto = autoVarden(t.key, job, data);
       for (const [m, n, tol, upp, dif] of matt) {
