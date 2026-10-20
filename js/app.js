@@ -64,20 +64,21 @@ const SHARED = [
   // Fyller i Eget Ao nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
   { key: 'ao', label: 'Ao nr', inputmode: 'numeric' },
   // Personuppgifterna finns bara under Inställningar och kan ändras i de enskilda blanketterna.
-  { key: 'namn', label: 'Ditt namn', profile: true, settingsOnly: true },
-  { key: 'namn_tel', label: 'Ditt telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
-  { key: 'svetsid', label: 'Svets-ID', profile: true, settingsOnly: true, autocapitalize: 'characters' },
-  { key: 'foretag', label: 'Företag / entreprenör', profile: true, settingsOnly: true },
-  { key: 'arbetsledare', label: 'Arbetsledare', profile: true, settingsOnly: true },
-  { key: 'arbetsledare_tel', label: 'Arbetsledarens telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
-  { key: 'platschef', label: 'Platschef', profile: true, settingsOnly: true },
-  { key: 'platschef_tel', label: 'Platschefens telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
-  // Bara under Inställningar. Kopieras till jobbet när det skapas.
-  { key: 'enhet', label: 'Företag/enhet (svetsrapport)', profile: true, settingsOnly: true },
-  { key: 'svetsansvarig', label: 'Svetsansvarig', profile: true, settingsOnly: true },
-  { key: 'svetsansvarig_tel', label: 'Svetsansvarigs telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
-  { key: 'projektledare', label: 'TRV projektledare (IBT)', profile: true, settingsOnly: true },
-  { key: 'projektledare_tel', label: 'TRV projektledarens telefonnr', profile: true, settingsOnly: true, type: 'tel', inputmode: 'tel' },
+  // group: rubriken de står under i Inställningar. Namn och telefon står på samma rad (2026-10-20).
+  { key: 'namn', label: 'Namn', profile: true, settingsOnly: true, group: 'Om dig', row: 'du', flex: 3 },
+  { key: 'namn_tel', label: 'Telefon', profile: true, settingsOnly: true, group: 'Om dig', row: 'du', flex: 2, type: 'tel', inputmode: 'tel' },
+  { key: 'svetsid', label: 'Svets-ID', profile: true, settingsOnly: true, group: 'Om dig', autocapitalize: 'characters' },
+  // Kopieras till jobbet när det skapas.
+  { key: 'foretag', label: 'Företag/entreprenör', profile: true, settingsOnly: true, group: 'Företag' },
+  { key: 'enhet', label: 'Företag/enhet på svetsrapporten', profile: true, settingsOnly: true, group: 'Företag' },
+  { key: 'arbetsledare', label: 'Arbetsledare', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'al', flex: 3 },
+  { key: 'arbetsledare_tel', label: 'Telefon', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'al', flex: 2, type: 'tel', inputmode: 'tel' },
+  { key: 'platschef', label: 'Platschef', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'pc', flex: 3 },
+  { key: 'platschef_tel', label: 'Telefon', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'pc', flex: 2, type: 'tel', inputmode: 'tel' },
+  { key: 'svetsansvarig', label: 'Svetsansvarig', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'sa', flex: 3 },
+  { key: 'svetsansvarig_tel', label: 'Telefon', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'sa', flex: 2, type: 'tel', inputmode: 'tel' },
+  { key: 'projektledare', label: 'TRV projektledare', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'pl', flex: 3 },
+  { key: 'projektledare_tel', label: 'Telefon', profile: true, settingsOnly: true, group: 'Kontaktpersoner', row: 'pl', flex: 2, type: 'tel', inputmode: 'tel' },
 ];
 
 const PROFILE_KEYS = SHARED.filter(f => f.profile).map(f => f.key);
@@ -569,7 +570,7 @@ async function buildFiles(job, area) {
     if (!form) { problems.push('Välj växeltyp för växelbesiktningsrapporten.'); continue; }
     const tpl = await db.get('templates', form.key);
     if (!tpl || (form.format === 'overlay' && !isPdf(tpl.data))) {
-      problems.push(`PDF-mallen för ${form.title} saknas. Läs in den under Mallar.`); continue;
+      problems.push(`PDF-mallen för ${form.title} saknas. Läs in den under Inställningar > Blankettmallar.`); continue;
     }
     try {
       const values = form.toValues(job, job.forms[form.key] || {}, { diff });
@@ -1106,7 +1107,7 @@ async function formView(id, key) {
 }
 
 async function templatesView() {
-  setTitle('Mallar', '#/installningar');
+  setTitle('Blankettmallar', '#/installningar');
   const templates = await db.getAll('templates');
   const status = h('div', { class: 'status' });
   const input = h('input', {
@@ -1150,10 +1151,22 @@ async function settingsView() {
   // Versionen är namnet på cachen i sw.js, så att man kan se om telefonen har den senaste.
   const version = h('p', { class: 'muted' });
   if ('caches' in window) caches.keys().then(k => { const v = k.filter(x => /^v\d+$/.test(x)).sort((a, b) => a.slice(1) - b.slice(1)).pop(); if (v) version.textContent = `Version ${v}`; }).catch(() => {});
+  const onChange = (k, v) => { profile[k] = v; save(); };
+  const GRUPPER = [
+    ['Om dig', 'Ditt namn står som underskrift på blanketterna.'],
+    ['Företag', null],
+    ['Kontaktpersoner', 'Svetsansvarig står på svetsrapporten och TRV projektledare på IBT.'],
+  ];
   render(
-    h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
-    h('h2', {}, 'Förval för nya jobb'),
-    h('div', { class: 'card' }, sharedInputs(profile, (k, v) => { profile[k] = v; save(); }, { only: PROFILE_KEYS })),
+    h('p', { class: 'muted' }, 'Uppgifterna här fylls i automatiskt i nya jobb och blanketter. I en blankett kan du skriva något annat som bara gäller den.'),
+    ...GRUPPER.flatMap(([namn, hjalp]) => [
+      h('h2', {}, namn),
+      h('div', { class: 'card' },
+        hjalp ? h('p', { class: 'muted note' }, hjalp) : null,
+        sharedInputs(profile, onChange, { only: SHARED.filter(f => f.group === namn).map(f => f.key) })),
+    ]),
+    h('h2', {}, 'Blankettmallar'),
+    h('a', { class: 'button big', href: '#/mallar' }, 'Läs in och visa blankettmallar'),
     h('h2', {}, 'Om appen'),
     h('p', { class: 'muted' }, 'Allt du fyller i och alla mallar sparas bara i den här telefonen. Inget skickas till någon server. Filerna lämnar telefonen först när du delar dem.'),
     version,
