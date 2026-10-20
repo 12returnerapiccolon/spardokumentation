@@ -81,7 +81,8 @@ export default {
         { type: 'text', key: 'datum', label: 'Datum', inputType: 'date', defaultValue: job => blankettDatum(job) },
         { type: 'text', key: 'plats', label: 'Bandel/driftplats', placeholder: job => [job.bandel, job.driftplats].filter(Boolean).join(' ') },
         { type: 'text', key: 'spar', label: 'Spår', placeholder: job => job.spar || '' },
-        { type: 'text', key: 'utrustning', label: 'Mätutrustning', remember: true },
+        // Spårpass om inget annat anges (2026-10-20).
+        { type: 'text', key: 'utrustning', label: 'Mätutrustning', remember: true, placeholder: () => 'Spårpass' },
         { type: 'plus', label: 'Km+m första mätpunkt', keys: ['km', 'm'], placeholders: [job => job.km || '', job => job.m || ''] },
       ],
     },
@@ -122,7 +123,7 @@ export default {
       G2: data.datum !== undefined ? data.datum : datum,
       C3: data.plats || [job.bandel, job.driftplats].filter(Boolean).join(' '),
       G3: data.spar || job.spar || '',
-      C4: data.utrustning || '',
+      C4: data.utrustning || 'Spårpass',
       G4: km ? `${km}+${String(m || 0).padStart(3, '0')}` : '',
     };
     const list = data.punkter || [];

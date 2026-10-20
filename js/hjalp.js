@@ -295,7 +295,7 @@ export const HJALP = {
     intro: 'Protokoll för spårvidd och rälsförhöjning (TMALL 1605). Appen räknar ut skevning och ramptal och visar rött det som ligger utanför UH2.',
     delar: [
       ['Rapportuppgifter', [
-        'Välj hastighetsklass; den styr gränsvärdena. Fyll i nominell spårvidd, anordnad rälsförhöjning, mätutrustning och km+m för första mätpunkten.',
+        'Välj hastighetsklass; den styr gränsvärdena. Fyll i nominell spårvidd, anordnad rälsförhöjning, mätutrustning (Spårpass om du inte skriver något annat) och km+m för första mätpunkten.',
       ]],
       ['Mätpunkter', [
         'En mätpunkt varannan meter, 0–36 m. Skriv spårvidd och rälsförhöjning; rutan hoppar vidare när värdet är komplett. Knappen ± ger minustecken.',
