@@ -869,7 +869,15 @@ function renderItems(items, data, onChange, job) {
   for (let i = 0; i < items.length; i++) {
     const f = items[i];
     const n = f.row || (f.half && items[i + 1]?.half ? 2 : 1);
-    if (n > 1) { out.push(h('div', { class: 'row' }, items.slice(i, i + n).map(x => renderItem(x, data, onChange, job)))); i += n - 1; } else out.push(renderItem(f, data, onChange, job));
+    if (n > 1) {
+      // flex: hur stor del av raden fältet tar (standard 1).
+      out.push(h('div', { class: 'row' }, items.slice(i, i + n).map(x => {
+        const el = renderItem(x, data, onChange, job);
+        if (x.flex && el) el.style.flex = x.flex;
+        return el;
+      })));
+      i += n - 1;
+    } else out.push(renderItem(f, data, onChange, job));
   }
   return out;
 }

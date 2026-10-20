@@ -154,6 +154,7 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 .field.shared output {
   display: block;
   padding: 10px 12px;
+  border: 1px solid transparent; /* samma höjd som en inmatningsruta bredvid */
   border-radius: 8px;
   background: var(--shared);
   min-height: 44px;

@@ -124,10 +124,10 @@ const EGEN = [
 ];
 
 const ROLLER = [
-  ['projektledare', 'TRV Projektledare', 4, job => job.projektledare || '', job => job.projektledare_tel || ''],
-  ['platschef', 'Entreprenör Platschef', 5, job => job.platschef || '', job => job.platschef_tel || ''],
-  ['arbetsledare', 'Ibruktagande-/arbetsledare', 6, job => job.arbetsledare || '', job => job.arbetsledare_tel || ''],
-  ['besiktningsman', 'Ibruktagandebesiktningsman', 7],
+  ['projektledare', 'TRV projektledare', 4, job => job.projektledare || '', job => job.projektledare_tel || ''],
+  ['platschef', 'Platschef', 5, job => job.platschef || '', job => job.platschef_tel || ''],
+  ['arbetsledare', 'Arbetsledare', 6, job => job.arbetsledare || '', job => job.arbetsledare_tel || ''],
+  ['besiktningsman', 'Besiktningsman', 7],
   ['bankontrollant', 'Bankontrollant', 8, job => job.namn || '', job => job.namn_tel || ''],
 ];
 // Bankontrollanten besiktigar och signerar. Finns en besiktningsman på jobbet tas
@@ -161,20 +161,23 @@ export default {
       help: 'Grå text hämtas från jobbet.',
       items: [
         { type: 'radio', key: 'kontrakt', label: 'Arbete i', options: ['UH-kontrakt', 'Projekt'], noEmpty: true, remember: true, defaultValue: () => 'UH-kontrakt' },
-        { type: 'text', key: 'kontraktNamn', label: 'UH-kontrakt eller projekt (namn)', remember: true },
-        { type: 'shared', label: 'Datum för besiktning', from: 'datum' },
-        { type: 'text', key: 'arbete', label: 'Arbete', placeholder: () => 't.ex. Byte av isolerskarv vxl 12' },
+        // Bandel är ett tresiffrigt nummer och får plats bredvid namnet (2026-10-20).
+        { type: 'text', key: 'kontraktNamn', label: 'UH-kontrakt eller projekt (namn)', remember: true, row: 2, flex: 3 },
+        { type: 'text', key: 'bandel', label: 'Bandel', inputmode: 'numeric', defaultValue: job => job.bandel || '', flex: 1 },
+        // Datum och beställningsnr på samma rad (2026-10-20).
+        { type: 'shared', label: 'Datum för besiktning', from: 'datum', row: 2 },
         { type: 'text', key: 'bestnr', label: 'Beställningsnr', placeholder: job => job.ao || '' },
+        { type: 'text', key: 'arbete', label: 'Arbete', placeholder: () => 't.ex. Byte av isolerskarv vxl 12' },
         // Besiktningsmannen gäller bara jobbet och sparas inte till nästa (namnet föreslås ändå).
         ...ROLLER.flatMap(([key, label, , def, defTfn]) => {
           const hideIf = key === 'bankontrollant' ? (job, data) => besiktningsman(data) : null;
           const remember = key !== 'besiktningsman';
           return [
-            { type: 'text', key, label, defaultValue: def, remember: remember && !def, names: true, hideIf },
-            { type: 'text', key: `${key}Tfn`, label: 'Tfn', inputType: 'tel', inputmode: 'tel', defaultValue: defTfn, remember: remember && !defTfn, hideIf },
+            // Namn och telefon på samma rad (2026-10-20).
+            { type: 'text', key, label, defaultValue: def, remember: remember && !def, names: true, hideIf, row: 2 },
+            { type: 'text', key: `${key}Tfn`, label: 'Telefon', inputType: 'tel', inputmode: 'tel', defaultValue: defTfn, remember: remember && !defTfn, hideIf },
           ];
         }),
-        { type: 'text', key: 'bandel', label: 'Bandel', inputmode: 'numeric', defaultValue: job => job.bandel || '' },
       ],
     },
     {
@@ -203,6 +206,8 @@ export default {
     },
     ...PUNKTER.map(([title, rows]) => ({
       title: `Kontrollpunkter: ${title}`,
+      // Kontrollpunkterna är minimerade från start (2026-10-20).
+      closed: true,
       help: title === 'Allmänt' ? 'Kryssa i punkterna som är kontrollerade. De signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld, och övriga lämnas tomma. Tryck på en punkt för att se vad som ska kontrolleras enligt TDOK 2021:0311. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
       items: rows.map(([r, label, enligt, moment]) => ({
         type: 'check', key: `k${r}`, label, isChecked: kontrollerad,
