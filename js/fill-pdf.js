@@ -17,6 +17,10 @@ export async function fillPdf(templateBuffer, values) {
       const v = value || ' ';
       if (field.getOptions().includes(v)) field.select(v);
     } else if (field instanceof PDFTextField) {
+      // Mallen 1481 skriver snedstrecket i DA som \057, som pdf-lib inte läser. Då tappas
+      // textstorleken och flerradiga fält får jättestor text.
+      const da = field.acroField.getDefaultAppearance() || '';
+      if (da.includes('\\057')) field.acroField.setDefaultAppearance(da.replaceAll('\\057', '/'));
       field.setText(value == null ? '' : String(value));
     }
   }
