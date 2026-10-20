@@ -2,6 +2,7 @@
 // så att t.ex. en arbetsledare kan förbereda ett jobb och skicka filerna till en tekniker som
 // importerar dem i appen. Uppgifterna ligger i PDF:ens dokumentinformation och syns inte när
 // filen öppnas eller skrivs ut, så den som saknar appen kan fylla i blanketterna på papper.
+// Appens gamla namn; behålls så att PDF:er från alla versioner går att importera.
 const NYCKEL = 'SpardokumentationJobb';
 // Avsändarens egna uppgifter följer inte med; mottagaren har sina egna under Inställningar.
 const EGNA = ['namn', 'namn_tel', 'svetsid'];

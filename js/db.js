@@ -1,4 +1,5 @@
 // Lokal lagring i telefonen (IndexedDB). Inget skickas någonstans.
+// Appens gamla namn; ändras inte, annars försvinner allt som sparats (appen heter Svetsjobb sedan 2026-10-20).
 const DB_NAME = 'spardokumentation';
 // Version 2: bilder i jobben (2026-10-19).
 const DB_VERSION = 2;

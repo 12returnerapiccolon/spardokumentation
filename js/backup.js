@@ -16,7 +16,7 @@ export async function skapaKopia() {
   zip.file('data.json', JSON.stringify(data));
   const blob = await zip.generateAsync({ type: 'blob' });
   const datum = new Date().toLocaleDateString('sv-SE');
-  return new File([blob], `Spårdokumentation säkerhetskopia ${datum}.zip`, { type: 'application/zip' });
+  return new File([blob], `Svetsjobb säkerhetskopia ${datum}.zip`, { type: 'application/zip' });
 }
 
 // Läser in en kopia. Jobb, mallar och bilder med samma id skrivs över, övrigt i telefonen

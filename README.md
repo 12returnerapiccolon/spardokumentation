@@ -1,4 +1,6 @@
-# Spårdokumentation
+# Svetsjobb
+
+Hette tidigare Spårdokumentation (bytt 2026-10-20). Det gamla namnet finns kvar där det måste: databasen i telefonen (`spardokumentation`), mallarnas ämne (`Spårdokumentation mall …`) och nyckeln för jobb i PDF:erna (`SpardokumentationJobb`), så att inläsning av data, mallar och äldre filer fortsätter fungera.
 
 Webbapp för iPhone där en spårsvetsare fyller i fältdokumentation och får ut ifyllda originalblanketter.
 

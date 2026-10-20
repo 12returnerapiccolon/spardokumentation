@@ -105,8 +105,8 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
 
   if (title) pdf.setTitle(title);
   pdf.setSubject('');
-  pdf.setProducer('Spårdokumentation');
-  pdf.setCreator('Spårdokumentation');
+  pdf.setProducer('Svetsjobb');
+  pdf.setCreator('Svetsjobb');
   const bytes = await pdf.save();
   return new Blob([bytes], { type: 'application/pdf' });
 }

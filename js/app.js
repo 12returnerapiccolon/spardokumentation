@@ -253,7 +253,7 @@ async function importTemplates(selected) {
 // ---------- Vyer ----------
 
 async function homeView() {
-  setTitle('Spårdokumentation');
+  setTitle('Svetsjobb');
   const jobs = (await db.getAll('jobs')).sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
   const templates = await db.getAll('templates');
   const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
