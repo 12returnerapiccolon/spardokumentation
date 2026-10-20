@@ -20,18 +20,42 @@ DOCXML = dict((it.filename, d) for it, d in ENTRIES)['word/document.xml']
 WP = '{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}'
 # EKV: vänster pil mellan ordet Driftplats och strecklinjen, höger pil ovanför sin Driftplats.
 ARROW_PT = {('ekv', 'Line 36'): 13, ('ekv', 'Line 37'): 3}
+# EVR: vänster pil ligger mot rubrikraden. Båda pilarna i samma höjd som den högra.
+ARROW_ROW_PT = {'evr': 6.65}
 def fix_arrows(xml):
     doc = etree.fromstring(xml)
     for tr in doc.iter(w + 'tr'):
         arrows = [a for a in tr.iter(WP + 'anchor') if int(a.find(WP + 'extent').get('cy')) < 200000
                   and a.find(WP + 'positionV').get('relativeFrom') == 'paragraph']
         offs = [int(a.find(WP + 'positionV')[0].text) for a in arrows]
+        if arrows and key in ARROW_ROW_PT:
+            for a in arrows: a.find(WP + 'positionV')[0].text = str(int(ARROW_ROW_PT[key] * 12700))
+            continue
         if not arrows or min(offs) >= 0: continue
         target = max(offs) if 0 <= max(offs) <= 8 * 12700 else 3 * 12700
         for a in arrows:
             name = a.find(WP + 'docPr').get('name')
             a.find(WP + 'positionV')[0].text = str(int(ARROW_PT.get((key, name), target / 12700) * 12700))
+    if key in MOVE_PICTURE: move_picture(doc, MOVE_PICTURE[key])
     return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
+
+# Växelbilden i EVR ligger 33,75 pt ovanför sin rad. LibreOffice håller den inom cellen, så den
+# hamnar för lågt och över måttabellen. Förankra den i raden ovanför med motsvarande läge.
+MOVE_PICTURE = {'evr': 'Bildobjekt 6'}
+def move_picture(doc, name):
+    trs = list(doc.iter(w + 'tr'))
+    for a in list(doc.iter(WP + 'anchor')):
+        if a.find(WP + 'docPr').get('name') != name: continue
+        run = a
+        while run.tag != w + 'r': run = run.getparent()
+        tr = run
+        while tr.tag != w + 'tr': tr = tr.getparent()
+        prev = trs[trs.index(tr) - 1]
+        h = int(prev.find(f'{w}trPr/{w}trHeight').get(w + 'val')) * 635  # twips -> EMU
+        pv = a.find(WP + 'positionV')[0]
+        pv.text = str(int(pv.text) + h)
+        run.getparent().remove(run)
+        next(prev.iter(w + 'p')).append(run)
 DOCXML = fix_arrows(DOCXML)
 
 # Sidfötter med innehållskontroller kopplade till dokumentegenskaper (version, fastställd) visar
