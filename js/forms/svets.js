@@ -115,7 +115,7 @@ export default {
       items: EGENKONTROLL.map(([key, label]) => ({ type: 'check', key, label, isChecked: v => v === true || v === 'X' })),
     },
     {
-      title: 'Kommentarer',
+      title: 'Avvikelser och kommentarer',
       items: [
         { type: 'textarea', key: 'kommentar', label: 'Avvikelser eller kommentarer' },
       ],

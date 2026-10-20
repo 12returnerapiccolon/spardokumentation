@@ -65,7 +65,7 @@ export default {
 
   sections: [
     {
-      title: 'Protokoll',
+      title: 'Rapportuppgifter',
       help: 'Grå text hämtas från jobbet och Inställningar.',
       items: [
         {

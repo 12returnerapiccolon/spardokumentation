@@ -43,7 +43,7 @@ export default {
 
   sections: [
     {
-      title: 'Arbete',
+      title: 'Rapportuppgifter',
       help: 'Kontrollplanen upprättas av utförande entreprenör före arbetets start och revideras om förutsättningarna ändras (TRVINFRA-00014 kap 6). Grå text hämtas från jobbet och Inställningar.',
       items: [
         { type: 'text', key: 'arende', label: 'Ärendenummer' },

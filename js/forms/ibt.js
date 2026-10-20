@@ -172,9 +172,9 @@ export default {
   },
 
   sections: [
-    // Kontaktuppgifterna i ett eget avsnitt överst, minimerat från start (2026-10-20).
+    // Kontaktpersonerna i ett eget avsnitt överst, minimerat från start (2026-10-20).
     {
-      title: 'Kontaktuppgifter',
+      title: 'Kontaktpersoner',
       closed: true,
       help: 'Namn och telefon hämtas från Inställningar och går att ändra här.',
       items: [
@@ -191,7 +191,7 @@ export default {
       ],
     },
     {
-      title: 'Arbete',
+      title: 'Rapportuppgifter',
       help: 'Grå text hämtas från jobbet.',
       items: [
         { type: 'radio', key: 'kontrakt', label: 'Arbete i', options: ['UH-kontrakt', 'Projekt'], noEmpty: true, remember: true, defaultValue: () => 'UH-kontrakt' },

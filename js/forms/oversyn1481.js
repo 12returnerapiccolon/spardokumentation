@@ -70,7 +70,7 @@ export default {
 
   sections: [
     {
-      title: 'Huvud',
+      title: 'Rapportuppgifter',
       items: [
         // Förval från Inställningar (grått). Det som skrivs här gäller bara den här blanketten.
         { type: 'text', key: 'foretag', label: 'Entreprenörens namn', placeholder: job => job.foretag || '' },

@@ -381,7 +381,7 @@ function buildForm(t) {
       },
       ...t.groups.map(g => ({ title: g.title, items: checkItems(g) })),
       {
-        title: 'Spårväxeln kontrollerad',
+        title: 'Underskrift',
         items: [
           { type: 'shared', label: 'Datum', from: 'datum' },
           // Förval: Ditt namn från Inställningar (grått). Går att skriva något annat.
@@ -428,7 +428,7 @@ function buildForm(t) {
 }
 
 // Bara de här delarna är öppna från start i växelrapporterna, resten är minimerade (2026-10-20).
-const OPPNA = ['Besiktningstyp', 'Växeldata', 'Mått i växeln', 'Spårväxeln kontrollerad'];
+const OPPNA = ['Besiktningstyp', 'Växeldata', 'Mått i växeln', 'Underskrift'];
 
 export const VAXELFORMS = VAXELTYPER.map(t => {
   const form = buildForm(t);
