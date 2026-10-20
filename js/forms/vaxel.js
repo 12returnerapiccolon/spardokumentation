@@ -346,9 +346,9 @@ function buildForm(t) {
       {
         title: 'Växeldata',
         items: [
-          // Bandel och Vx.nr är jobbets och ändras överallt; trafikplats är förval (grått) som går att skriva över (2026-10-20).
-          { type: 'jobtext', key: 'bandel', label: 'Bandel', inputmode: 'numeric', row: 3, flex: 2 },
-          { type: 'jobtext', key: 'vxnr', label: 'Vx.nr', flex: 2 },
+          // Förval från jobbet (grått) som går att skriva över, på en rad (2026-10-20).
+          { type: 'text', key: 'bandel', label: 'Bandel', inputmode: 'numeric', placeholder: job => job.bandel || '', row: 3, flex: 2 },
+          { type: 'text', key: 'vxnr', label: 'Vx.nr', placeholder: job => job.vxnr || '', flex: 2 },
           { type: 'text', key: 'trafikplats', label: 'Trafikplats', placeholder: job => job.driftplats || '', flex: 3 },
           { type: 'vaxelval' },
           ...['inlaggningsar', 'ritnr', 'ybv', 'radie'].filter(k => k in d)
@@ -403,8 +403,7 @@ function buildForm(t) {
       const fromJob = { bandel: job.bandel, vxnr: job.vxnr, trafikplats: job.driftplats, vxmodell: job.vxmodell };
       for (const [k, idx] of Object.entries(d)) {
         if (k === 'usp') continue;
-        // Bandel och växelnummer är jobbets (2026-10-20); ett äldre eget värde bara om jobbet saknar.
-        v[idx] = ['bandel', 'vxnr'].includes(k) ? fromJob[k] || data[k] : data[k] || fromJob[k];
+        v[idx] = data[k] || fromJob[k];
       }
       const auto = autoVarden(t.key, job, data);
       for (const [m, n, tol, upp, dif] of matt) {

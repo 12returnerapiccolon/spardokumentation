@@ -783,12 +783,6 @@ function renderItem(item, data, onChange, job) {
   switch (item.type) {
     case 'label':
       return h('p', { class: 'sublabel' }, item.label);
-    // Ett fält på jobbet som går att ändra i blanketten, t.ex. bandel och växelnummer i
-    // växelblanketterna (2026-10-20). Ändringen syns i jobbet och alla blanketter.
-    case 'jobtext':
-      return h('label', { class: 'field' }, h('span', {}, item.label),
-        h('input', { type: 'text', inputmode: item.inputmode, name: item.key, value: job[item.key] || '', autocomplete: 'off',
-          oninput: e => onChange(`job.${item.key}`, e.target.value) }));
     // Jobbets växeltyp och växelmodell, ändringsbara i växelblanketterna (2026-10-20).
     // Ändringen sparas på jobbet och syns därför i alla blanketter.
     case 'vaxelval':
