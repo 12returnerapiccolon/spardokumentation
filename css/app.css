@@ -467,3 +467,9 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .check .doknamn small.hel { display: block; font-size: 13px; line-height: 1.3; margin-top: 2px; }
 .check:has(> .doknamn) { align-items: flex-start; padding: 6px 0; }
 .check:has(> .doknamn) input { margin-top: 1px; }
+/* Kopiera jobbnamnet, bredvid titeln på jobbsidan (2026-10-20). */
+.topbar .kopiera { flex: none; width: 36px; height: 44px; margin-left: -4px; padding: 0; border: 0; background: none; color: var(--accent); display: flex; align-items: center; justify-content: center; }
+.topbar .kopiera[hidden] { display: none; }
+.topbar .kopiera svg { width: 22px; height: 22px; }
+.topbar .kopiera.klar svg { display: none; }
+.topbar .kopiera.klar::after { content: '✓'; font-size: 22px; font-weight: 700; }

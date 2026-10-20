@@ -143,8 +143,10 @@ function visaHjalp() {
   document.body.append(overlay);
 }
 
-function setTitle(text, back) {
+// kopiera: visa knappen som kopierar titeln, t.ex. jobbnamnet till mejlets ämnesrad (2026-10-20).
+function setTitle(text, back, { kopiera = false } = {}) {
   document.getElementById('title').textContent = text;
+  document.getElementById('kopiera').hidden = !kopiera;
   // Loggan bara på startsidan.
   document.getElementById('logo').style.display = !back && text === 'Svetsjobb' ? '' : 'none';
   const b = document.getElementById('back');
@@ -627,7 +629,7 @@ async function jobView(id) {
   upgradeJob(job);
   job.docs = CATALOG.map(d => d.key).filter(k => job.docs.includes(k));
   await fillFromProfile(job);
-  setTitle(jobLabel(job), '#/');
+  setTitle(jobLabel(job), '#/', { kopiera: true });
   const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   window.onpagehide = () => save.flush();
   const exportArea = h('div', { class: 'export' });
@@ -678,7 +680,7 @@ async function jobView(id) {
       jobInputs(job, k => {
         save(); docBox.refresh();
         if (k === 'vaxeltyp') docList.replaceChildren(...docItems());
-        setTitle(jobLabel(job), '#/');
+        setTitle(jobLabel(job), '#/', { kopiera: true });
       }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })),
     h('button', {
       class: 'button big', type: 'button',
@@ -888,7 +890,7 @@ async function buildFiles(job, area, onSent) {
   const lankar = h('ul', { class: 'files' }, files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
   // Delade filer markerar jobbet som skickat.
   const dela = async list => {
-    if (!(await delaFiler(list, lankar, jobLabel(job))) || jobStatus(job) !== 'Pågående') return;
+    if (!(await delaFiler(list, lankar)) || jobStatus(job) !== 'Pågående') return;
     if (!(navigator.canShare && navigator.canShare({ files: list }))) return;
     job.status = 'Skickat';
     job.skickad = new Date().toISOString();
@@ -1592,11 +1594,11 @@ function kopiaKort() {
 
 // Dela filer via iOS delningsmeny. Sant om de delades. Utan delning (t.ex. på en dator)
 // visas länkar att ladda ner i stället, och det räknas som delat.
-async function delaFiler(files, area, titel) {
+async function delaFiler(files, area) {
   if (navigator.canShare && navigator.canShare({ files })) {
-    // Jobbnamnet som titel blir ämnesrad i Mail (2026-10-20). iOS kan då lägga till en liten
-    // textfil med namnet, t.ex. i Filer; det är godtaget. Säkerhetskopian delas utan titel.
-    try { await navigator.share(titel ? { files, title: titel } : { files }); return true; }
+    // Bara filerna: med title eller text lägger iOS till en textfil, och Mail tar ändå inte
+    // titeln som ämnesrad (testat 2026-10-20). Jobbnamnet kopieras i stället med knappen överst.
+    try { await navigator.share({ files }); return true; }
     catch (e) { if (e.name !== 'AbortError') alert('Kunde inte dela: ' + e.message); return false; }
   }
   area.replaceChildren(...files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
@@ -1627,6 +1629,18 @@ async function route() {
 
 window.addEventListener('hashchange', route);
 document.addEventListener('click', e => { if (e.target.closest('#hjalp')) { e.preventDefault(); visaHjalp(); } });
+
+// Kopiera titeln (jobbnamnet) till urklipp. Bocken visar att det gick.
+document.getElementById('kopiera').addEventListener('click', async e => {
+  const knapp = e.currentTarget;
+  const text = document.getElementById('title').textContent;
+  try { await navigator.clipboard.writeText(text); } catch {
+    const t = h('textarea', { readonly: true, style: 'position:fixed;opacity:0' }, text);
+    document.body.append(t); t.select(); document.execCommand('copy'); t.remove();
+  }
+  knapp.classList.add('klar');
+  setTimeout(() => knapp.classList.remove('klar'), 1500);
+});
 window.addEventListener('DOMContentLoaded', () => {
   db.persist();
   route();
