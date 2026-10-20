@@ -260,33 +260,64 @@ async function komIgangView() {
   const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
   const jobs = await db.getAll('jobs');
   const senasteKopia = await db.getSetting('senasteKopia', null);
-  // Öppnad från hemskärmen: navigator.standalone på iPhone, display-mode på Android.
-  const hemskarm = navigator.standalone === true || window.matchMedia?.('(display-mode: standalone)').matches;
-  const steg = [
-    ['Lägg appen på hemskärmen',
-      ['iPhone: öppna sidan i Safari, tryck på Dela (fyrkanten med pilen) och välj Lägg till på hemskärmen.',
-        'Android: öppna sidan i Chrome, tryck på menyn ⋮ uppe till höger och välj Installera app eller Lägg till på startskärmen.',
-        'Öppna sedan appen från ikonen. Då fungerar den utan täckning och jobben rensas inte lika lätt.'],
-      hemskarm, null],
-    ['Läs in blankettmallarna',
-      'Mallarna finns inte i appen. Du får zip-filen "Alla PDF-mallar" av arbetsledaren eller en kollega. Spara den i telefonen (Filer på iPhone, Filer eller Hämtade filer på Android) och läs in den under Blankettmallar. Det behövs bara en gång, och igen om appen säger att en mall är gammal.',
-      missing.length === 0, ['#/mallar', missing.length ? `Läs in mallarna (${missing.length} saknas)` : 'Visa mallarna']],
-    ['Fyll i dina uppgifter',
-      'Ditt namn står som underskrift på blanketterna. Fyll också i telefon, svets-ID, företag och kontaktpersoner, så fylls de i automatiskt i varje jobb.',
-      !!profile.namn, ['#/installningar', 'Öppna Inställningar']],
-    ['Skapa ditt första jobb',
-      'Fyll i uppgifterna om jobbet. Appen väljer blanketterna efter dina svar. Fyll i blanketterna, ta bilder och tryck Skapa filer. Dela sedan filerna med arbetsledaren via Mail eller Teams.',
-      jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
-    ['Spara en säkerhetskopia',
-      'Jobben finns bara i telefonen. Spara en kopia i telefonens filer då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.',
-      !!senasteKopia, ['#/installningar', 'Till säkerhetskopian']],
-  ];
-  render(
-    h('p', { class: 'muted' }, 'Så kommer du igång med appen. Steg med bock är redan gjorda.'),
-    h('ol', { class: 'steg' }, steg.map(([rubrik, text, klar, lank]) => h('li', { class: 'card' + (klar ? ' klar' : '') },
+  // Öppnad från hemskärmen eller som installerad app.
+  const installerad = navigator.standalone === true || window.matchMedia?.('(display-mode: standalone)').matches;
+  // Instruktioner för en enhet i taget, förvald efter den som sidan öppnats på (2026-10-20).
+  // iPad säger sig vara Mac men har pekskärm, och räknas som iPhone.
+  const ua = navigator.userAgent;
+  const gissad = /Android/i.test(ua) ? 'Android' : /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'iPhone'
+    : /Macintosh/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : 'iPhone';
+  const ENHETER = ['iPhone', 'Android', 'Mac', 'Windows'];
+  const dator = e => e === 'Mac' || e === 'Windows';
+  const TEXT = {
+    installera: {
+      iPhone: ['Öppna sidan i Safari, tryck på Dela (fyrkanten med pilen) och välj Lägg till på hemskärmen.', 'Öppna sedan appen från ikonen. Då fungerar den utan täckning och jobben rensas inte lika lätt.'],
+      Android: ['Öppna sidan i Chrome, tryck på menyn ⋮ uppe till höger och välj Installera app eller Lägg till på startskärmen.', 'Öppna sedan appen från ikonen. Då fungerar den utan täckning och jobben rensas inte lika lätt.'],
+      Mac: ['I Safari: välj Arkiv och Lägg till i Dock. I Chrome: tryck på installera-ikonen till höger i adressfältet.', 'Det är frivilligt. Sidan fungerar även i en vanlig flik, men öppna den alltid i samma webbläsare, för jobben sparas i webbläsaren.'],
+      Windows: ['I Chrome eller Edge: tryck på installera-ikonen till höger i adressfältet, eller välj Installera i webbläsarens meny.', 'Det är frivilligt. Sidan fungerar även i en vanlig flik, men öppna den alltid i samma webbläsare, för jobben sparas i webbläsaren.'],
+    },
+    spara: { iPhone: 'i Filer', Android: 'i Filer eller Hämtade filer', Mac: 'i en mapp på datorn, t.ex. Hämtade filer', Windows: 'i en mapp på datorn, t.ex. Hämtade filer' },
+    dela: {
+      iPhone: 'Dela filerna med arbetsledaren via Mail eller Teams.',
+      Android: 'Dela filerna med arbetsledaren via Mail eller Teams.',
+      Mac: 'I Safari fungerar Dela. I Chrome på Mac går det inte att dela filer: ladda ned dem via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
+      Windows: 'Dela fungerar via Windows delning. Du kan också ladda ned filerna via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
+    },
+  };
+  let enhet = gissad;
+  const lista = h('ol', { class: 'steg' });
+  const visa = () => {
+    const d = dator(enhet);
+    const steg = [
+      [d ? 'Installera appen (frivilligt)' : 'Lägg appen på hemskärmen', TEXT.installera[enhet], installerad && enhet === gissad, null],
+      ['Läs in blankettmallarna',
+        `Mallarna finns inte i appen. Du får zip-filen "Alla PDF-mallar" av arbetsledaren eller en kollega. Spara den ${TEXT.spara[enhet]} och läs in den under Blankettmallar. Det behövs bara en gång, och igen om appen säger att en mall är gammal.`,
+        missing.length === 0, ['#/mallar', missing.length ? `Läs in mallarna (${missing.length} saknas)` : 'Visa mallarna']],
+      ['Fyll i dina uppgifter',
+        'Ditt namn står som underskrift på blanketterna. Fyll också i telefon, svets-ID, företag och kontaktpersoner, så fylls de i automatiskt i varje jobb.',
+        !!profile.namn, ['#/installningar', 'Öppna Inställningar']],
+      ['Skapa ditt första jobb',
+        ['Fyll i uppgifterna om jobbet. Appen väljer blanketterna efter dina svar. Fyll i blanketterna, lägg till bilder och tryck Skapa filer.', TEXT.dela[enhet]],
+        jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
+      ['Spara en säkerhetskopia',
+        [`Jobben finns bara ${d ? 'i webbläsaren på den här datorn' : 'i telefonen'}. Spara en kopia ${TEXT.spara[enhet]} då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.`,
+          'Ett enskilt jobb flyttas till en annan telefon eller dator genom att du skickar filerna och väljer dem under Importera jobb från PDF på startsidan.'],
+        !!senasteKopia, ['#/installningar', 'Till säkerhetskopian']],
+    ];
+    lista.replaceChildren(...steg.map(([rubrik, text, klar, lank]) => h('li', { class: 'card' + (klar ? ' klar' : '') },
       h('strong', {}, (klar ? '✓ ' : '') + rubrik),
       [text].flat().map(t => h('p', { class: 'muted' }, t)),
-      lank && !klar ? h('a', { class: 'button', href: lank[0] }, lank[1]) : null))),
+      lank && !klar ? h('a', { class: 'button', href: lank[0] }, lank[1]) : null)));
+  };
+  visa();
+  render(
+    h('p', { class: 'muted' }, 'Så kommer du igång med appen. Steg med bock är redan gjorda.'),
+    h('fieldset', { class: 'segmented enhet' },
+      h('legend', {}, 'Instruktioner för'),
+      ENHETER.map(e => h('label', {},
+        h('input', { type: 'radio', name: 'enhet', value: e, checked: e === enhet, onchange: () => { enhet = e; visa(); } }),
+        h('span', {}, e)))),
+    lista,
   );
 }
 
