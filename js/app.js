@@ -54,7 +54,7 @@ const SHARED = [
   { key: 'datum', label: 'Datum', type: 'date' },
   // row: fält med samma värde står på en rad; flex: hur stor del av raden fältet tar.
   { key: 'bandel', label: 'Bandel', inputmode: 'numeric', row: 'plats', flex: 1 },
-  { key: 'driftplats', label: 'Driftplats', row: 'plats', flex: 2 },
+  { key: 'driftplats', label: 'Driftplats/Sträcka', row: 'plats', flex: 2 },
   { key: 'spar', label: 'Spår', row: 'plats', flex: 1 },
   // Km + m som två sifferrutor med + emellan (2026-10-19). km/m är från, km2/m2 till.
   { key: 'km', label: 'Från km+m', kind: 'kmm', keys: ['km', 'm'] },
