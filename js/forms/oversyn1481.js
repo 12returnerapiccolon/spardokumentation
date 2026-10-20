@@ -77,9 +77,10 @@ export default {
         { type: 'shared', label: 'Kontroll utförd av', from: 'namn' },
         { type: 'shared', label: 'Datum', from: 'datum' },
         { type: 'text', key: 'godkand', label: 'Godkänd platschef/arb.ledare', placeholder: job => job.arbetsledare || job.platschef || '', names: true },
-        { type: 'shared', label: 'Bandel', from: 'bandel' },
+        // Bandel och växelnummer ändras på jobbet och syns i alla blanketter (2026-10-20).
+        { type: 'jobtext', key: 'bandel', label: 'Bandel', inputmode: 'numeric', row: 2 },
+        { type: 'jobtext', key: 'vxnr', label: 'Växel nr' },
         { type: 'shared', label: 'Driftplats', from: 'driftplats' },
-        { type: 'shared', label: 'Växel nr', from: 'vxnr' },
         { type: 'vaxelval' },
       ],
     },
