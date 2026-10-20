@@ -145,6 +145,8 @@ function visaHjalp() {
 
 function setTitle(text, back) {
   document.getElementById('title').textContent = text;
+  // Loggan bara på startsidan.
+  document.getElementById('logo').style.display = !back && text === 'Svetsjobb' ? '' : 'none';
   const b = document.getElementById('back');
   b.hidden = !back;
   if (back) b.href = back;

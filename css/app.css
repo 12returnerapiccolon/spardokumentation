@@ -442,3 +442,17 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .hjalp-text p, .hjalp-text li { margin: 0 0 8px; }
 .hjalp-text ul { padding-left: 20px; margin: 0 0 8px; }
 .hjalp-text a { color: var(--accent); }
+
+/* Appens logga bredvid namnet på startsidan (2026-10-20): stål och glöd i ljust läge,
+   varselorange i mörkt läge. */
+.topbar .logo { width: 32px; height: 32px; flex: none; }
+.logo-bg { fill: #0b0b0f; }
+.logo-ral { fill: url(#logo-stal); }
+.logo-gnista { fill: #ef4444; }
+.logo-mitt { fill: #fbbf24; }
+@media (prefers-color-scheme: dark) {
+  .logo-bg { fill: #f97316; }
+  .logo-ral { fill: #1f2937; }
+  .logo-gnista { fill: #fde047; }
+  .logo-mitt { fill: #fff; }
+}
