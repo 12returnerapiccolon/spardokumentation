@@ -88,6 +88,19 @@ def move_label_arrow(xml):
     return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
 if key == 'ekv': DOCXML = move_label_arrow(DOCXML)
 
+# En sammanslagen cell (Driv) har extra nedre marginal i sista raden. Word bryr sig inte om den,
+# men LibreOffice gör raden ovanför (Uppkörbar omläggningsanordning) lägre. Ta bort marginalen.
+def drop_merged_bottom_margin(xml):
+    doc = etree.fromstring(xml)
+    for tcpr in doc.iter(w + 'tcPr'):
+        if tcpr.find(w + 'vMerge') is None: continue
+        mar = tcpr.find(w + 'tcMar')
+        if mar is None: continue
+        for b in mar.findall(w + 'bottom'): mar.remove(b)
+        if not len(mar): tcpr.remove(mar)
+    return etree.tostring(doc, xml_declaration=True, encoding='UTF-8', standalone=True)
+DOCXML = drop_merged_bottom_margin(DOCXML)
+
 # Sidfötter med innehållskontroller kopplade till dokumentegenskaper (version, fastställd) visar
 # i LibreOffice fel datum och tappar textstorleken. Ersätt dem med vanlig text med samma format,
 # med värdet som Word visar (ur customXml).
