@@ -783,6 +783,10 @@ function renderItem(item, data, onChange, job) {
   switch (item.type) {
     case 'label':
       return h('p', { class: 'sublabel' }, item.label);
+    // Jobbets växeltyp och växelmodell, ändringsbara i växelblanketterna (2026-10-20).
+    // Ändringen sparas på jobbet och syns därför i alla blanketter.
+    case 'vaxelval':
+      return h('div', {}, sharedInputs(job, (k, v) => onChange(`job.${k}`, v), { only: ['vaxeltyp', 'vxmodell'] }));
     case 'shared':
       return h('div', { class: 'field shared' }, h('span', {}, item.label),
         h('output', {}, item.value ? item.value(job) || '–' : item.from === 'datum'
@@ -1301,7 +1305,19 @@ async function formView(id, key) {
   window.onpagehide = () => { save.flush(); saveRemembered.flush(); };
   // Tabellen räknas om när något som styr normalvärden och toleranser ändras.
   const onChange = (k, v) => {
-    data[k] = v; save();
+    if (k.startsWith('job.')) {
+      job[k.slice(4)] = v;
+      // En modell som inte finns för den nya växeltypen tas bort, så att man väljer om.
+      if (k === 'job.vaxeltyp' && !(MODELLER[v] || []).some(([m]) => m === job.vxmodell)) job.vxmodell = '';
+      // Ny växeltyp ger en annan besiktningsrapport: visa den.
+      if (k === 'job.vaxeltyp' && key === 'vaxel') {
+        job.updated = new Date().toISOString();
+        db.put('jobs', job).then(route);
+        return;
+      }
+      save();
+      document.querySelectorAll('.measures-wrap').forEach(w => w.refresh());
+    } else { data[k] = v; save(); }
     document.querySelectorAll('input[data-ph]').forEach(el => el.refreshPh?.());
     document.querySelectorAll('[data-hideif]').forEach(el => el.refreshHide?.());
     document.querySelectorAll('output[data-calc]').forEach(el => el.refreshCalc?.());

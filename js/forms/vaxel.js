@@ -350,7 +350,7 @@ function buildForm(t) {
           { type: 'text', key: 'bandel', label: 'Bandel', inputmode: 'numeric', placeholder: job => job.bandel || '', row: 3, flex: 2 },
           { type: 'text', key: 'vxnr', label: 'Vx.nr', placeholder: job => job.vxnr || '', flex: 2 },
           { type: 'text', key: 'trafikplats', label: 'Trafikplats', placeholder: job => job.driftplats || '', flex: 3 },
-          { type: 'shared', label: 'Växelmodell', from: 'vxmodell' },
+          { type: 'vaxelval' },
           ...['inlaggningsar', 'ritnr', 'ybv', 'radie'].filter(k => k in d)
             // Inläggningsår och Ritn. nr på samma rad (2026-10-20).
             .map(k => ({ type: 'text', key: k, label: DATA_LABELS[k][0], inputmode: DATA_LABELS[k][1], row: k === 'inlaggningsar' && 'ritnr' in d ? 2 : undefined })),

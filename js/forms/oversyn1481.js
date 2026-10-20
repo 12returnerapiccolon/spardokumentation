@@ -80,7 +80,7 @@ export default {
         { type: 'shared', label: 'Bandel', from: 'bandel' },
         { type: 'shared', label: 'Driftplats', from: 'driftplats' },
         { type: 'shared', label: 'Växel nr', from: 'vxnr' },
-        { type: 'shared', label: 'Växelmodell', from: 'vxmodell' },
+        { type: 'vaxelval' },
       ],
     },
     {
