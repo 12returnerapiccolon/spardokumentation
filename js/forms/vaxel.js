@@ -252,6 +252,44 @@ export function effektiv(row, col, auto) {
   return row && Object.prototype.hasOwnProperty.call(row, col) ? row[col] : (auto || '');
 }
 
+// Ligger uppmätt utanför toleransen (2026-10-20)? Toleransen är '±4', '+3/-2', '≥59' eller
+// '≤3', egen eller ur bilagan. Okänd form eller saknat värde räknas inte som utanför.
+const tal = s => {
+  const n = Number(String(s).replace(',', '.').replace('−', '-').trim());
+  return String(s).trim() !== '' && Number.isFinite(n) ? n : null;
+};
+export function utanforTol(tol, normal, uppmatt) {
+  const u = tal(uppmatt ?? '');
+  // Normalvärdet kan självt vara ett gränsvärde (x ≥59) när tabellen saknar tolerans.
+  const t = String(tol || (/^\s*[≥≤]/.test(normal || '') ? normal : '')).replace(/\s+/g, '').replace(/−/g, '-');
+  if (u == null || !t) return false;
+  let m = t.match(/^(≥|>=)(\d+(?:[.,]\d+)?)$/);
+  if (m) return u < tal(m[2]);
+  m = t.match(/^(≤|<=)(\d+(?:[.,]\d+)?)$/);
+  if (m) return u > tal(m[2]);
+  const n = tal(normal ?? '');
+  if (n == null) return false;
+  const d = Math.round((u - n) * 10) / 10;
+  m = t.match(/^±(\d+(?:[.,]\d+)?)$/);
+  if (m) return Math.abs(d) > tal(m[1]);
+  let plus = null, minus = null;
+  for (const del of t.split('/')) {
+    const k = del.match(/^([+-])(\d+(?:[.,]\d+)?)$/);
+    if (!k) return false;
+    if (k[1] === '+') plus = tal(k[2]); else minus = tal(k[2]);
+  }
+  return (plus != null && d > plus) || (minus != null && d < -minus);
+}
+
+// Mått utanför toleransen i en ifylld rapport, i tabellens ordning.
+export function mattUtanfor(vaxeltyp, job, data) {
+  const auto = autoVarden(vaxeltyp, job, data);
+  return (MATT[vaxeltyp] || []).map(r => r[0]).filter(m => {
+    const row = data.matt?.[m];
+    return row?.uppmatt && utanforTol(effektiv(row, 'tolerans', auto.tol[m]), effektiv(row, 'normal', auto.normal[m]), row.uppmatt);
+  });
+}
+
 const DATA_LABELS = {
   inlaggningsar: ['Inläggningsår', 'numeric'],
   ritnr: ['Ritn.nr'],
@@ -338,7 +376,7 @@ function buildForm(t) {
           // Måtten i den ordning de tas i växeln eller som de står i besiktningsrapporten (2026-10-20).
           { type: 'radio', key: 'ordning', label: 'Måttordning', options: [I_VAXELN, RAPPORTEN], noEmpty: true, remember: true, defaultValue: () => I_VAXELN },
           ...(harAnde(t.key) ? [{ type: 'radio', key: 'start', label: 'Börja mäta från', options: [AENDE, BENDE], noEmpty: true, defaultValue: () => AENDE, hideIf: (job, data) => data.ordning === RAPPORTEN }] : []),
-          { type: 'measures', keys: data => (data.ordning === RAPPORTEN ? iRapporten : ordna(t.key, matt.map(m => m[0]), data.start)), auto: (job, data) => autoVarden(t.key, job, data) },
+          { type: 'measures', utanfor: utanforTol, keys: data => (data.ordning === RAPPORTEN ? iRapporten : ordna(t.key, matt.map(m => m[0]), data.start)), auto: (job, data) => autoVarden(t.key, job, data) },
         ],
       },
       ...t.groups.map(g => ({ title: g.title, items: checkItems(g) })),
@@ -351,6 +389,11 @@ function buildForm(t) {
         ],
       },
     ],
+
+    saknas: (job, data) => {
+      const ute = mattUtanfor(t.key, job, data);
+      return ute.length ? [`${ute.length === 1 ? 'måttet' : 'måtten'} ${ute.join(', ')} ligger utanför toleransen.`] : [];
+    },
 
     toValues(job, data, { diff }) {
       const v = {};

@@ -224,6 +224,9 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 .mname { font-weight: 600; }
 .mrow.skip { opacity: .35; }
 .mrow output { text-align: center; color: var(--muted); }
+.mrow.ute { opacity: 1; }
+.mrow.ute output { color: var(--danger); font-weight: 700; }
+.mrow.ute input { border-color: var(--danger); color: var(--danger); background: rgba(180, 35, 24, .1); }
 
 .files { padding-left: 20px; word-break: break-word; }
 .files li { margin-bottom: 8px; }

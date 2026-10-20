@@ -1204,6 +1204,14 @@ function measureTable(item, data, onChange, job) {
       if (nasta) nasta.input.focus(); else input.blur();
     };
     const tas = m => !auto.matpunkter || auto.matpunkter.has(m);
+    // Rödmarkera raden när uppmätt ligger utanför toleransen (2026-10-20).
+    const markera = (m, out) => {
+      const r = data.matt[m] || {};
+      const ute = !!item.utanfor?.(effektiv(r, 'tolerans', auto.tol[m]), effektiv(r, 'normal', auto.normal[m]), r.uppmatt);
+      out.closest('.mrow')?.classList.toggle('ute', ute);
+      out.title = ute ? 'Utanför toleransen' : '';
+      return ute;
+    };
     const cell = (m, col, out) => {
       const row = data.matt[m] || {};
       const own = Object.prototype.hasOwnProperty.call(row, col);
@@ -1222,6 +1230,7 @@ function measureTable(item, data, onChange, job) {
           r[col] = e.target.value;
           e.target.classList.remove('auto');
           out.value = diff(effektiv(r, 'normal', auto.normal[m]), r.uppmatt);
+          markera(m, out);
           onChange('matt', data.matt);
           if (col === 'uppmatt') {
             const siffror = e.target.value.replace(/\D/g, '').length;
@@ -1267,7 +1276,9 @@ function measureTable(item, data, onChange, job) {
         (typeof item.keys === 'function' ? item.keys(data) : item.keys).map(m => {
           const row = data.matt[m] || {};
           const out = h('output', {}, diff(effektiv(row, 'normal', auto.normal[m]), row.uppmatt));
-          return h('div', { class: tas(m) ? 'mrow' : 'mrow skip' }, h('span', { class: 'mname' }, m), cell(m, 'normal', out), cell(m, 'tolerans', out), cell(m, 'uppmatt', out), out);
+          const rad = h('div', { class: tas(m) ? 'mrow' : 'mrow skip' }, h('span', { class: 'mname' }, m), cell(m, 'normal', out), cell(m, 'tolerans', out), cell(m, 'uppmatt', out), out);
+          markera(m, out);
+          return rad;
         })));
   };
   draw();
