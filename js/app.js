@@ -323,7 +323,7 @@ async function komIgangView() {
         jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
       ['Spara en säkerhetskopia',
         [`Jobben finns bara ${d ? 'i webbläsaren på den här datorn' : 'i telefonen'}. Spara en kopia ${TEXT.spara[enhet]} då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.`,
-          'Ett enskilt jobb flyttas till en annan telefon eller dator genom att du skickar filerna och väljer dem under Importera jobb från PDF på startsidan.'],
+          'Ett enskilt jobb flyttas till en annan telefon eller dator genom att du skickar det med Dela allt som en PDF och väljer den filen under Importera jobb från PDF på startsidan.'],
         !!senasteKopia, ['#/installningar', 'Till säkerhetskopian']],
     ];
     lista.replaceChildren(...steg.map(([rubrik, text, klar, lank]) => h('li', { class: 'card' + (klar ? ' klar' : '') },
@@ -758,7 +758,7 @@ function importKnapp() {
         if (!r || !r.job.id) continue;
         if (!job || r.bilder.length > bilder.length) ({ job, bilder } = r);
       }
-      if (!job) { alert('Filen innehåller inget jobb. Välj en PDF som skapats i appen.'); return; }
+      if (!job) { alert('Filen innehåller inget jobb. Välj PDF:en som skapats med Dela allt som en PDF i appen.'); return; }
       const jpg = files.filter(f => /\.jpe?g$/i.test(f.name)).sort((a, b) => a.name.localeCompare(b.name, 'sv', { numeric: true }));
       if (jpg.length) bilder = jpg.map(f => ({ typ: bildtypUrNamn(f.name), data: f }));
       const finns = await db.get('jobs', job.id);
@@ -872,7 +872,9 @@ async function buildFiles(job, area, onSent) {
         const blob = form.format === 'overlay'
           ? await fillOverlay(tpl.data, form.layout, values, { title: `${form.code} ${form.title}` })
           : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
-        const ut = blob.type === 'application/pdf' ? await laggIJobb(blob, jobbText(job)) : blob;
+        // Bara den sammanslagna PDF:en bär jobbet, så att de enskilda blanketterna inte innehåller
+        // dolda uppgifter från andra blanketter.
+        const ut = blob;
         const namn = fileName(form, job);
         files.push(new File([ut], antal > 1 ? namn.replace(/(\.\w+)$/, ` del ${sida + 1}$1`) : namn, { type: ut.type }));
       }

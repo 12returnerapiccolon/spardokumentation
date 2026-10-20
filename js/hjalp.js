@@ -52,7 +52,7 @@ export const HJALP = {
       ]],
       ['Knapparna', [[
         '+ Nytt jobb: skapar ett jobb. Du fyller i uppgifterna en gång, och appen föreslår vilka blanketter som behövs.',
-        'Importera jobb från PDF: läser in ett jobb från PDF-filer som appen har skapat, t.ex. från en kollega eller från en annan telefon. Välj PDF-filerna, och gärna bildfilerna, samtidigt. Avsändarens namn och svets-ID följer inte med.',
+        'Importera jobb från PDF: läser in ett jobb från en PDF som skapats med Dela allt som en PDF, t.ex. från en kollega eller från en annan telefon. Bilderna följer med. Avsändarens namn, telefon och svets-ID följer inte med. De enskilda blanketterna bär inte jobbet och går inte att importera.',
       ]]],
       ['Jobblistan', [
         'Varje jobb visar namn, status, datum och blanketterna. Tryck på ett jobb för att öppna det.',
@@ -113,7 +113,7 @@ export const HJALP = {
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',
         [
           'Dela de … filerna: öppnar telefonens delning, så att du kan skicka filerna med Mail, Teams eller spara dem i OneDrive.',
-          'Dela allt som en PDF: slår ihop alla blanketter och bilder till en fil. Bra när mottagaren vill ha allt samlat.',
+          'Dela allt som en PDF: slår ihop alla blanketter och bilder till en fil. Bra när mottagaren vill ha allt samlat. Den här filen bär också hela jobbet, så att det kan importeras i en annan telefon. Skicka den bara till den som får se alla jobbets uppgifter.',
           'Länkarna under knapparna öppnar eller laddar ned en fil i taget.',
         ],
         'Har svetsrapporten fler än 10 svetsar blir det flera svetsrapporter, del 1, del 2 och så vidare.',

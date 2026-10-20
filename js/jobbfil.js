@@ -1,6 +1,6 @@
-// Jobb i PDF-filerna (2026-10-20): appen lägger jobbets uppgifter i varje PDF den skapar,
-// så att t.ex. en arbetsledare kan förbereda ett jobb och skicka filerna till en tekniker som
-// importerar dem i appen. Uppgifterna ligger i PDF:ens dokumentinformation och syns inte när
+// Jobb i PDF-filen (2026-10-20): appen lägger jobbets uppgifter i den sammanslagna PDF:en
+// (Dela allt som en PDF), så att t.ex. en arbetsledare kan förbereda ett jobb och skicka filen
+// till en tekniker som importerar den i appen. De enskilda blanketterna bär inte jobbet. Uppgifterna ligger i PDF:ens dokumentinformation och syns inte när
 // filen öppnas eller skrivs ut, så den som saknar appen kan fylla i blanketterna på papper.
 // Appens gamla namn; behålls så att PDF:er från alla versioner går att importera.
 const NYCKEL = 'SpardokumentationJobb';

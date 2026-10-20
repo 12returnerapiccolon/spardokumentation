@@ -43,7 +43,7 @@ Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilag
 - Jobbet: status (Pågående, Skickat, Avslutat), blanketter, bilder (Före, Efter, Rälsmärkning), Skapa filer med varningar för det som saknas eller ligger utanför tolerans.
 - Växelrapporterna: normalvärden och toleranser fylls i efter modell. Mått utanför tolerans rödmarkeras i appen (inte i PDF:en). Växeltyp och modell kan ändras i blanketten och synkas till jobbet.
 - Svetsrapporten: SFT räknas som på kapmetoden när före kap, efter kap och rältemp är ifyllda. Visas bara i appen.
-- Varje PDF bär jobbet i dokumentinformationen (`js/jobbfil.js`), så att ett jobb kan läsas in igen från PDF:en.
+- Den sammanslagna PDF:en (Dela allt som en PDF) bär jobbet i dokumentinformationen (`js/jobbfil.js`), så att jobbet kan läsas in igen. De enskilda blanketterna bär det inte, så att de inte innehåller dolda uppgifter från andra blanketter.
 - Säkerhetskopia som zip (`js/backup.js`), sök bland jobben, hjälp på varje sida (`js/hjalp.js`) och en Kom igång-sida per enhet.
 
 ## Köra lokalt
