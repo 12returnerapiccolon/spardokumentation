@@ -62,7 +62,10 @@ export default {
       items: [
         // Förval från Inställningar (grått). Det som skrivs här gäller bara den här rapporten.
         { type: 'text', key: 'enhet', label: 'Företag/enhet', placeholder: job => job.enhet || '' },
-        { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric', placeholder: job => job.ao || '' },
+        // Svetsansvarig under enheten och Ao-numren på en rad (2026-10-20).
+        { type: 'text', key: 'ansvarig', label: 'Svetsansvarig', placeholder: job => job.svetsansvarig || '', row: 2, flex: 3 },
+        { type: 'text', key: 'telefon', label: 'Telefonnr', inputmode: 'tel', placeholder: job => job.svetsansvarig_tel || '', flex: 2 },
+        { type: 'text', key: 'ao', label: 'Eget Ao nr', inputmode: 'numeric', placeholder: job => job.ao || '', row: 2 },
         { type: 'text', key: 'kundao', label: 'Kundens Ao nr' },
         { type: 'text', key: 'bessy', label: 'Bessy anm/Ofelia' },
         { type: 'text', key: 'namnId', label: 'Namn och svets-ID', placeholder: job => namnId(job) },
@@ -111,11 +114,8 @@ export default {
       items: EGENKONTROLL.map(([key, label]) => ({ type: 'check', key, label, isChecked: v => v === true || v === 'X' })),
     },
     {
-      title: 'Svetsansvarig och kommentarer',
-      help: 'Grå text hämtas från Inställningar. Skriv här om det ska vara något annat i den här rapporten.',
+      title: 'Kommentarer',
       items: [
-        { type: 'text', key: 'ansvarig', label: 'Svetsansvarig', placeholder: job => job.svetsansvarig || '' },
-        { type: 'text', key: 'telefon', label: 'Telefonnr', inputmode: 'tel', placeholder: job => job.svetsansvarig_tel || '' },
         { type: 'textarea', key: 'kommentar', label: 'Avvikelser eller kommentarer' },
       ],
     },
