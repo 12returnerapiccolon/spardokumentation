@@ -363,4 +363,11 @@ function buildForm(t) {
   };
 }
 
-export const VAXELFORMS = VAXELTYPER.map(buildForm);
+// Bara de här delarna är öppna från start i växelrapporterna, resten är minimerade (2026-10-20).
+const OPPNA = ['Besiktningstyp', 'Växeldata', 'Mått i växeln', 'Spårväxeln kontrollerad'];
+
+export const VAXELFORMS = VAXELTYPER.map(t => {
+  const form = buildForm(t);
+  form.sections.forEach(s => { s.closed = !OPPNA.includes(s.title); });
+  return form;
+});

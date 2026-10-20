@@ -1098,7 +1098,7 @@ async function formView(id, key) {
   render(
     h('p', { class: 'muted' }, `${form.code}. Uppgifter i grått hämtas från jobbet.`),
     // Sektionerna går att fälla ihop för överblick och är öppna varje gång blanketten öppnas.
-    ...form.sections.map(section => h('details', { class: 'card section', open: true },
+    ...form.sections.map(section => h('details', { class: 'card section', open: !section.closed },
       h('summary', {}, h('h2', {}, section.title)),
       section.help ? h('p', { class: 'muted' }, section.help) : null,
       renderItems(section.items, data, onChange, job))),
