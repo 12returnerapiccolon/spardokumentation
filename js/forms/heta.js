@@ -6,7 +6,8 @@ import LAYOUT from './heta-layout.js';
 import { blankettDatum } from '../datum.js';
 import { initialer } from '../initialer.js';
 
-const METOD = [['svetsning', 'Svetsning', 0], ['rondell', 'Rondell', 1], ['skarning', 'Skärning', 2], ['lodning', 'Lödning', 3], ['hetluft', 'Hetluft', 4], ['annat', 'Annat', 5]];
+// Ordningen i appen (2026-10-20); tredje värdet är rutans plats på blanketten.
+const METOD = [['svetsning', 'Svetsning', 0], ['hetluft', 'Hetluft', 4], ['skarning', 'Skärning', 2], ['lodning', 'Lödning', 3], ['rondell', 'Rondell', 1], ['annat', 'Annat', 5]];
 
 // Kontrollpunkterna 0–10. sub är en extra ruta under punkten.
 const PUNKTER = [
