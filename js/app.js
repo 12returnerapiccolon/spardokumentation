@@ -705,6 +705,11 @@ function saknas(job) {
 
 async function kontrollera(job, area, onSent) {
   const lista = saknas(job);
+  // Efter-bilder och rälsmärkning ska finnas, Före är frivilligt (2026-10-20).
+  const typer = new Set((await jobbetsBilder(job.id)).map(b => b.typ));
+  for (const t of BILDTYPER.filter(t => ['efter', 'markning'].includes(t.key))) {
+    if (!typer.has(t.key)) lista.push(`Bilder: inga bilder under ${t.label}.`);
+  }
   for (const key of job.docs) {
     const form = docForm(job, key);
     const t = form && await db.get('templates', form.key);
