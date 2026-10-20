@@ -58,7 +58,7 @@ export default {
 
   sections: [
     {
-      title: 'Huvud',
+      title: 'Rapportuppgifter',
       items: [
         // Förval från Inställningar (grått). Det som skrivs här gäller bara den här rapporten.
         { type: 'text', key: 'enhet', label: 'Företag/enhet', placeholder: job => job.enhet || '' },
