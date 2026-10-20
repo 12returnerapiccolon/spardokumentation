@@ -138,6 +138,22 @@ const kmm = (k, m) => (k ? `${k}+${String(m || 0).padStart(3, '0')}` : '');
 const km = job => kmm(job.km, job.m);
 // Till km+m; utan till-värde gäller från-värdet.
 const kmTill = job => (job.km2 ? kmm(job.km2, job.m2) : km(job));
+// Km från/till hämtas från svetsrapportens svetsar med km+m (första och sista läget),
+// annars från jobbet (2026-10-20). Visas grått och kan skrivas över.
+function svetsKm(job) {
+  const lagen = (job.forms?.svets?.svetsar || [])
+    .filter(r => r.lagekm && r.lagem)
+    .map(r => [Number(r.lagekm) * 1000 + Number(r.lagem), kmm(r.lagekm, r.lagem)])
+    .filter(([n]) => Number.isFinite(n))
+    .sort((a, b) => a[0] - b[0]);
+  return lagen.length ? [lagen[0][1], lagen[lagen.length - 1][1]] : [km(job), kmTill(job)];
+}
+const kmFranPh = job => svetsKm(job)[0];
+const kmTillPh = job => svetsKm(job)[1];
+const kmFalt = () => [
+  { type: 'text', key: 'kmFran', label: 'Km från', half: true, placeholder: kmFranPh },
+  { type: 'text', key: 'kmTill', label: 'Km till', half: true, placeholder: kmTillPh },
+];
 const dpl = job => [job.driftplats, job.vxnr ? `vxl ${job.vxnr}` : '', job.spar ? `sp ${job.spar}` : ''].filter(Boolean).join(' / ');
 const bankontrollant = (job, data) => (besiktningsman(data) ? '' : data.bankontrollant ?? job.namn ?? '');
 const signerar = (job, data) => besiktningsman(data) || bankontrollant(job, data);
@@ -187,13 +203,12 @@ export default {
         type: 'rows', key: 'objekt', max: 3, rowLabel: 'Objekt', addLabel: '+ Lägg till objekt',
         fields: [
           { type: 'text', key: 'dpl', label: 'Dpl/Sträcka/Spår' },
-          { type: 'text', key: 'kmFran', label: 'Km från', half: true },
-          { type: 'text', key: 'kmTill', label: 'Km till', half: true },
+          ...kmFalt(),
           { type: 'select', key: 'nr', label: 'Arbete enligt TRVINFRA-00271 bilaga 1', options: ARBETE_VAL },
           { type: 'text', key: 'atgard', label: 'Åtgärd' },
         ],
         newRow(previous, job) {
-          return previous ? { dpl: previous.dpl, kmFran: previous.kmFran, kmTill: previous.kmTill } : { dpl: dpl(job), kmFran: km(job), kmTill: kmTill(job) };
+          return previous ? { dpl: previous.dpl, kmFran: previous.kmFran, kmTill: previous.kmTill } : { dpl: dpl(job) };
         },
       }],
     },
@@ -227,14 +242,13 @@ export default {
         type: 'rows', key: 'anm', max: 4, rowLabel: 'Anmärkning', addLabel: '+ Lägg till anmärkning',
         fields: [
           { type: 'text', key: 'text', label: 'Besiktningsanmärkning' },
-          { type: 'text', key: 'kmFran', label: 'Km från', half: true },
-          { type: 'text', key: 'kmTill', label: 'Km till', half: true },
+          ...kmFalt(),
           { type: 'text', key: 'anl', label: 'Anläggning' },
           { type: 'select', key: 'prio', label: 'Prioritet', options: PRIO, info: PRIO_INFO },
           { type: 'text', key: 'atgardad', label: 'Anm. åtgärdad dat/sign' },
         ],
         newRow(previous, job) {
-          return { kmFran: previous?.kmFran ?? km(job), kmTill: previous?.kmTill ?? kmTill(job) };
+          return { kmFran: previous?.kmFran, kmTill: previous?.kmTill };
         },
       }],
     },
@@ -244,14 +258,14 @@ export default {
       items: [{
         type: 'rows', key: 'godkand', max: 2, rowLabel: 'Sträcka', addLabel: '+ Lägg till sträcka',
         fields: [
-          { type: 'text', key: 'kmFran', label: 'Km från', half: true },
-          { type: 'text', key: 'kmTill', label: 'Km till', half: true },
+          ...kmFalt(),
           { type: 'text', key: 'spar', label: 'Spår', half: true },
-          { type: 'text', key: 'sth', label: 'För STH', inputmode: 'numeric', half: true },
+          // Tom ruta blir Full (2026-10-20).
+          { type: 'text', key: 'sth', label: 'För STH', inputmode: 'numeric', half: true, placeholder: () => 'Full' },
           { type: 'text', key: 'kommentar', label: 'Övrig kommentar' },
         ],
         newRow(previous, job) {
-          return { kmFran: previous?.kmFran ?? km(job), kmTill: previous?.kmTill ?? kmTill(job), spar: previous?.spar ?? (job.spar || '') };
+          return { kmFran: previous?.kmFran, kmTill: previous?.kmTill, spar: previous?.spar ?? (job.spar || '') };
         },
       }],
     },
@@ -292,9 +306,10 @@ export default {
       v[`H${r}`] = val(`${key}Tfn`, defTfn ? defTfn(job) : '') || '';
       if (key === 'bankontrollant' && besiktningsman(data)) v[`D${r}`] = v[`H${r}`] = '';
     }
+    const [franPh, tillPh] = svetsKm(job);
     (data.objekt || []).slice(0, 3).forEach((o, i) => {
       const r = 12 + i;
-      Object.assign(v, { [`A${r}`]: o.dpl || '', [`C${r}`]: o.kmFran || '', [`D${r}`]: o.kmTill || '', [`E${r}`]: nummer(o.nr), [`F${r}`]: arbete(o.nr), [`H${r}`]: o.atgard || '' });
+      Object.assign(v, { [`A${r}`]: o.dpl || '', [`C${r}`]: o.kmFran || franPh, [`D${r}`]: o.kmTill || tillPh, [`E${r}`]: nummer(o.nr), [`F${r}`]: arbete(o.nr), [`H${r}`]: o.atgard || '' });
     });
     for (const [, rows] of PUNKTER) {
       for (const [r] of rows) {
@@ -308,11 +323,11 @@ export default {
     });
     (data.anm || []).slice(0, 4).forEach((a, i) => {
       const r = 68 + i;
-      Object.assign(v, { [`A${r}`]: a.text || '', [`C${r}`]: a.kmFran || '', [`D${r}`]: a.kmTill || '', [`E${r}`]: a.anl || '', [`G${r}`]: a.prio || '', [`H${r}`]: a.atgardad || '' });
+      Object.assign(v, { [`A${r}`]: a.text || '', [`C${r}`]: a.kmFran || franPh, [`D${r}`]: a.kmTill || tillPh, [`E${r}`]: a.anl || '', [`G${r}`]: a.prio || '', [`H${r}`]: a.atgardad || '' });
     });
     (data.godkand || []).slice(0, 2).forEach((g, i) => {
       const r = 75 + i;
-      Object.assign(v, { [`A${r}`]: g.kmFran || '', [`C${r}`]: g.kmTill || '', [`E${r}`]: g.spar || '', [`F${r}`]: g.sth || '', [`G${r}`]: g.kommentar || '' });
+      Object.assign(v, { [`A${r}`]: g.kmFran || franPh, [`C${r}`]: g.kmTill || tillPh, [`E${r}`]: g.spar || '', [`F${r}`]: g.sth || 'Full', [`G${r}`]: g.kommentar || '' });
     });
     return v;
   },
