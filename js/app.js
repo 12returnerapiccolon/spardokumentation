@@ -367,19 +367,11 @@ function sharedInputs(values, onChange, opts = {}) {
       }),
       field.list ? h('datalist', { id: `list-${field.key}` }, field.list.map(v => h('option', { value: v }))) : null);
     if (f.key === 'datum') {
-      // Nattarbete: blanketterna får nästa dags datum.
-      const hint = h('p', { class: 'muted note' });
-      const showHint = () => {
-        hint.textContent = values.natt && values.datum ? `Blanketterna får datum ${blankettDatum(values)}.` : '';
-        hint.hidden = !hint.textContent;
-      };
-      const field = input(f);
-      inputs.datum.addEventListener('input', () => setTimeout(showHint));
-      out.push(h('div', { class: 'row datum' }, field,
+      // Nattarbete: blanketterna får nästa dags datum (ingen förklaring visas, 2026-10-20).
+      out.push(h('div', { class: 'row datum' }, input(f),
         h('label', { class: 'check natt' },
-          h('input', { type: 'checkbox', name: 'natt', checked: !!values.natt, onchange: e => { change('natt', e.target.checked); showHint(); } }),
-          h('span', {}, 'Nattarbete'))), hint);
-      showHint();
+          h('input', { type: 'checkbox', name: 'natt', checked: !!values.natt, onchange: e => change('natt', e.target.checked) }),
+          h('span', {}, 'Nattarbete'))));
       continue;
     }
     if (f.row) {
