@@ -16,6 +16,7 @@ import { minPosition, adress, koordinater, valjPaKarta } from './plats.js';
 import { BILDTYPER, laggTill, jobbetsBilder, taBortAlla, bildfiler } from './bilder.js';
 import { ARBETEN, BEHORIGHET, SPARLAGE, bedomning, foreslagnaDokument, jobbnamn } from './jobb.js';
 import { skapaKopia, lasInKopia } from './backup.js';
+import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
 const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
@@ -264,6 +265,7 @@ async function homeView() {
     navigator.standalone === false ? h('p', { class: 'muted note' },
       'Tips: Lägg appen på hemskärmen (Dela > Lägg till på hemskärmen). Då rensar Safari inte jobben lika lätt.') : null,
     h('a', { class: 'button primary big', href: '#/nytt' }, '+ Nytt jobb'),
+    importKnapp(),
     h('h2', {}, 'Jobb'),
     aktiva.length ? lista(aktiva) : h('p', { class: 'muted' }, arkiv.length ? 'Inga pågående jobb.' : 'Inga jobb än.'),
     arkiv.length ? h('details', { class: 'card' },
@@ -603,6 +605,28 @@ function bildSektion(jobId) {
   return box;
 }
 
+// Importera ett jobb ur PDF-filer som appen skapat, t.ex. från arbetsledaren (2026-10-20).
+function importKnapp() {
+  const val = h('input', {
+    type: 'file', multiple: true, hidden: true,
+    onchange: async e => {
+      const files = [...e.target.files];
+      e.target.value = '';
+      let job = null;
+      for (const f of files) if ((job = await lasJobb(f))) break;
+      if (!job || !job.id) { alert('Filen innehåller inget jobb. Välj en PDF som skapats i appen.'); return; }
+      const finns = await db.get('jobs', job.id);
+      if (finns && !confirm(`Jobbet ${jobLabel(finns)} finns redan i telefonen. Ersätta det med det importerade?`)) return;
+      const now = new Date().toISOString();
+      await db.put('jobs', { ...job, forms: job.forms || {}, docs: job.docs || [], importerad: now, updated: now });
+      location.hash = `#/jobb/${job.id}`;
+    },
+  });
+  return h('div', {},
+    h('button', { class: 'button big', type: 'button', onclick: () => val.click() }, 'Importera jobb från PDF'),
+    val);
+}
+
 // Nytt jobb med samma uppgifter och dokument, t.ex. nästa skift på samma plats (2026-10-20).
 // Blanketterna börjar tomma; det som ska följa med fylls i av sig själv (profil, sparade val).
 function nyttFranJobb(job) {
@@ -644,7 +668,7 @@ function kontrollera(job, area, onSent) {
 }
 
 // Jobbets blanketter och bilder i en PDF: blanketterna i ordning, sedan en sida per bild (2026-10-20).
-async function enPdf(files, namn) {
+async function enPdf(files, namn, jobb) {
   const { PDFDocument, PageSizes } = PDFLib;
   const out = await PDFDocument.create();
   for (const f of files) {
@@ -661,7 +685,8 @@ async function enPdf(files, namn) {
     }
   }
   out.setTitle(namn);
-  return new File([await out.save()], `${namn}.pdf`, { type: 'application/pdf' });
+  const blob = await laggIJobb(new Blob([await out.save()], { type: 'application/pdf' }), jobb);
+  return new File([blob], `${namn}.pdf`, { type: 'application/pdf' });
 }
 
 async function buildFiles(job, area, onSent) {
@@ -680,7 +705,8 @@ async function buildFiles(job, area, onSent) {
       const blob = form.format === 'overlay'
         ? await fillOverlay(tpl.data, form.layout, values, { title: `${form.code} ${form.title}` })
         : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
-      files.push(new File([blob], fileName(form, job), { type: blob.type }));
+      const ut = blob.type === 'application/pdf' ? await laggIJobb(blob, jobbText(job)) : blob;
+      files.push(new File([ut], fileName(form, job), { type: ut.type }));
     } catch (e) {
       console.error(e);
       problems.push(`${form.title}: ${e.message}`);
@@ -706,7 +732,7 @@ async function buildFiles(job, area, onSent) {
       onclick: async e => {
         const knapp = e.currentTarget;
         knapp.disabled = true;
-        try { await dela([await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`))]); }
+        try { await dela([await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`), jobbText(job))]); }
         catch (err) { alert('Kunde inte slå ihop filerna: ' + err.message); }
         knapp.disabled = false;
       },
