@@ -15,7 +15,7 @@ const KONTRAKT = { C2: 162.27, E2: 251.8 };
 const layout = {
   ...LAYOUT,
   text: { ...LAYOUT.text, ...Object.fromEntries(Object.entries(MITT).map(([cell, [x, maxW]]) => [cell, [1, x, 77.7, 11, 'center', maxW]])),
-    ...Object.fromEntries(Object.entries(KONTRAKT).map(([cell, x]) => [cell, [0, x, 749.5, 9, 'center', 44, 21]])) },
+    ...Object.fromEntries(Object.entries(KONTRAKT).map(([cell, x]) => [cell, [0, x, 748.4, 9, 'center', 44, 21.7]])) },
 };
 
 // TRVINFRA-00271 bilaga 1, tabell B1.1. sv: får utföras av spårsvetsare.

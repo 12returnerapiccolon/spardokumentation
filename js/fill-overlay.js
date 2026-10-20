@@ -1,7 +1,8 @@
 // Fyller en tom PDF-mall (en Word-blankett utskriven till PDF) genom att skriva text och
 // kryss på fältens platser. Platserna kommer ur en layout som tagits fram ur Word-mallen:
 // text: fältindex → [sida, x, baslinje, teckenstorlek, justering, största bredd?, höjd?]
-// Med höjd radbryts texten inom rutan, uppifrån (baslinjen är då rutans nederkant).
+// Med höjd radbryts texten inom rutan, uppifrån (baslinjen är då rutans nederkant). Med
+// layout.mittHojd står de radbrutna raderna i stället mitt i rutan i höjdled.
 // check: fältindex → [sida, x, y, bredd, höjd]
 
 let fontBytes;
@@ -25,7 +26,7 @@ async function font(pdf) {
 }
 
 // Radbryter text inom en ruta. Får den inte plats krymps texten.
-function drawWrapped(page, value, { x, base, size, maxWidth, height, align, font, color }) {
+function drawWrapped(page, value, { x, base, size, maxWidth, height, align, font, color, mitt }) {
   const lines = s => {
     const out = [];
     for (const para of value.split(/\r?\n/)) {
@@ -42,10 +43,12 @@ function drawWrapped(page, value, { x, base, size, maxWidth, height, align, font
   const forBred = () => l.some(t => font.widthOfTextAtSize(t, s) > maxWidth);
   while (s > 5 && (l.length * s * 1.15 > height - 2 || forBred())) { s -= 0.5; l = lines(s); }
   const top = base + height - 1.5;
+  const mid = base + height / 2;
   l.forEach((line, i) => {
     const w = font.widthOfTextAtSize(line, s);
     const left = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
-    page.drawText(line, { x: left, y: top - s * (1 + i * 1.15), size: s, font, color });
+    const y = mitt ? mid + ((l.length - 1) / 2 - i) * s * 1.15 - s * 0.36 : top - s * (1 + i * 1.15);
+    page.drawText(line, { x: left, y, size: s, font, color });
   });
 }
 
@@ -81,7 +84,7 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
     if (value == null || value === '' || value === true || value === false) continue;
     const [p, x, base, fullSize, align, maxWidth, height] = pos;
     if (height) {
-      drawWrapped(pages[p], String(value), { x, base, size: fullSize, maxWidth, height, align, font: f, color: ink });
+      drawWrapped(pages[p], String(value), { x, base, size: fullSize, maxWidth, height, align, font: f, color: ink, mitt: layout.mittHojd });
       continue;
     }
     const text = String(value).replace(/\s+/g, ' ');
