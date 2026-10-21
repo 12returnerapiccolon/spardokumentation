@@ -51,6 +51,12 @@ const lage = (row, job) => (row.lagekm ? (row.lagem ? kmm(row.lagekm, row.lagem)
 
 // Rader som läggs till kopierar föregående svets, utom det som skiljer mellan svetsar.
 const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter'];
+// Rältemp följer bara med inom jobbet, inte från ett tidigare jobb (2026-10-21).
+const INTE_FRAN_ANNAT_JOBB = ['temp'];
+
+// Kallt klimat: rältemp under 0 °C kräver de tre rutorna i egenkontrollen (2026-10-21).
+const KALLT = ['kallt', 'gasflode', 'svalning'];
+const grader = v => (v == null || v === '' ? null : Number(String(v).replace('−', '-')));
 
 // SFT ur före/efter kap och rältemp, som på Spänningsfri temperatur SFT, Kapmetoden.
 function sft(row) {
@@ -89,7 +95,7 @@ export default {
     },
     {
       title: 'Svetsar',
-      help: `Blanketten har plats för ${RADER} svetsar; fler svetsar hamnar på en blankett till (del 2, 3 …). En ny svets får samma uppgifter som den förra, utom läge och kapmått. Grå text hämtas från jobbet. SFT räknas ut som på kapmetoden när före kap, efter kap och rältemp är ifyllda; den visas bara här och kommer inte med på blanketten.`,
+      help: `Blanketten har plats för ${RADER} svetsar; fler svetsar hamnar på en blankett till (del 2, 3 …). En ny svets får samma uppgifter som den förra, utom läge och kapmått. Rältemp hämtas inte från ett tidigare jobb. Grå text hämtas från jobbet. SFT räknas ut som på kapmetoden när före kap, efter kap och rältemp är ifyllda; den visas bara här och kommer inte med på blanketten.`,
       items: [{
         type: 'rows',
         key: 'svetsar',
@@ -120,14 +126,15 @@ export default {
           { type: 'text', key: 'batch', label: 'Batch nr', half: true },
           { type: 'select', key: 'wps', label: 'WPS nr', options: WPS, half: true },
         ],
-        newRow(previous) {
-          return Object.fromEntries(Object.entries(previous || {}).filter(([k]) => !KOPIERAS_INTE.includes(k)));
+        newRow(previous, job, franAnnatJobb) {
+          const bort = franAnnatJobb ? [...KOPIERAS_INTE, ...INTE_FRAN_ANNAT_JOBB] : KOPIERAS_INTE;
+          return Object.fromEntries(Object.entries(previous || {}).filter(([k]) => !bort.includes(k)));
         },
       }],
     },
     {
       title: 'Egenkontroll',
-      help: 'Kryssa i det som är utfört. Det blir X på blanketten, och det som inte är ikryssat lämnas tomt.',
+      help: 'Kryssa i det som är utfört. Det blir X på blanketten, och det som inte är ikryssat lämnas tomt. Har någon svets rältemp under 0 °C ska Svetsad i kallt klimat, Säkerställt gasflödet och Skyddad svalning av svetsobjekt vara ikryssade, annars varnar appen innan filerna skapas.',
       // En kryssruta per egenkontroll (2026-10-19). Äldre jobb sparade X eller --.
       items: EGENKONTROLL.map(([key, label]) => ({ type: 'check', key, label, isChecked: v => v === true || v === 'X' })),
     },
@@ -147,7 +154,17 @@ export default {
     const sidor = Math.ceil(n / RADER);
     return n ? `${n} ${n === 1 ? 'svets' : 'svetsar'}${sidor > 1 ? `, ${sidor} blanketter` : ''}` : 'Inga svetsar ännu';
   },
-  saknas: (job, data) => ((data.svetsar || []).length ? [] : ['inga svetsar ifyllda.']),
+  saknas: (job, data) => {
+    const svetsar = data.svetsar || [];
+    if (!svetsar.length) return ['inga svetsar ifyllda.'];
+    const kalla = svetsar.map((row, i) => (grader(row.temp) < 0 ? i + 1 : 0)).filter(Boolean);
+    const ej = EGENKONTROLL.filter(([key]) => KALLT.includes(key) && !(data[key] === true || data[key] === 'X')).map(([, label]) => label.toLowerCase());
+    if (!kalla.length || !ej.length) return [];
+    const och = a => a.join(', ').replace(/, ([^,]*)$/, ' och $1');
+    const vilka = kalla.length === 1 ? `svets ${kalla[0]}` : `svetsarna ${och(kalla)}`;
+    const rutor = ej.length === 1 ? `rutan ${ej[0]} är inte ikryssad` : `rutorna ${och(ej)} är inte ikryssade`;
+    return [`${vilka} har rältemp under 0 °C, men ${rutor} under Egenkontroll.`];
+  },
   // Rimlighetskontroll före Skapa filer (2026-10-21).
   rimlighet: (job, data) => (data.svetsar || []).flatMap((row, i) => (sft(row) === 'Utanför' ? [`svets ${i + 1}: före och efter kap ger en öppning utanför tabellen, kontrollera måtten.`] : [])),
 

@@ -226,7 +226,7 @@ export const HJALP = {
         'Företag/enhet, svetsansvarig och ditt namn och svets-ID hämtas från Inställningar. Eget Ao nr hämtas från jobbet. Kundens Ao nr och Bessy/Ofelia skriver du själv.',
       ]],
       ['Svetsar', [
-        'Tryck + Lägg till svets för varje svets. En ny svets får samma uppgifter som den förra, utom läge och kapmått, så du behöver oftast bara ändra några rutor.',
+        'Tryck + Lägg till svets för varje svets. En ny svets får samma uppgifter som den förra, utom läge och kapmått, så du behöver oftast bara ändra några rutor. Den första svetsen i ett nytt jobb får uppgifterna från förra jobbet, men rältemp är tom tills du väljer den.',
         'SFT bredvid Rältemp räknas ut som på SFT Kapmetoden när Före kap, Efter kap och Rältemp är ifyllda. Den är bara till för dig och kommer inte med på svetsrapporten.',
         'Dag och plats hämtas från jobbet. Km + m är svetsens läge; i en växel kan du i stället skriva svetsens nummer på växelbilden (1–14) i första rutan och lämna meter tom.',
         'Fyll i före och efter kap, rältemperatur, rälsmodell, material, typ av arbete, svetsmetod, tillsatsmaterial, batch och WPS.',
@@ -235,6 +235,7 @@ export const HJALP = {
       ]],
       ['Egenkontroll och kommentarer', [
         'Kryssa i det som är utfört; det blir X på blanketten. Avvikelser skriver du sist.',
+        'Har någon svets rältemp under 0 °C varnar appen innan filerna skapas om Svetsad i kallt klimat, Säkerställt gasflödet och Skyddad svalning av svetsobjekt inte alla är ikryssade.',
       ]],
       BLANKETT_ALLMANT,
     ],

@@ -44,7 +44,7 @@ Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilag
 - Hänglås per blankett och för avsnitten Bilder och Uppgifter om jobbet. Skickat låser allt. En låst blankett går inte att kryssa ur under Lägg till/ta bort blanketter (direkt under rubriken Blanketter). En låst blankett behåller jobbets uppgifter från när den låstes (`job.lastJobb`).
 - Skicka in jobb delar blanketterna och bilderna som separata filer till arbetsledaren, med storlek efter varje fil, och sätter Skickat. Överför jobbet (längst ned i jobbet) gör en PDF som bär jobbet, för en kollega eller en annan enhet, och sätter inte Skickat. Läs in överfört jobb på startsidan läser in den.
 - Växelrapporterna: normalvärden och toleranser fylls i efter modell. Mått utanför tolerans rödmarkeras i appen (inte i PDF:en). Växeltyp och modell kan ändras i blanketten och synkas till jobbet.
-- Svetsrapporten: SFT räknas som på kapmetoden när före kap, efter kap och rältemp är ifyllda. Visas bara i appen.
+- Svetsrapporten: SFT räknas som på kapmetoden när före kap, efter kap och rältemp är ifyllda. Visas bara i appen. Rältemp följer inte med från ett tidigare jobb. Rältemp under 0 °C ger en varning före Skapa filer om rutorna för kallt klimat, gasflöde och skyddad svalning inte är ikryssade.
 - Överföringsfilen (Överför jobbet) bär jobbet i dokumentinformationen (`js/jobbfil.js`), så att jobbet kan läsas in igen. De enskilda blanketterna bär det inte, så att de inte innehåller dolda uppgifter från andra blanketter.
 - Svetsrapporten: fler än tio svetsar ger fler blanketter, numrerade 11–20 osv. med sidnummer, t.ex. 2(3).
 - TMALL 1481 fylls i mallens formulärfält, som plattas till vid export.

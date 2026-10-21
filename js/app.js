@@ -1443,7 +1443,8 @@ function renderItems(items, data, onChange, job) {
 }
 
 // Upprepade rader, t.ex. svetsar. Varje rad har samma fält. En ny rad får innehållet från
-// raden före (eller den senaste raden från ett tidigare jobb) via item.newRow.
+// raden före (eller den senaste raden från ett tidigare jobb) via item.newRow. Tredje argumentet
+// säger att raden kommer från ett tidigare jobb.
 function rowsEditor(item, data, onChange, job) {
   const list = data[item.key] = data[item.key] || [];
   const wrap = h('div', { class: 'rows' });
@@ -1464,7 +1465,7 @@ function rowsEditor(item, data, onChange, job) {
       ? h('button', {
           type: 'button', class: 'button big',
           onclick: () => {
-            list.push(item.newRow(list[list.length - 1] || remembered[`${item.form}.${item.key}`], job));
+            list.push(item.newRow(list[list.length - 1] || remembered[`${item.form}.${item.key}`], job, !list.length));
             onChange(item.key, list); draw();
             wrap.querySelectorAll('.rowcard')[list.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
           },
