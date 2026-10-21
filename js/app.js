@@ -914,6 +914,38 @@ async function enPdf(files, namn, job) {
   return new File([blob], `${namn}.pdf`, { type: 'application/pdf' });
 }
 
+// Dela allt som en PDF i två steg (2026-10-21): första trycket gör PDF:en, andra delar den.
+// iPhone kräver att delningen startar direkt av ett tryck; när sammanslagningen tog några
+// sekunder kom bilagan fram tom (301 byte). PDF:en kontrolleras också innan den delas.
+function samladPdf(files, job, dela) {
+  const ruta = h('div', {});
+  const knapp = h('button', {
+    class: 'button big', type: 'button',
+    onclick: async () => {
+      knapp.disabled = true;
+      knapp.textContent = 'Slår ihop filerna …';
+      try {
+        const pdf = await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`), job);
+        const bytes = new Uint8Array(await pdf.arrayBuffer());
+        const sidor = (await PDFLib.PDFDocument.load(bytes)).getPageCount();
+        if (bytes.length < 2000 || !sidor) throw new Error('PDF:en blev tom.');
+        // Filen byggs om från bytes i minnet så att delningen inte beror på en Blob som iOS inte kan läsa.
+        const fil = new File([bytes], pdf.name, { type: 'application/pdf' });
+        const mb = (fil.size / 1048576).toLocaleString('sv-SE', { maximumFractionDigits: 1 });
+        ruta.replaceChildren(
+          h('button', { class: 'button primary big', type: 'button', onclick: () => dela([fil]) }, `Dela PDF:en (${sidor} sidor, ${mb} MB)`),
+          h('ul', { class: 'files' }, h('li', {}, h('a', { href: URL.createObjectURL(fil), download: fil.name }, fil.name))));
+      } catch (err) {
+        alert('Kunde inte slå ihop filerna: ' + err.message);
+        knapp.disabled = false;
+        knapp.textContent = 'Dela allt som en PDF';
+      }
+    },
+  }, 'Dela allt som en PDF');
+  ruta.append(knapp);
+  return ruta;
+}
+
 async function buildFiles(job, area, onSent) {
   area.replaceChildren(h('p', { class: 'muted' }, 'Skapar filer …'));
   const files = [];
@@ -962,16 +994,7 @@ async function buildFiles(job, area, onSent) {
     ...problems.map(p => h('p', { class: 'error' }, p)),
     files.length ? h('button', { class: 'button primary big', type: 'button', onclick: () => dela(files) },
       `Dela ${files.length === 1 ? 'filen' : `de ${files.length} filerna`} (Mail, Teams, OneDrive …)`) : null,
-    files.length > 1 ? h('button', {
-      class: 'button big', type: 'button',
-      onclick: async e => {
-        const knapp = e.currentTarget;
-        knapp.disabled = true;
-        try { await dela([await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`), job)]); }
-        catch (err) { alert('Kunde inte slå ihop filerna: ' + err.message); }
-        knapp.disabled = false;
-      },
-    }, 'Dela allt som en PDF') : null,
+    files.length > 1 ? samladPdf(files, job, dela) : null,
     lankar,
   ].filter(Boolean));
 }

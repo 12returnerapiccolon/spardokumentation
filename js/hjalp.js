@@ -118,7 +118,7 @@ export const HJALP = {
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',
         [
           'Dela de … filerna: öppnar telefonens delning, så att du kan skicka filerna med Mail, Teams eller spara dem i OneDrive. Ämnesraden i Mail fyller du i själv: tryck på kopieraknappen bredvid jobbnamnet överst och klistra in.',
-          'Dela allt som en PDF: slår ihop alla blanketter och bilder till en fil. Bra när mottagaren vill ha allt samlat. Den här filen bär också hela jobbet, så att det kan importeras i en annan telefon. Skicka den bara till den som får se alla jobbets uppgifter.',
+          'Dela allt som en PDF: slår ihop alla blanketter och bilder till en fil. Tryck en gång så görs PDF:en, och tryck sedan på Dela PDF:en; knappen visar antal sidor och storlek. Bra när mottagaren vill ha allt samlat. Den här filen bär också hela jobbet, så att det kan importeras i en annan telefon. Skicka den bara till den som får se alla jobbets uppgifter.',
           'Länkarna under knapparna öppnar eller laddar ned en fil i taget.',
         ],
         'Har svetsrapporten fler än 10 svetsar blir det flera svetsrapporter, del 1, del 2 och så vidare.',
