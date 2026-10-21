@@ -321,7 +321,7 @@ async function komIgangView() {
     const steg = [
       [d ? 'Installera appen (frivilligt)' : 'Lägg appen på hemskärmen', TEXT.installera[enhet], installerad && enhet === gissad, null],
       ['Läs in blankettmallarna',
-        `Mallarna finns inte i appen. Du får zip-filen "Alla PDF-mallar" av arbetsledaren eller en kollega. Spara den ${TEXT.spara[enhet]} och läs in den under Blankettmallar. Det behövs bara en gång, och igen om appen säger att en mall är gammal.`,
+        `Mallarna finns inte i appen. Du får zip-filen "Svetsjobb blankettmallar" av arbetsledaren eller en kollega. Spara den ${TEXT.spara[enhet]} och läs in den under Blankettmallar. Det behövs bara en gång, och igen om appen säger att en mall är gammal.`,
         missing.length === 0, ['#/mallar', missing.length ? `Läs in mallarna (${missing.length} saknas)` : 'Visa mallarna']],
       ['Fyll i dina uppgifter',
         'Ditt namn står som underskrift på blanketterna. Fyll också i telefon, svets-ID, företag och kontaktpersoner, så fylls de i automatiskt i varje jobb.',

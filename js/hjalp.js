@@ -146,7 +146,7 @@ export const HJALP = {
     intro: 'Appen fyller i de riktiga blankettmallarna. Mallarna finns inte i appen, utan läses in från telefonens filer en gång och sparas sedan i telefonen.',
     delar: [
       ['Läs in mallar', [
-        'Tryck Läs in mallar från Filer och välj zip-filen "Alla PDF-mallar", eller en eller flera mallar. Appen känner själv igen vilken blankett varje fil är.',
+        'Tryck Läs in mallar från Filer och välj zip-filen "Svetsjobb blankettmallar", eller en eller flera mallar. Appen känner själv igen vilken blankett varje fil är.',
         'Efter inläsningen visas en rad per mall: bock om den lästes in, varning om den är en gammal version.',
       ]],
       ['Listan', [
