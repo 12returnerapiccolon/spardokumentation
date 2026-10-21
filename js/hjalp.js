@@ -52,7 +52,7 @@ export const HJALP = {
       ]],
       ['Knapparna', [[
         '+ Nytt jobb: skapar ett jobb. Du fyller i uppgifterna en gång, och appen föreslår vilka blanketter som behövs.',
-        'Importera jobb från PDF: läser in ett jobb från en PDF som skapats med Exportera jobbet till en annan enhet, t.ex. från en kollega eller från en annan telefon. Bilderna följer med. Avsändarens namn, telefon och svets-ID följer inte med. De enskilda blanketterna bär inte jobbet och går inte att importera.',
+        'Läs in överfört jobb: läser in ett jobb som en kollega eller du själv har skickat med Överför jobbet, t.ex. från en annan telefon, platta eller dator. Bilderna följer med. Avsändarens namn, telefon och svets-ID följer inte med. Filerna som skickas in till arbetsledaren bär inte jobbet och går inte att läsa in.',
       ]]],
       ['Jobblistan', [
         'Varje jobb visar namn, status, datum och blanketterna. Tryck på ett jobb för att öppna det.',
@@ -103,7 +103,7 @@ export const HJALP = {
     intro: 'Här samlas allt som hör till jobbet: status, blanketterna, bilderna och uppgifterna om jobbet. Härifrån skapar och delar du filerna.',
     delar: [
       ['Status', [
-        'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du delar filerna, och då låses alla blanketter. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
+        'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du trycker Skicka in jobb och skickar filerna, och då låses alla blanketter. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
       ]],
       ['Kopiera jobbnamn och Ao nr', [
         'Knappen bredvid jobbnamnet överst kopierar namnet. Klistra in det på ämnesraden när du mejlar filerna; telefonen kan inte fylla i ämnesraden själv.',
@@ -117,20 +117,20 @@ export const HJALP = {
       ['Skapa filer', [
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',
         [
-          'Dela de … filerna: öppnar telefonens delning, så att du kan skicka filerna med Mail, Teams eller spara dem i OneDrive. Ämnesraden i Mail fyller du i själv: tryck på kopieraknappen bredvid jobbnamnet överst och klistra in. Det här är filerna som går till arbetsledaren, och jobbet blir Skickat.',
-          'Exportera jobbet till en annan enhet: gör en PDF med alla blanketter och bilder som också bär hela jobbet, så att det kan läsas in med Importera jobb från PDF i en annan telefon eller dator. Tryck en gång så görs PDF:en, och tryck sedan på Dela exportfilen. Jobbet blir inte Skickat av det. Skicka filen bara till den som får se alla jobbets uppgifter.',
-          'Länkarna under knapparna öppnar eller laddar ned en fil i taget. Storleken står efter varje fil, så att du kan jämföra med bilagorna i Mail. En bilaga på bara några hundra byte har blivit tom.',
+          'Skicka in jobb: öppnar delningen, så att du kan skicka filerna till arbetsledaren med Mail eller Teams eller spara dem i OneDrive. Ämnesraden i Mail fyller du i själv: tryck på kopieraknappen bredvid jobbnamnet överst och klistra in. Jobbet blir Skickat och alla blanketter låses.',
+          'Länkarna under knappen öppnar eller laddar ned en fil i taget. Storleken står efter varje fil, så att du kan jämföra med bilagorna i Mail. En bilaga på bara några hundra byte har blivit tom.',
         ],
         'Har svetsrapporten fler än 10 svetsar blir det flera svetsrapporter, del 1, del 2 och så vidare.',
       ]],
       ['Bilder', [
         'Tre grupper: Före, Efter och Rälsmärkning/bricka. Tryck på + i gruppen för att ta en bild eller välja bilder. Tryck på en bild för att se den större, och på × för att ta bort den.',
-        'Bilderna följer med när du delar filerna. Saknas Efter-bilder eller rälsmärkning får du en påminnelse.',
+        'Bilderna följer med när du skickar in jobbet. Saknas Efter-bilder eller rälsmärkning får du en påminnelse.',
       ]],
       ['Längre ner', [[
         'Lägg till eller ta bort blanketter: kryssa i fler blanketter eller ta bort en. Det du fyllt i finns kvar om du lägger till den igen.',
-        'Uppgifter om jobbet: samma uppgifter som när jobbet skapades. Ändringar här syns på alla blanketter.',
-        'Nytt jobb från detta: gör ett nytt jobb med dagens datum och samma uppgifter och blanketter, men tomma blanketter. Bra när du jobbar på samma ställe flera dagar.',
+        'Uppgifter om jobbet: samma uppgifter som när jobbet skapades. Ändringar här syns på alla blanketter som inte är låsta.',
+        'Nytt jobb med samma uppgifter: gör ett nytt jobb med dagens datum och samma uppgifter och blanketter, men tomma blanketter. Bra när du jobbar på samma ställe flera dagar.',
+        'Överför jobbet: gör en PDF med alla blanketter och bilder som också bär hela jobbet, så att en kollega eller en annan enhet (telefon, platta eller dator) kan läsa in det med Läs in överfört jobb på startsidan. Tryck en gång så görs filen, och tryck sedan på Dela överföringsfilen. Jobbet blir inte Skickat av det. Skicka filen bara till den som får se alla jobbets uppgifter.',
         'Ta bort jobbet: tar bort jobbet, blanketterna och bilderna från telefonen. Det går inte att ångra.',
       ]]],
     ],

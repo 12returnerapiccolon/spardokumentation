@@ -302,10 +302,10 @@ async function komIgangView() {
     },
     spara: { iPhone: 'i Filer', Android: 'i Filer eller Hämtade filer', Mac: 'i en mapp på datorn, t.ex. Hämtade filer', Windows: 'i en mapp på datorn, t.ex. Hämtade filer' },
     dela: {
-      iPhone: 'Dela filerna med arbetsledaren via Mail eller Teams.',
-      Android: 'Dela filerna med arbetsledaren via Mail eller Teams.',
-      Mac: 'I Safari fungerar Dela. I Chrome på Mac går det inte att dela filer: ladda ned dem via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
-      Windows: 'Dela fungerar via Windows delning. Du kan också ladda ned filerna via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
+      iPhone: 'Tryck Skicka in jobb och skicka filerna till arbetsledaren med Mail eller Teams.',
+      Android: 'Tryck Skicka in jobb och skicka filerna till arbetsledaren med Mail eller Teams.',
+      Mac: 'I Safari fungerar Skicka in jobb. I Chrome på Mac går det inte att dela filer: ladda ned dem via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
+      Windows: 'Skicka in jobb fungerar via Windows delning. Du kan också ladda ned filerna via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
     },
   };
   let enhet = gissad;
@@ -325,7 +325,7 @@ async function komIgangView() {
         jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
       ['Spara en säkerhetskopia',
         [`Jobben finns bara ${d ? 'i webbläsaren på den här datorn' : 'i telefonen'}. Spara en kopia ${TEXT.spara[enhet]} då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.`,
-          'Ett enskilt jobb flyttas till en annan telefon eller dator genom att du skickar det med Exportera jobbet till en annan enhet och väljer den filen under Importera jobb från PDF på startsidan.'],
+          'Ett enskilt jobb flyttas till en annan enhet med Överför jobbet längst ned i jobbet. På den andra enheten trycker du Läs in överfört jobb på startsidan och väljer filen.'],
         !!senasteKopia, ['#/installningar', 'Till säkerhetskopian']],
     ];
     lista.replaceChildren(...steg.map(([rubrik, text, klar, lank]) => h('li', { class: 'card' + (klar ? ' klar' : '') },
@@ -701,8 +701,9 @@ async function jobView(id) {
         await db.put('jobs', kopia);
         location.hash = `#/jobb/${kopia.id}`;
       },
-    }, 'Nytt jobb från detta'),
+    }, 'Nytt jobb med samma uppgifter'),
     h('p', { class: 'muted note' }, 'Skapar ett jobb med dagens datum och samma uppgifter om jobbet och samma blanketter. Blanketterna börjar tomma.'),
+    overforJobb(job, save),
     h('button', {
       class: 'button danger', type: 'button',
       onclick: async () => {
@@ -771,7 +772,7 @@ function importKnapp() {
         if (!r || !r.job.id) continue;
         if (!job || r.bilder.length > bilder.length) ({ job, bilder } = r);
       }
-      if (!job) { alert('Filen innehåller inget jobb. Välj PDF:en som skapats med Exportera jobbet till en annan enhet i appen.'); return; }
+      if (!job) { alert('Filen innehåller inget jobb. Välj PDF:en som gjorts med Överför jobbet i appen.'); return; }
       const jpg = files.filter(f => /\.jpe?g$/i.test(f.name)).sort((a, b) => a.name.localeCompare(b.name, 'sv', { numeric: true }));
       if (jpg.length) bilder = jpg.map(f => ({ typ: bildtypUrNamn(f.name), data: f }));
       const finns = await db.get('jobs', job.id);
@@ -783,7 +784,8 @@ function importKnapp() {
     },
   });
   return h('div', {},
-    h('button', { class: 'button big', type: 'button', onclick: () => val.click() }, 'Importera jobb från PDF'),
+    h('button', { class: 'button big', type: 'button', onclick: () => val.click() }, 'Läs in överfört jobb'),
+    h('p', { class: 'muted note' }, 'Från en kollega eller en annan enhet.'),
     val);
 }
 
@@ -930,34 +932,38 @@ async function enPdf(files, namn, job) {
   return new File([blob], `${namn}.pdf`, { type: 'application/pdf' });
 }
 
-// Exportera jobbet till en annan enhet: alla blanketter och bilder i en PDF som bär jobbet.
-// Arbetsledarna vill ha separata filer, så exporten används för att flytta jobb och sätter inte
-// jobbet som Skickat (2026-10-21). Två steg: första trycket gör PDF:en, andra delar den, så att
-// delningen startar direkt av ett tryck. PDF:en kontrolleras också innan den delas.
-function samladPdf(files, job, dela) {
-  const ruta = h('div', {});
+// Överför jobbet (2026-10-21): alla blanketter och bilder i en PDF som bär jobbet, så att en
+// kollega eller en annan enhet kan läsa in det med Läs in överfört jobb. Arbetsledarna vill ha
+// separata filer, så överföringen sätter inte jobbet som Skickat. Två steg: första trycket gör
+// PDF:en, andra delar den, så att delningen startar direkt av ett tryck. PDF:en kontrolleras
+// också innan den delas.
+function overforJobb(job, save) {
+  const ruta = h('div', { class: 'overfor' });
   const knapp = h('button', {
     class: 'button big', type: 'button',
     onclick: async () => {
+      save.flush();
       knapp.disabled = true;
-      knapp.textContent = 'Slår ihop filerna …';
+      knapp.textContent = 'Gör överföringsfilen …';
       try {
+        const { files, problems } = await skapaFiler(job);
         const pdf = await enPdf(files, safeName(`${jobLabel(job)} ${blankettDatum(job)}`), job);
         const bytes = new Uint8Array(await pdf.arrayBuffer());
         const sidor = (await PDFLib.PDFDocument.load(bytes)).getPageCount();
         if (bytes.length < 2000 || !sidor) throw new Error('PDF:en blev tom.');
         const fil = await iMinnet(new Blob([bytes]), pdf.name, 'application/pdf');
-        ruta.replaceChildren(
-          h('button', { class: 'button big', type: 'button', onclick: () => dela([fil]) }, `Dela exportfilen (${sidor} sidor, ${storlek(fil.size)})`),
-          h('ul', { class: 'files' }, filLank(fil)));
+        const lank = h('ul', { class: 'files' }, filLank(fil));
+        ruta.replaceChildren(...problems.map(p => h('p', { class: 'error' }, p)),
+          h('button', { class: 'button big', type: 'button', onclick: () => delaFiler([fil], lank) }, `Dela överföringsfilen (${sidor} sidor, ${storlek(fil.size)})`),
+          lank);
       } catch (err) {
-        alert('Kunde inte slå ihop filerna: ' + err.message);
+        alert('Kunde inte göra överföringsfilen: ' + err.message);
         knapp.disabled = false;
-        knapp.textContent = 'Exportera jobbet till en annan enhet';
+        knapp.textContent = 'Överför jobbet';
       }
     },
-  }, 'Exportera jobbet till en annan enhet');
-  ruta.append(knapp);
+  }, 'Överför jobbet');
+  ruta.append(knapp, h('p', { class: 'muted note' }, 'Till en kollega eller en annan enhet, som läser in det med Läs in överfört jobb på startsidan. Jobbet blir inte Skickat.'));
   return ruta;
 }
 
@@ -973,8 +979,8 @@ async function iMinnet(data, namn, typ) {
   return new File([new Uint8Array(await data.arrayBuffer())], namn, { type: typ });
 }
 
-async function buildFiles(job, area, onSent) {
-  area.replaceChildren(h('p', { class: 'muted' }, 'Skapar filer …'));
+// Blanketterna och bilderna som filer. problems: det som inte gick.
+async function skapaFiler(job) {
   const files = [];
   const problems = [];
   for (const key of job.docs) {
@@ -1009,6 +1015,12 @@ async function buildFiles(job, area, onSent) {
   try { for (const f of await bildfiler(job.id, safeName(jobLabel(job)))) files.push(await iMinnet(f, f.name, f.type)); } catch (e) { problems.push('Bilderna: ' + e.message); }
   // En fil som blivit tom stoppas här i stället för att komma fram trasig hos mottagaren.
   for (const f of files.filter(f => f.size < 1000)) problems.push(`${f.name} blev tom. Försök skapa filerna igen.`);
+  return { files, problems };
+}
+
+async function buildFiles(job, area, onSent) {
+  area.replaceChildren(h('p', { class: 'muted' }, 'Skapar filer …'));
+  const { files, problems } = await skapaFiler(job);
   const lankar = h('ul', { class: 'files' }, files.map(filLank));
   // Delade filer markerar jobbet som skickat.
   const dela = async list => {
@@ -1023,8 +1035,8 @@ async function buildFiles(job, area, onSent) {
   area.replaceChildren(...[
     ...problems.map(p => h('p', { class: 'error' }, p)),
     files.length ? h('button', { class: 'button primary big', type: 'button', onclick: () => dela(files) },
-      `Dela ${files.length === 1 ? 'filen' : `de ${files.length} filerna`} (Mail, Teams, OneDrive …)`) : null,
-    files.length ? samladPdf(files, job, list => delaFiler(list, lankar)) : null,
+      `Skicka in jobb (${files.length === 1 ? '1 fil' : `${files.length} filer`})`) : null,
+    files.length ? h('p', { class: 'muted note' }, 'Med Mail, Teams eller OneDrive. Jobbet blir Skickat och låses.') : null,
     lankar,
   ].filter(Boolean));
 }
@@ -1670,7 +1682,7 @@ async function settingsView() {
         sharedInputs(profile, onChange, { only: SHARED.filter(f => f.group === namn).map(f => f.key) })),
     ]),
     h('h2', {}, 'Blankettmallar'),
-    h('a', { class: 'button big', href: '#/mallar' }, 'Läs in och visa blankettmallar'),
+    h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
     h('h2', {}, 'Säkerhetskopia'),
     kopiaKort(),
     h('h2', {}, 'Om appen'),
