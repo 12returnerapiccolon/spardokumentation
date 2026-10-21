@@ -725,13 +725,12 @@ async function jobView(id) {
         setTitle(jobLabel(job), '#/', { kopiera: true });
       }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })), job, '_uppgifter', 'uppgifterna om jobbet', save),
     h('h2', {}, 'Blanketter'),
-    docList,
-    // Ändra blanketter direkt under listan, fälls ut på plats (2026-10-21).
     andraBlanketter = h('details', { class: 'andra-blanketter' },
-      h('summary', {}, 'Ändra blanketter'),
+      h('summary', {}, 'Lägg till/ta bort blanketter'),
       h('p', { class: 'muted note' }, 'Kryssa i blanketter att lägga till eller ta bort. Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen. En låst blankett går inte att ta bort.'),
       docBox,
       h('button', { class: 'button', type: 'button', onclick: () => { andraBlanketter.open = false; } }, 'Klar')),
+    docList,
     // Bilder före Skapa filer, så att de inte glöms (2026-10-21).
     lasbar(bildDel, job, '_bilder', 'bilderna', save),
     skapaKnapp,

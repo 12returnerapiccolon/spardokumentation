@@ -529,3 +529,9 @@ details.andra-blanketter > summary::before { content: '›'; color: var(--muted)
 details.andra-blanketter[open] > summary::before { transform: rotate(90deg); }
 /* En låst blankett går inte att kryssa ur (2026-10-21). */
 .check.last { opacity: .6; }
+
+/* Lägg till/ta bort som liten text under rubriken */
+details.andra-blanketter { margin: -6px 0 8px; padding: 0 2px; }
+details.andra-blanketter:not([open]) > summary { min-height: 28px; font-size: 14px; font-weight: 500; }
+details.andra-blanketter:not([open]) > summary::before { font-size: 18px; }
+details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
