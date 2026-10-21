@@ -525,4 +525,7 @@ details.andra-blanketter .button { margin-top: 8px; }
 details.lasbar > summary .las { width: 48px; justify-content: center; margin-right: -10px; }
 details.andra-blanketter { padding: 0 16px; }
 details.andra-blanketter > summary { padding: 0; }
-details.andra-blanketter > summary .las { margin-right: -10px; }
+details.andra-blanketter > summary::before { content: '›'; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .15s; }
+details.andra-blanketter[open] > summary::before { transform: rotate(90deg); }
+/* En låst blankett går inte att kryssa ur (2026-10-21). */
+.check.last { opacity: .6; }

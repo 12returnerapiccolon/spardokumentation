@@ -588,12 +588,14 @@ function dokNamn(job, d, foreslas) {
     h('small', { class: 'hel' }, hel));
 }
 
-function docChecks(job, checked, onToggle) {
+// last(key): en låst blankett i jobbet går inte att kryssa ur, så att en blankett som skickats
+// inte försvinner av misstag (2026-10-21). Nya blanketter går alltid att lägga till.
+function docChecks(job, checked, onToggle, { last = () => false } = {}) {
   const box = h('div', { class: 'card' });
   const draw = () => {
     const forslag = foreslagnaDokument(job);
-    box.replaceChildren(...CATALOG.map(d => h('label', { class: 'check' },
-      h('input', { type: 'checkbox', name: `doc_${d.key}`, checked: checked(d.key), onchange: e => { onToggle(d.key, e.target.checked); draw(); } }),
+    box.replaceChildren(...CATALOG.map(d => h('label', { class: 'check' + (last(d.key) ? ' last' : '') },
+      h('input', { type: 'checkbox', name: `doc_${d.key}`, checked: checked(d.key), disabled: last(d.key), onchange: e => { onToggle(d.key, e.target.checked); draw(); } }),
       dokNamn(job, d, forslag.has(d.key)))));
   };
   draw();
@@ -669,7 +671,7 @@ async function jobView(id) {
       // Hänglås: en låst blankett går att läsa men inte ändra (2026-10-21).
       lasKnapp(last, () => {
         if (last && !bekraftaUpplasning(form.kort || form.title)) return;
-        satLas(job, k, !last); save(); docList.replaceChildren(...docItems());
+        satLas(job, k, !last); save(); docList.replaceChildren(...docItems()); docBox.refresh();
       }));
   });
   const docList = h('ul', { class: 'list' }, docItems());
@@ -683,6 +685,7 @@ async function jobView(id) {
       if (v === 'Skickat') lasAlla(job);
       await db.put('jobs', job);
       docList.replaceChildren(...docItems());
+      docBox.refresh();
       document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.());
     }, job)].flat().filter(Boolean));
   statusRad.refresh();
@@ -701,14 +704,14 @@ async function jobView(id) {
   inskickatRad.refresh();
   let andraBlanketter;
   const skapaKnapp = h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, efterSkickat) }, 'Skapa filer');
-  const efterSkickat = () => { statusRad.refresh(); inskickatRad.refresh(); docList.replaceChildren(...docItems()); document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.()); };
+  const efterSkickat = () => { statusRad.refresh(); inskickatRad.refresh(); docList.replaceChildren(...docItems()); docBox.refresh(); document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.()); };
   const bildDel = bildSektion(id);
   const docBox = docChecks(job, k => job.docs.includes(k), (k, on) => {
     const docs = new Set(job.docs);
     on ? docs.add(k) : docs.delete(k);
     job.docs = CATALOG.map(d => d.key).filter(key => docs.has(key));
     save(); docList.replaceChildren(...docItems());
-  });
+  }, { last: k => job.docs.includes(k) && !!job.last?.[k] });
 
   render(
     statusRad,
@@ -724,11 +727,11 @@ async function jobView(id) {
     h('h2', {}, 'Blanketter'),
     docList,
     // Ändra blanketter direkt under listan, fälls ut på plats (2026-10-21).
-    lasbar(andraBlanketter = h('details', { class: 'andra-blanketter' },
+    andraBlanketter = h('details', { class: 'andra-blanketter' },
       h('summary', {}, 'Ändra blanketter'),
-      h('p', { class: 'muted note' }, 'Kryssa i blanketter att lägga till eller ta bort. Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen.'),
+      h('p', { class: 'muted note' }, 'Kryssa i blanketter att lägga till eller ta bort. Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen. En låst blankett går inte att ta bort.'),
       docBox,
-      h('button', { class: 'button', type: 'button', onclick: () => { andraBlanketter.open = false; } }, 'Klar')), job, '_blanketter', 'valet av blanketter', save),
+      h('button', { class: 'button', type: 'button', onclick: () => { andraBlanketter.open = false; } }, 'Klar')),
     // Bilder före Skapa filer, så att de inte glöms (2026-10-21).
     lasbar(bildDel, job, '_bilder', 'bilderna', save),
     skapaKnapp,
@@ -842,7 +845,7 @@ const STATUSAR = ['Pågående', 'Skickat', 'Avslutat'];
 const jobStatus = job => job.status || (job.skickad ? 'Skickat' : 'Pågående');
 // När jobbet skickas låses alla blanketter; de går att låsa upp en och en (2026-10-21).
 // Avsnitten på jobbsidan har egna nycklar med _ först.
-const LASBARA_DELAR = ['_bilder', '_blanketter', '_uppgifter'];
+const LASBARA_DELAR = ['_bilder', '_uppgifter'];
 const lasAlla = job => {
   for (const k of job.docs) if (!job.last?.[k]) satLas(job, k, true);
   job.last = Object.fromEntries([...job.docs, ...LASBARA_DELAR].map(k => [k, true]));
