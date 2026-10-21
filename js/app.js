@@ -648,7 +648,10 @@ async function jobView(id) {
       h('span', { class: 'main' }, form.kort || form.title),
       (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], job))),
       // Hänglås: en låst blankett går att läsa men inte ändra (2026-10-21).
-      lasKnapp(last, () => { job.last = { ...job.last, [k]: !last }; save(); docList.replaceChildren(...docItems()); }));
+      lasKnapp(last, () => {
+        if (last && !bekraftaUpplasning(form.kort || form.title)) return;
+        job.last = { ...job.last, [k]: !last }; save(); docList.replaceChildren(...docItems());
+      }));
   });
   const docList = h('ul', { class: 'list' }, docItems());
   // Status (2026-10-20). Blir Skickat när filerna delas.
@@ -661,6 +664,7 @@ async function jobView(id) {
       if (v === 'Skickat') lasAlla(job);
       await db.put('jobs', job);
       docList.replaceChildren(...docItems());
+      document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.());
     }, job)].flat().filter(Boolean));
   statusRad.refresh();
   const bildDel = bildSektion(id);
@@ -675,20 +679,20 @@ async function jobView(id) {
     statusRad,
     h('h2', {}, 'Blanketter'),
     docList,
-    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => { statusRad.refresh(); docList.replaceChildren(...docItems()); }) }, 'Skapa filer'),
+    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => { statusRad.refresh(); docList.replaceChildren(...docItems()); document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.()); }) }, 'Skapa filer'),
     exportArea,
-    bildDel,
-    h('details', { class: 'card' },
+    lasbar(bildDel, job, '_bilder', 'bilderna', save),
+    lasbar(h('details', { class: 'card' },
       h('summary', {}, 'Lägg till eller ta bort blanketter'),
       h('p', { class: 'muted note' }, 'Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen.'),
-      docBox),
-    h('details', { class: 'card' },
+      docBox), job, '_blanketter', 'valet av blanketter', save),
+    lasbar(h('details', { class: 'card' },
       h('summary', {}, 'Uppgifter om jobbet'),
       jobInputs(job, k => {
         save(); docBox.refresh();
         if (k === 'vaxeltyp') docList.replaceChildren(...docItems());
         setTitle(jobLabel(job), '#/', { kopiera: true });
-      }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })),
+      }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })), job, '_uppgifter', 'uppgifterna om jobbet', save),
     h('button', {
       class: 'button big', type: 'button',
       onclick: async () => {
@@ -787,7 +791,43 @@ function importKnapp() {
 const STATUSAR = ['Pågående', 'Skickat', 'Avslutat'];
 const jobStatus = job => job.status || (job.skickad ? 'Skickat' : 'Pågående');
 // När jobbet skickas låses alla blanketter; de går att låsa upp en och en (2026-10-21).
-const lasAlla = job => { job.last = Object.fromEntries(job.docs.map(k => [k, true])); };
+// Avsnitten på jobbsidan har egna nycklar med _ först.
+const LASBARA_DELAR = ['_bilder', '_blanketter', '_uppgifter'];
+const lasAlla = job => { job.last = Object.fromEntries([...job.docs, ...LASBARA_DELAR].map(k => [k, true])); };
+// Upplåsning kräver en bekräftelse (2026-10-21).
+const bekraftaUpplasning = namn => confirm(`Är du säker på att du vill låsa upp ${namn}? Det som är låst har oftast redan skickats in.`);
+// Ett avsnitt (details) på jobbsidan som går att låsa: hänglås i rubriken, och när det är låst
+// stängs rutor och knappar av. Bilder går fortfarande att titta på. Avsnitt som ritas om,
+// som Bilder, får låset igen via en MutationObserver.
+function lasbar(box, job, nyckel, namn, spara) {
+  let obs;
+  const tillampa = () => {
+    obs.disconnect();
+    const last = !!(job.last && job.last[nyckel]);
+    box.classList.add('lasbar');
+    box.classList.toggle('last', last);
+    const sum = box.querySelector(':scope > summary');
+    if (sum) {
+      sum.querySelector('.las')?.remove();
+      sum.append(lasKnapp(last, e => {
+        e.preventDefault();
+        if (last && !bekraftaUpplasning(namn)) return;
+        job.last = { ...job.last, [nyckel]: !last };
+        spara(); tillampa();
+      }, namn));
+    }
+    box.querySelectorAll('input, select, textarea, button').forEach(el => {
+      if (el.classList.contains('las') || el.classList.contains('visa') || el.classList.contains('kopiera')) return;
+      if (last && !el.disabled) { el.disabled = true; el.dataset.lasavst = ''; }
+      if (!last && 'lasavst' in el.dataset) { el.disabled = false; delete el.dataset.lasavst; }
+    });
+    obs.observe(box, { childList: true, subtree: true });
+  };
+  obs = new MutationObserver(tillampa);
+  box.lasRefresh = tillampa;
+  tillampa();
+  return box;
+}
 function lasIkon(last) {
   const ns = 'http://www.w3.org/2000/svg';
   const el = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
@@ -796,8 +836,8 @@ function lasIkon(last) {
   svg.append(el('rect', { x: 4, y: 11, width: 16, height: 10, rx: 2 }), el('path', { d: last ? 'M8 11V7a4 4 0 0 1 8 0v4' : 'M8 11V7a4 4 0 0 1 7.9-.9' }));
   return svg;
 }
-function lasKnapp(last, onToggle) {
-  return h('button', { class: 'las' + (last ? ' last' : ''), type: 'button', 'aria-label': last ? 'Lås upp blanketten' : 'Lås blanketten', 'aria-pressed': last ? 'true' : 'false', onclick: onToggle }, lasIkon(last));
+function lasKnapp(last, onToggle, vad = 'blanketten') {
+  return h('button', { class: 'las' + (last ? ' last' : ''), type: 'button', 'aria-label': last ? `Lås upp ${vad}` : `Lås ${vad}`, 'aria-pressed': last ? 'true' : 'false', onclick: onToggle }, lasIkon(last));
 }
 
 // Nytt jobb med samma uppgifter och dokument, t.ex. nästa skift på samma plats (2026-10-20).
@@ -1495,7 +1535,7 @@ async function formView(id, key) {
   render(
     h('p', { class: 'muted' }, `${form.code} ${form.title}. Uppgifter i grått hämtas från jobbet.`),
     last ? h('div', { class: 'card las-note' }, lasIkon(true), h('span', {}, 'Blanketten är låst och kan inte ändras.'),
-      h('button', { class: 'button', type: 'button', onclick: async () => { job.last = { ...job.last, [key]: false }; await db.put('jobs', job); route(); } }, 'Lås upp')) : null,
+      h('button', { class: 'button', type: 'button', onclick: async () => { if (!bekraftaUpplasning(form.kort || form.title)) return; job.last = { ...job.last, [key]: false }; await db.put('jobs', job); route(); } }, 'Lås upp')) : null,
     // Sektionerna går att fälla ihop för överblick och är öppna varje gång blanketten öppnas.
     // En låst blankett visas i en avstängd fieldset: allt syns men inget går att ändra.
     blankettRuta = h('fieldset', { class: 'blankett' + (last ? ' last' : '') },

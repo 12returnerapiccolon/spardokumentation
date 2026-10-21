@@ -493,3 +493,13 @@ fieldset.blankett.last :is(input, select, textarea):disabled { opacity: 0.75; -w
 .las-note svg { width: 22px; height: 22px; flex: none; color: var(--accent); }
 .las-note span { flex: 1; }
 .las-note .button { width: auto; margin: 0; padding: 8px 14px; }
+/* Låsbara avsnitt på jobbsidan: hänglåset till höger i rubriken (2026-10-21). */
+details.lasbar > summary { display: flex; align-items: center; gap: 8px; list-style: none; }
+details.lasbar > summary::-webkit-details-marker { display: none; }
+details.lasbar > summary::before { content: '›'; color: var(--muted); font-size: 22px; line-height: 1; transition: transform .15s; }
+details.lasbar[open] > summary::before { transform: rotate(90deg); }
+details.lasbar > summary .las { margin-left: auto; flex: none; width: 44px; height: 36px; padding: 0; border: 0; background: none; color: var(--muted); display: flex; align-items: center; justify-content: flex-end; }
+details.lasbar > summary .las.last { color: var(--accent); }
+details.lasbar > summary .las svg { width: 22px; height: 22px; }
+details.lasbar.last :is(input, select, textarea):disabled { opacity: 0.75; -webkit-text-fill-color: currentColor; }
+details.lasbar.last .miniatyr.ny, details.lasbar.last .bort { display: none; }
