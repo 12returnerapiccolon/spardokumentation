@@ -166,10 +166,16 @@ export const HJALP = {
       ]],
       ['Säkerhetskopia', [
         'Jobben finns bara i telefonen. Spara säkerhetskopia gör en zip-fil med alla jobb, bilder, mallar och inställningar som du sparar i Filer, t.ex. i iCloud Drive eller OneDrive.',
-        'Läs in säkerhetskopia läser tillbaka en sådan fil, t.ex. efter byte av telefon. Jobb som redan finns skrivs över med kopians version, övriga jobb ligger kvar.',
+        'Kopian är inte krypterad. Den som får tag i zip-filen kan öppna den och läsa alla jobb, dina uppgifter och bilderna. Spara den bara där andra inte kommer åt den.',
+        'Läs in säkerhetskopia läser tillbaka en sådan fil, t.ex. efter byte av telefon. Inställningarna och mallarna ersätts med kopians. För jobb som finns både i telefonen och i kopian väljer du om appen ska behålla den nyare versionen av varje jobb eller fråga för varje jobb. Jobb som bara finns i telefonen ligger kvar.',
+      ]],
+      ['Lagring', [
+        'Visar hur mycket av telefonens lagring appen använder och hur många jobb och bilder som finns. Bilderna tar mest plats.',
+        'Ta bort bilder i gamla avslutade jobb: tar bort bilderna i jobb som är Avslutade och inte ändrats på tre månader. Blanketterna finns kvar. Spara gärna en säkerhetskopia först.',
       ]],
       ['Om appen', [
         'Kom igång visar stegen för att börja använda appen. Versionen längst ner visar vilken version telefonen har.',
+        'Inget skickas till någon server, utom när du trycker Min position eller Välj på karta: då skickas positionen till OpenStreetMap.',
       ]],
     ],
   },
@@ -233,7 +239,7 @@ export const HJALP = {
         'Från och till med klockslag. Förval är jobbets datum, och vid nattarbete till dagen efter. Tillståndet ska gälla så kort tid som möjligt.',
       ]],
       ['Arbetsplats och arbetsmetod', [
-        'Larmadress: skriv adressen, eller tryck Min position för närmaste adress, eller Välj på karta. Positionen skickas bara när du trycker på knapparna.',
+        'Larmadress: skriv adressen, eller tryck Min position för närmaste adress, eller Välj på karta. Positionen skickas bara när du trycker på knapparna: då skickas den till OpenStreetMap (nominatim.openstreetmap.org) för att hitta adressen, och kartbilderna hämtas därifrån. Inget annat ur jobbet skickas med.',
         'Kryssa i arbetsmetoderna och svara om arbetet är brandfarligt.',
       ]],
       ['Underskrifter', [

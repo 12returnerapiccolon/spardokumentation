@@ -180,12 +180,18 @@ export function diff(normal, uppmatt) {
   return s;
 }
 
+// flush sparar direkt, men bara om något väntar på att sparas.
 function debounce(fn, ms) {
-  let t;
-  const wrapped = (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
-  wrapped.flush = () => { clearTimeout(t); fn(); };
+  let t, vantar = false;
+  const wrapped = (...a) => { vantar = true; clearTimeout(t); t = setTimeout(() => { vantar = false; fn(...a); }, ms); };
+  wrapped.flush = () => { clearTimeout(t); if (vantar) { vantar = false; fn(); } };
   return wrapped;
 }
+
+// Det som väntar på att sparas sparas också när appen läggs undan och när en ruta lämnas
+// (2026-10-21), inte bara när sidan stängs. Varje vy sätter window.onpagehide.
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') window.onpagehide?.(); });
+document.addEventListener('focusout', () => window.onpagehide?.(), true);
 
 function safeName(s) {
   return s.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim();
@@ -963,14 +969,14 @@ function overforJobb(job, save) {
       }
     },
   }, 'Överför jobbet');
-  ruta.append(knapp, h('p', { class: 'muted note' }, 'Till en kollega eller en annan enhet, som läser in det med Läs in överfört jobb på startsidan. Jobbet blir inte Skickat.'));
+  ruta.append(knapp, h('p', { class: 'muted note' }, 'Till en kollega eller en annan enhet, som läser in det med Läs in överfört jobb på startsidan. Filen innehåller alla uppgifter i jobbet, så skicka den bara till kollegor. Jobbet blir inte Skickat.'));
   return ruta;
 }
 
 // Filer som ska delas byggs om från bytes i minnet (2026-10-21). En File som bara pekar på en
 // annan Blob kom fram som en tom bilaga på 301 byte när den mejlades från iPhone.
 // Filstorlek som i Mail, t.ex. 57 kB eller 1,2 MB (2026-10-21).
-const storlek = b => (b < 1048576 ? `${Math.max(1, Math.round(b / 1024))} kB`
+const storlek = b => (b < 1048576 ? `${b ? Math.max(1, Math.round(b / 1024)) : 0} kB`
   : `${(b / 1048576).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} MB`);
 // En länk till en skapad fil, med storleken efter så att den går att jämföra med bilagan.
 const filLank = f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name), h('span', { class: 'storlek' }, ` · ${storlek(f.size)}`));
@@ -999,7 +1005,7 @@ async function skapaFiler(job) {
         const values = form.toValues(j, data, { diff, sida });
         const blob = form.format === 'overlay'
           ? await fillOverlay(tpl.data, form.layout, values, { title: `${form.code} ${form.title}` })
-          : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
+          : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values, { title: `${form.code} ${form.title}` });
         // Bara den sammanslagna PDF:en bär jobbet, så att de enskilda blanketterna inte innehåller
         // dolda uppgifter från andra blanketter.
         const ut = blob;
@@ -1664,6 +1670,7 @@ async function settingsView() {
     if (!profile[k] && rem[r]) profile[k] = rem[r];
   }
   const save = debounce(() => db.setSetting('profile', profile), 300);
+  window.onpagehide = () => save.flush();
   // Versionen är namnet på cachen i sw.js, så att man kan se om telefonen har den senaste.
   const version = h('p', { class: 'muted' });
   if ('caches' in window) caches.keys().then(k => { const v = k.filter(x => /^v\d+$/.test(x)).sort((a, b) => a.slice(1) - b.slice(1)).pop(); if (v) version.textContent = `Version ${v}`; }).catch(() => {});
@@ -1685,11 +1692,43 @@ async function settingsView() {
     h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
     h('h2', {}, 'Säkerhetskopia'),
     kopiaKort(),
+    h('h2', {}, 'Lagring'),
+    lagringKort(),
     h('h2', {}, 'Om appen'),
     h('a', { class: 'button', href: '#/kom-igang' }, 'Kom igång, steg för steg'),
-    h('p', { class: 'muted' }, 'Allt du fyller i och alla mallar sparas bara i den här telefonen. Inget skickas till någon server. Filerna lämnar telefonen först när du delar dem.'),
+    h('p', { class: 'muted' }, 'Allt du fyller i och alla mallar sparas bara i den här telefonen. Inget skickas till någon server, utom när du använder Min position eller kartan: då skickas positionen eller kartutsnittet till OpenStreetMap för att hitta platsen. Filerna lämnar telefonen först när du delar dem.'),
     version,
   );
+}
+
+// Hur mycket appen använder av telefonens lagring, och rensning av bilder i gamla avslutade
+// jobb (2026-10-21). Blanketterna finns kvar; bara bilderna tas bort.
+const GAMMALT = 90 * 864e5; // ungefär tre månader
+function lagringKort() {
+  const ruta = h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Räknar …'));
+  const visa = async () => {
+    const [jobs, bilder] = await Promise.all([db.getAll('jobs'), db.getAll('bilder')]);
+    const gamla = new Set(jobs.filter(j => jobStatus(j) === 'Avslutat' && Date.now() - new Date(j.updated || j.datum || 0) > GAMMALT).map(j => j.id));
+    const rensas = bilder.filter(b => gamla.has(b.jobId));
+    const bildMb = bilder.reduce((n, b) => n + (b.data?.size || 0), 0);
+    const est = await navigator.storage?.estimate?.().catch(() => null);
+    ruta.replaceChildren(...[
+      h('p', {}, est?.usage != null
+        ? `Appen använder ${storlek(est.usage)}${est.quota ? ` av ${storlek(est.quota)} som webbläsaren tillåter` : ''}.`
+        : 'Webbläsaren visar inte hur mycket lagring appen använder.'),
+      h('p', { class: 'muted note' }, `${jobs.length} jobb och ${bilder.length} bilder (${storlek(bildMb)}). Bilderna tar mest plats.`),
+      rensas.length ? h('button', {
+        class: 'button big', type: 'button',
+        onclick: async () => {
+          if (!confirm(`Ta bort ${rensas.length} bilder (${storlek(rensas.reduce((n, b) => n + (b.data?.size || 0), 0))}) i ${gamla.size} avslutade jobb som är äldre än tre månader? Blanketterna finns kvar. Det går inte att ångra.`)) return;
+          for (const b of rensas) await db.del('bilder', b.id);
+          visa();
+        },
+      }, `Ta bort bilder i gamla avslutade jobb (${rensas.length})`) : h('p', { class: 'muted note' }, 'Inga bilder i avslutade jobb äldre än tre månader.'),
+    ]);
+  };
+  visa();
+  return ruta;
 }
 
 // Spara alla jobb, inställningar, mallar och bilder i en fil, och läsa tillbaka dem.
@@ -1705,15 +1744,29 @@ function kopiaKort() {
     onchange: async e => {
       const file = e.target.files[0];
       e.target.value = '';
-      if (!file || !confirm('Läsa in säkerhetskopian? Jobb som finns i både telefonen och kopian ersätts med kopians version.')) return;
-      try {
-        const r = await lasInKopia(file);
-        alert(`Klart. ${r.jobb} jobb lästes in.`);
-      } catch (err) { alert('Kunde inte läsa in kopian: ' + err.message); }
+      if (!file) return;
+      // Val för jobb som finns både i telefonen och i kopian (2026-10-21).
+      valRuta.replaceChildren(h('div', { class: 'card varning' },
+        h('strong', {}, 'Läsa in säkerhetskopian?'),
+        h('p', {}, 'Inställningarna och blankettmallarna ersätts med kopians. Jobb som bara finns i telefonen ligger kvar. Vad ska hända med jobb som finns både i telefonen och i kopian?'),
+        h('button', { class: 'button primary big', type: 'button', onclick: () => lasIn(file, (lokalt, kopia) => (kopia.updated || '') > (lokalt.updated || '')) }, 'Behåll den nyare versionen av varje jobb'),
+        h('button', { class: 'button big', type: 'button', onclick: () => lasIn(file, (lokalt, kopia) => confirm(
+          `${jobLabel(lokalt)} finns både i telefonen (ändrat ${datumTid(lokalt.updated)}) och i kopian (ändrat ${datumTid(kopia.updated)}).\n\nOK: använd kopians version.\nAvbryt: behåll telefonens.`)) }, 'Fråga för varje jobb'),
+        h('button', { class: 'button', type: 'button', onclick: () => valRuta.replaceChildren() }, 'Avbryt')));
     },
   });
+  const valRuta = h('div', {});
+  const datumTid = d => (d ? new Date(d).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : 'okänt');
+  const lasIn = async (file, ersatt) => {
+    valRuta.replaceChildren(h('p', { class: 'muted' }, 'Läser in …'));
+    try {
+      const r = await lasInKopia(file, ersatt);
+      alert(`Klart. ${r.jobb} jobb lästes in${r.behallna ? `, ${r.behallna} behölls som de var i telefonen` : ''}.`);
+      route();
+    } catch (err) { alert('Kunde inte läsa in kopian: ' + err.message); valRuta.replaceChildren(); }
+  };
   return h('div', { class: 'card' },
-    h('p', { class: 'muted note' }, 'Allt finns bara i telefonen. Spara en kopia i Filer (t.ex. iCloud Drive eller OneDrive) ibland, så kan du läsa tillbaka jobben om de försvinner eller om du byter telefon.'),
+    h('p', { class: 'muted note' }, 'Allt finns bara i telefonen. Spara en kopia i Filer (t.ex. iCloud Drive eller OneDrive) ibland, så kan du läsa tillbaka jobben om de försvinner eller om du byter telefon. Kopian är en vanlig zip-fil som inte är krypterad: den som får tag i filen kan läsa allt i den, så spara den bara där andra inte kommer åt den.'),
     status,
     h('button', {
       class: 'button primary big', type: 'button',
@@ -1729,6 +1782,7 @@ function kopiaKort() {
     }, 'Spara säkerhetskopia'),
     filer,
     h('button', { class: 'button big', type: 'button', onclick: () => val.click() }, 'Läs in säkerhetskopia'),
+    valRuta,
     val);
 }
 

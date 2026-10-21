@@ -397,11 +397,16 @@ function buildForm(t) {
       const alla = matt.map(m => m[0]).filter(m => !auto.matpunkter || auto.matpunkter.has(m));
       const ifyllda = alla.filter(m => data.matt?.[m]?.uppmatt).length;
       const ute = mattUtanfor(t.key, job, data).length;
-      return { text: `${ifyllda} av ${alla.length} mått${ute ? `, ${ute} utanför tolerans` : ''}`, varning: ute > 0 };
+      // Utan besiktningstyp blir ingen ruta ikryssad på blanketten (2026-10-21).
+      const typ = data.typ ? '' : ', besiktningstyp saknas';
+      return { text: `${ifyllda} av ${alla.length} mått${ute ? `, ${ute} utanför tolerans` : ''}${typ}`, varning: ute > 0 || !data.typ };
     },
     saknas: (job, data) => {
       const ute = mattUtanfor(t.key, job, data);
-      return ute.length ? [`${ute.length === 1 ? 'måttet' : 'måtten'} ${ute.join(', ')} ligger utanför toleransen.`] : [];
+      return [
+        ...(data.typ ? [] : ['besiktningstyp är inte vald.']),
+        ...(ute.length ? [`${ute.length === 1 ? 'måttet' : 'måtten'} ${ute.join(', ')} ligger utanför toleransen.`] : []),
+      ];
     },
 
     toValues(job, data, { diff }) {

@@ -83,6 +83,10 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
     if (!pos) throw new Error(`Fält ${key} finns inte i mallen`);
     if (value == null || value === '' || value === true || value === false) continue;
     const [p, x, base, fullSize, align, maxWidth, height] = pos;
+    // layout.tack: mallens egen text på platsen täcks först, t.ex. radnumren på svetsrapportens
+    // andra blankett (2026-10-21).
+    const tack = layout.tack?.[key];
+    if (tack) pages[tack[0]].drawRectangle({ x: tack[1], y: tack[2], width: tack[3], height: tack[4], color: rgb(1, 1, 1) });
     if (height) {
       drawWrapped(pages[p], String(value), { x, base, size: fullSize, maxWidth, height, align, font: f, color: ink, mitt: layout.mittHojd });
       continue;
@@ -105,6 +109,8 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
 
   if (title) pdf.setTitle(title);
   pdf.setSubject('');
+  pdf.setAuthor('');
+  pdf.setKeywords([]);
   pdf.setProducer('Svetsjobb');
   pdf.setCreator('Svetsjobb');
   const bytes = await pdf.save();

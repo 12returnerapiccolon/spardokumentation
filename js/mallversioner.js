@@ -46,12 +46,12 @@ export default {
     "datum": "2026-10-20"
   },
   "0737": {
-    "sha": "f66539e781fc255c587b49b66288b6bc7178fcd149764ea8af8b98160332bd56",
-    "datum": "2026-10-20"
+    "sha": "e1dafea2bb8fe5164c8a9c599ba40af702a4b9e75536723d5c8b1cb026ea8a27",
+    "datum": "2026-10-21"
   },
   "ibt": {
-    "sha": "efcb4357fbed521fc4f3b67e524556ab747bc1bef20b2084f2783a1cfd44707e",
-    "datum": "2026-10-20"
+    "sha": "59a1cf30634d5a45569b7603133637e172e978c7dfbe18d64fd919daf70244be",
+    "datum": "2026-10-21"
   },
   "kap": {
     "sha": "004cfa7fccb2c8ac813740020dd26a099688270bc3ea58dc66db435b34e2a717",
@@ -62,7 +62,7 @@ export default {
     "datum": "2026-10-20"
   },
   "skevning": {
-    "sha": "57e2e21c2e098b92786ba14e35119595275e2071c4b522528e31fdd2a5b5b936",
-    "datum": "2026-10-20"
+    "sha": "a77ad970b18bad87fa0b58dce7280ea025b09dc2378005c66f945de4c2d325b4",
+    "datum": "2026-10-21"
   }
 };

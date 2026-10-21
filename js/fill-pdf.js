@@ -4,7 +4,7 @@
  * values: { [fältnamn]: string | boolean }
  * Returnerar en Blob med en .pdf-fil. Fälten lämnas redigerbara.
  */
-export async function fillPdf(templateBuffer, values) {
+export async function fillPdf(templateBuffer, values, { title } = {}) {
   const { PDFDocument, PDFTextField, PDFDropdown, PDFCheckBox } = PDFLib;
   const pdf = await PDFDocument.load(templateBuffer);
   const form = pdf.getForm();
@@ -24,6 +24,15 @@ export async function fillPdf(templateBuffer, values) {
       field.setText(value == null ? '' : String(value));
     }
   }
+  // Fälten plattas till så att det ifyllda inte går att ändra hos mottagaren, och mallens
+  // uppgifter om vem som gjort den byts mot appens (2026-10-21).
+  form.flatten();
+  if (title) pdf.setTitle(title);
+  pdf.setSubject('');
+  pdf.setAuthor('');
+  pdf.setKeywords([]);
+  pdf.setProducer('Svetsjobb');
+  pdf.setCreator('Svetsjobb');
   const bytes = await pdf.save();
   return new Blob([bytes], { type: 'application/pdf' });
 }

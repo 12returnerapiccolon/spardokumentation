@@ -19,22 +19,31 @@ export async function skapaKopia() {
   return new File([bytes], `Svetsjobb säkerhetskopia ${datum}.zip`, { type: 'application/zip' });
 }
 
-// Läser in en kopia. Jobb, mallar och bilder med samma id skrivs över, övrigt i telefonen
-// ligger kvar.
-export async function lasInKopia(file) {
+// Läser in en kopia. Inställningar och mallar ersätts. För ett jobb som finns både i
+// telefonen och i kopian avgör ersatt(lokalt, kopia) om kopians version ska användas
+// (2026-10-21); bilderna till ett jobb som behålls läses inte in. Övrigt i telefonen ligger kvar.
+export async function lasInKopia(file, ersatt) {
   const zip = await JSZip.loadAsync(await file.arrayBuffer());
   const json = zip.file('data.json');
   if (!json) throw new Error('Filen är ingen säkerhetskopia från appen.');
   const data = JSON.parse(await json.async('string'));
-  for (const job of data.jobs || []) await db.put('jobs', job);
+  const behallna = new Set();
+  let jobb = 0;
+  for (const job of data.jobs || []) {
+    const lokalt = await db.get('jobs', job.id);
+    if (lokalt && !(await ersatt(lokalt, job))) { behallna.add(job.id); continue; }
+    await db.put('jobs', job);
+    jobb++;
+  }
   for (const s of data.settings || []) await db.put('settings', s);
   for (const t of data.templates || []) {
     const f = zip.file(`mallar/${t.key}`);
     if (f) await db.put('templates', { ...t, data: await f.async('arraybuffer') });
   }
   for (const b of data.bilder || []) {
+    if (behallna.has(b.jobId)) continue;
     const f = zip.file(`bilder/${b.id}.jpg`);
     if (f) await db.put('bilder', { ...b, data: new Blob([await f.async('arraybuffer')], { type: 'image/jpeg' }) });
   }
-  return { jobb: (data.jobs || []).length, skapad: data.skapad };
+  return { jobb, behallna: behallna.size, skapad: data.skapad };
 }

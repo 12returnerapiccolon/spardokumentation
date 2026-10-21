@@ -46,7 +46,16 @@ Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilag
 - Växelrapporterna: normalvärden och toleranser fylls i efter modell. Mått utanför tolerans rödmarkeras i appen (inte i PDF:en). Växeltyp och modell kan ändras i blanketten och synkas till jobbet.
 - Svetsrapporten: SFT räknas som på kapmetoden när före kap, efter kap och rältemp är ifyllda. Visas bara i appen.
 - Överföringsfilen (Överför jobbet) bär jobbet i dokumentinformationen (`js/jobbfil.js`), så att jobbet kan läsas in igen. De enskilda blanketterna bär det inte, så att de inte innehåller dolda uppgifter från andra blanketter.
-- Säkerhetskopia som zip (`js/backup.js`), sök bland jobben, hjälp på varje sida (`js/hjalp.js`) och en Kom igång-sida per enhet.
+- Svetsrapporten: fler än tio svetsar ger fler blanketter, numrerade 11–20 osv. med sidnummer, t.ex. 2(3).
+- TMALL 1481 fylls i mallens formulärfält, som plattas till vid export.
+- Säkerhetskopia som zip (`js/backup.js`), okrypterad. Vid inläsning väljer man att behålla den nyare versionen av varje jobb eller att appen frågar per jobb.
+- Lagring i Inställningar: hur mycket appen använder, och borttagning av bilder i avslutade jobb äldre än tre månader.
+- Sök bland jobben, hjälp på varje sida (`js/hjalp.js`) och en Kom igång-sida per enhet.
+
+## Säkerhet
+
+- Content-Security-Policy i `index.html`: bara appens egna filer, plus nominatim.openstreetmap.org (adress) och tile.openstreetmap.org (kartbilder). Positionen skickas bara när användaren trycker Min position eller Välj på karta.
+- Det som skrivs sparas när appen läggs undan och när en ruta lämnas.
 
 ## Köra lokalt
 

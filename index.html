@@ -9,6 +9,9 @@
   <meta name="apple-mobile-web-app-title" content="Svetsjobb">
   <meta name="theme-color" content="#f4f1ea">
   <meta name="robots" content="noindex">
+  <!-- Bara appens egna filer, plus OpenStreetMap för Min position och kartan (2026-10-21). Inline-stil behövs för
+       rutornas bredd och kartan. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org; connect-src 'self' https://nominatim.openstreetmap.org; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Svetsjobb</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/icon-180.png">

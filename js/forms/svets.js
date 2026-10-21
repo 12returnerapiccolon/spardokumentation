@@ -17,6 +17,14 @@ const WPS = ['001:05', '3-11:04', '3-12:05', '3-13:06', '3-14:04', '3-15:04', '3
 
 // Svetsraderna på blanketten: rad 6, 8 … 24.
 const RADER = 10;
+// Vid flera blanketter (fler än tio svetsar) skrivs radnumren 11–20 osv. och sidnumret, t.ex.
+// 2(3), över mallens 1–10 och 1(1) (2026-10-21).
+const RAD_BAS = [422.66, 403.18, 383.71, 364.24, 344.76, 325.29, 305.81, 286.34, 266.87, 247.39];
+const LAYOUT_DELAR = {
+  ...LAYOUT,
+  text: { ...LAYOUT.text, ...Object.fromEntries(RAD_BAS.map((y, i) => [`nr${i}`, [0, 31.9, y, 10, 'right']])), sida: [0, 824.9, 25.3, 9, 'right'] },
+  tack: { ...Object.fromEntries(RAD_BAS.map((y, i) => [`nr${i}`, [0, 20.8, y - 2.6, 11.3, 11.4]])), sida: [0, 800, 21.5, 26.5, 13] },
+};
 const COLS = { dag: 'C', plats: 'E', km: 'G', fore: 'I', efter: 'K', temp: 'M', modell: 'O', material: 'Q', hv: 'S', typ: 'U', metod: 'W', tillsats: 'Y', batch: 'AA', wps: 'AC' };
 
 const EGENKONTROLL = [
@@ -56,7 +64,7 @@ export default {
   title: 'Svetsrapport',
   format: 'overlay',
   ext: 'pdf',
-  layout: LAYOUT,
+  layout: LAYOUT_DELAR,
   templateHint: 'DOK 2630 Svetsrapport (PDF-mall)',
 
   async matches({ pdf }) {
@@ -161,6 +169,11 @@ export default {
       for (const [k, col] of Object.entries(COLS)) v[`${col}${6 + 2 * i}`] = (k === 'km' ? lage(row, job) : row[k] || auto[k]) || '';
     });
     for (const [key, , cell] of EGENKONTROLL) v[cell] = data[key] === true || data[key] === 'X' ? 'X' : '';
+    const sidor = Math.max(1, Math.ceil((data.svetsar || []).length / RADER));
+    if (sidor > 1) {
+      v.sida = `${sida + 1}(${sidor})`;
+      if (sida > 0) RAD_BAS.forEach((_, i) => { v[`nr${i}`] = String(sida * RADER + i + 1); });
+    }
     return v;
   },
 };
