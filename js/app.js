@@ -325,7 +325,7 @@ async function komIgangView() {
         jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
       ['Spara en säkerhetskopia',
         [`Jobben finns bara ${d ? 'i webbläsaren på den här datorn' : 'i telefonen'}. Spara en kopia ${TEXT.spara[enhet]} då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.`,
-          'Ett enskilt jobb flyttas till en annan telefon eller dator genom att du skickar det med Dela allt som en PDF och väljer den filen under Importera jobb från PDF på startsidan.'],
+          'Ett enskilt jobb flyttas till en annan telefon eller dator genom att du skickar det med Exportera jobbet till en annan enhet och väljer den filen under Importera jobb från PDF på startsidan.'],
         !!senasteKopia, ['#/installningar', 'Till säkerhetskopian']],
     ];
     lista.replaceChildren(...steg.map(([rubrik, text, klar, lank]) => h('li', { class: 'card' + (klar ? ' klar' : '') },
@@ -636,7 +636,7 @@ async function jobView(id) {
   window.onpagehide = () => save.flush();
   const exportArea = h('div', { class: 'export' });
   const docItems = () => job.docs.map(k => {
-    const form = docForm(job, k);
+    const form = docForm(jobbFor(job, k), k);
     if (!form) {
       return h('li', {}, h('div', { class: 'item' },
         h('span', { class: 'main' }, 'Besiktningsrapport växel'),
@@ -646,11 +646,11 @@ async function jobView(id) {
     return h('li', { class: 'med-las' }, h('a', { href: `#/jobb/${id}/${k}` },
       // Samma korta namn som sidtiteln (2026-10-20).
       h('span', { class: 'main' }, form.kort || form.title),
-      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], job))),
+      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], jobbFor(job, k)))),
       // Hänglås: en låst blankett går att läsa men inte ändra (2026-10-21).
       lasKnapp(last, () => {
         if (last && !bekraftaUpplasning(form.kort || form.title)) return;
-        job.last = { ...job.last, [k]: !last }; save(); docList.replaceChildren(...docItems());
+        satLas(job, k, !last); save(); docList.replaceChildren(...docItems());
       }));
   });
   const docList = h('ul', { class: 'list' }, docItems());
@@ -771,7 +771,7 @@ function importKnapp() {
         if (!r || !r.job.id) continue;
         if (!job || r.bilder.length > bilder.length) ({ job, bilder } = r);
       }
-      if (!job) { alert('Filen innehåller inget jobb. Välj PDF:en som skapats med Dela allt som en PDF i appen.'); return; }
+      if (!job) { alert('Filen innehåller inget jobb. Välj PDF:en som skapats med Exportera jobbet till en annan enhet i appen.'); return; }
       const jpg = files.filter(f => /\.jpe?g$/i.test(f.name)).sort((a, b) => a.name.localeCompare(b.name, 'sv', { numeric: true }));
       if (jpg.length) bilder = jpg.map(f => ({ typ: bildtypUrNamn(f.name), data: f }));
       const finns = await db.get('jobs', job.id);
@@ -793,7 +793,22 @@ const jobStatus = job => job.status || (job.skickad ? 'Skickat' : 'Pågående');
 // När jobbet skickas låses alla blanketter; de går att låsa upp en och en (2026-10-21).
 // Avsnitten på jobbsidan har egna nycklar med _ först.
 const LASBARA_DELAR = ['_bilder', '_blanketter', '_uppgifter'];
-const lasAlla = job => { job.last = Object.fromEntries([...job.docs, ...LASBARA_DELAR].map(k => [k, true])); };
+const lasAlla = job => {
+  for (const k of job.docs) if (!job.last?.[k]) satLas(job, k, true);
+  job.last = Object.fromEntries([...job.docs, ...LASBARA_DELAR].map(k => [k, true]));
+};
+// En låst blankett behåller jobbets uppgifter som de var när den låstes, så att ändringar under
+// Uppgifter om jobbet inte slår igenom i det som redan skickats (2026-10-21).
+const EJ_I_OGONBLICK = ['forms', 'docs', 'last', 'lastJobb', 'status', 'skickad', 'updated'];
+function satLas(job, k, las) {
+  job.last = { ...job.last, [k]: las };
+  const ogon = { ...job.lastJobb };
+  if (las) ogon[k] = structuredClone(Object.fromEntries(Object.entries(job).filter(([n]) => !EJ_I_OGONBLICK.includes(n))));
+  else delete ogon[k];
+  job.lastJobb = ogon;
+}
+// Jobbet som en blankett ska fyllas med: för en låst blankett uppgifterna från när den låstes.
+const jobbFor = (job, k) => (job.last?.[k] && job.lastJobb?.[k] ? { ...job, ...job.lastJobb[k] } : job);
 // Upplåsning kräver en bekräftelse (2026-10-21).
 const bekraftaUpplasning = namn => confirm(`Är du säker på att du vill låsa upp ${namn}? Det som är låst har oftast redan skickats in.`);
 // Ett avsnitt (details) på jobbsidan som går att låsa: hänglås i rubriken, och när det är låst
@@ -844,7 +859,7 @@ function lasKnapp(last, onToggle, vad = 'blanketten') {
 // Blanketterna börjar tomma; det som ska följa med fylls i av sig själv (profil, sparade val).
 function nyttFranJobb(job) {
   const now = new Date().toISOString();
-  const { id, created, updated, skickad, status, importerad, namnEget, forms, last, ...uppgifter } = job;
+  const { id, created, updated, skickad, status, importerad, namnEget, forms, last, lastJobb, ...uppgifter } = job;
   return { ...uppgifter, id: uid(), datum: today(), forms: {}, created: now, updated: now };
 }
 
@@ -853,7 +868,8 @@ function saknas(job) {
   const out = [];
   if (!job.namn) out.push('Ditt namn saknas under Inställningar, så blanketterna blir utan underskrift.');
   for (const key of job.docs) {
-    const form = docForm(job, key);
+    const j = jobbFor(job, key);
+    const form = docForm(j, key);
     if (!form) continue;
     const data = job.forms[form.key] || {};
     if (!Object.keys(data).length) { out.push(`${form.title}: inte påbörjad.`); continue; }
@@ -865,7 +881,7 @@ function saknas(job) {
         if (tomma) out.push(`${form.title}: ${tomma} av ${keys.length} mått saknar uppmätt värde.`);
       }
     }
-    if (form.saknas) out.push(...form.saknas(job, data).map(t => `${form.title}: ${t}`));
+    if (form.saknas) out.push(...form.saknas(j, data).map(t => `${form.title}: ${t}`));
   }
   return out;
 }
@@ -878,7 +894,7 @@ async function kontrollera(job, area, onSent) {
     if (!typer.has(t.key)) lista.push(`Bilder: inga bilder under ${t.label}.`);
   }
   for (const key of job.docs) {
-    const form = docForm(job, key);
+    const form = docForm(jobbFor(job, key), key);
     const t = form && await db.get('templates', form.key);
     if (t && await gammalMall(t)) lista.push(`${form.title}: mallen är en gammal version. Läs in den senaste under Inställningar > Blankettmallar.`);
   }
@@ -914,8 +930,10 @@ async function enPdf(files, namn, job) {
   return new File([blob], `${namn}.pdf`, { type: 'application/pdf' });
 }
 
-// Dela allt som en PDF i två steg (2026-10-21): första trycket gör PDF:en, andra delar den,
-// så att delningen startar direkt av ett tryck. PDF:en kontrolleras också innan den delas.
+// Exportera jobbet till en annan enhet: alla blanketter och bilder i en PDF som bär jobbet.
+// Arbetsledarna vill ha separata filer, så exporten används för att flytta jobb och sätter inte
+// jobbet som Skickat (2026-10-21). Två steg: första trycket gör PDF:en, andra delar den, så att
+// delningen startar direkt av ett tryck. PDF:en kontrolleras också innan den delas.
 function samladPdf(files, job, dela) {
   const ruta = h('div', {});
   const knapp = h('button', {
@@ -929,23 +947,28 @@ function samladPdf(files, job, dela) {
         const sidor = (await PDFLib.PDFDocument.load(bytes)).getPageCount();
         if (bytes.length < 2000 || !sidor) throw new Error('PDF:en blev tom.');
         const fil = await iMinnet(new Blob([bytes]), pdf.name, 'application/pdf');
-        const mb = (fil.size / 1048576).toLocaleString('sv-SE', { maximumFractionDigits: 1 });
         ruta.replaceChildren(
-          h('button', { class: 'button primary big', type: 'button', onclick: () => dela([fil]) }, `Dela PDF:en (${sidor} sidor, ${mb} MB)`),
-          h('ul', { class: 'files' }, h('li', {}, h('a', { href: URL.createObjectURL(fil), download: fil.name }, fil.name))));
+          h('button', { class: 'button big', type: 'button', onclick: () => dela([fil]) }, `Dela exportfilen (${sidor} sidor, ${storlek(fil.size)})`),
+          h('ul', { class: 'files' }, filLank(fil)));
       } catch (err) {
         alert('Kunde inte slå ihop filerna: ' + err.message);
         knapp.disabled = false;
-        knapp.textContent = 'Dela allt som en PDF';
+        knapp.textContent = 'Exportera jobbet till en annan enhet';
       }
     },
-  }, 'Dela allt som en PDF');
+  }, 'Exportera jobbet till en annan enhet');
   ruta.append(knapp);
   return ruta;
 }
 
 // Filer som ska delas byggs om från bytes i minnet (2026-10-21). En File som bara pekar på en
 // annan Blob kom fram som en tom bilaga på 301 byte när den mejlades från iPhone.
+// Filstorlek som i Mail, t.ex. 57 kB eller 1,2 MB (2026-10-21).
+const storlek = b => (b < 1048576 ? `${Math.max(1, Math.round(b / 1024))} kB`
+  : `${(b / 1048576).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} MB`);
+// En länk till en skapad fil, med storleken efter så att den går att jämföra med bilagan.
+const filLank = f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name), h('span', { class: 'storlek' }, ` · ${storlek(f.size)}`));
+
 async function iMinnet(data, namn, typ) {
   return new File([new Uint8Array(await data.arrayBuffer())], namn, { type: typ });
 }
@@ -955,7 +978,8 @@ async function buildFiles(job, area, onSent) {
   const files = [];
   const problems = [];
   for (const key of job.docs) {
-    const form = docForm(job, key);
+    const j = jobbFor(job, key);
+    const form = docForm(j, key);
     if (!form) { problems.push('Välj växeltyp för växelbesiktningsrapporten.'); continue; }
     const tpl = await db.get('templates', form.key);
     if (!tpl || (form.format === 'overlay' && !isPdf(tpl.data))) {
@@ -964,16 +988,16 @@ async function buildFiles(job, area, onSent) {
     try {
       // form.sidor: fler ifyllda blanketter när en inte räcker, t.ex. fler än 10 svetsar.
       const data = job.forms[form.key] || {};
-      const antal = form.sidor ? form.sidor(job, data) : 1;
+      const antal = form.sidor ? form.sidor(j, data) : 1;
       for (let sida = 0; sida < antal; sida++) {
-        const values = form.toValues(job, data, { diff, sida });
+        const values = form.toValues(j, data, { diff, sida });
         const blob = form.format === 'overlay'
           ? await fillOverlay(tpl.data, form.layout, values, { title: `${form.code} ${form.title}` })
           : form.format === 'word' ? await fillWord(tpl.data, values) : await fillPdf(tpl.data, values);
         // Bara den sammanslagna PDF:en bär jobbet, så att de enskilda blanketterna inte innehåller
         // dolda uppgifter från andra blanketter.
         const ut = blob;
-        const namn = fileName(form, job);
+        const namn = fileName(form, j);
         files.push(await iMinnet(ut, antal > 1 ? namn.replace(/(\.\w+)$/, ` del ${sida + 1}$1`) : namn, ut.type));
       }
     } catch (e) {
@@ -985,7 +1009,7 @@ async function buildFiles(job, area, onSent) {
   try { for (const f of await bildfiler(job.id, safeName(jobLabel(job)))) files.push(await iMinnet(f, f.name, f.type)); } catch (e) { problems.push('Bilderna: ' + e.message); }
   // En fil som blivit tom stoppas här i stället för att komma fram trasig hos mottagaren.
   for (const f of files.filter(f => f.size < 1000)) problems.push(`${f.name} blev tom. Försök skapa filerna igen.`);
-  const lankar = h('ul', { class: 'files' }, files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
+  const lankar = h('ul', { class: 'files' }, files.map(filLank));
   // Delade filer markerar jobbet som skickat.
   const dela = async list => {
     if (!(await delaFiler(list, lankar)) || jobStatus(job) !== 'Pågående') return;
@@ -1000,7 +1024,7 @@ async function buildFiles(job, area, onSent) {
     ...problems.map(p => h('p', { class: 'error' }, p)),
     files.length ? h('button', { class: 'button primary big', type: 'button', onclick: () => dela(files) },
       `Dela ${files.length === 1 ? 'filen' : `de ${files.length} filerna`} (Mail, Teams, OneDrive …)`) : null,
-    files.length > 1 ? samladPdf(files, job, dela) : null,
+    files.length ? samladPdf(files, job, list => delaFiler(list, lankar)) : null,
     lankar,
   ].filter(Boolean));
 }
@@ -1511,15 +1535,17 @@ function measureTable(item, data, onChange, job) {
 }
 
 async function formView(id, key) {
-  const job = await db.get('jobs', id);
-  const form = job && docForm(upgradeJob(job), key);
+  const lagrat = await db.get('jobs', id);
+  // En låst blankett visas med jobbets uppgifter från när den låstes, och sparas aldrig.
+  const job = lagrat && jobbFor(upgradeJob(lagrat), key);
+  const form = job && docForm(job, key);
   if (!job || !form) { location.hash = '#/'; return; }
   hjalpNyckel = blankettHjalp(form.key, VAXELTYPER.map(t => t.key));
   await fillFromProfile(job);
   // Kort titel överst så att den inte klipps; hela namnet står på raden under (2026-10-20).
   setTitle(form.kort || form.title, `#/jobb/${id}`);
   const data = job.forms[form.key] = job.forms[form.key] || {};
-  const save = debounce(async () => { job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
+  const save = debounce(async () => { if (job !== lagrat) return; job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   // Fält med remember får förra jobbets värde, t.ex. enhet och svetsansvarig.
   remembered = await db.getSetting('remember', {});
   const remember = new Set();
@@ -1564,7 +1590,7 @@ async function formView(id, key) {
   render(
     h('p', { class: 'muted' }, `${form.code} ${form.title}. Uppgifter i grått hämtas från jobbet.`),
     last ? h('div', { class: 'card las-note' }, lasIkon(true), h('span', {}, 'Blanketten är låst och kan inte ändras.'),
-      h('button', { class: 'button', type: 'button', onclick: async () => { if (!bekraftaUpplasning(form.kort || form.title)) return; job.last = { ...job.last, [key]: false }; await db.put('jobs', job); route(); } }, 'Lås upp')) : null,
+      h('button', { class: 'button', type: 'button', onclick: async () => { if (!bekraftaUpplasning(form.kort || form.title)) return; satLas(lagrat, key, false); await db.put('jobs', lagrat); route(); } }, 'Lås upp')) : null,
     // Sektionerna går att fälla ihop för överblick och är öppna varje gång blanketten öppnas.
     // En låst blankett visas i en avstängd fieldset: allt syns men inget går att ändra.
     blankettRuta = h('fieldset', { class: 'blankett' + (last ? ' last' : '') },

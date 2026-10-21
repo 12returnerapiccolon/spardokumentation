@@ -52,7 +52,7 @@ export const HJALP = {
       ]],
       ['Knapparna', [[
         '+ Nytt jobb: skapar ett jobb. Du fyller i uppgifterna en gång, och appen föreslår vilka blanketter som behövs.',
-        'Importera jobb från PDF: läser in ett jobb från en PDF som skapats med Dela allt som en PDF, t.ex. från en kollega eller från en annan telefon. Bilderna följer med. Avsändarens namn, telefon och svets-ID följer inte med. De enskilda blanketterna bär inte jobbet och går inte att importera.',
+        'Importera jobb från PDF: läser in ett jobb från en PDF som skapats med Exportera jobbet till en annan enhet, t.ex. från en kollega eller från en annan telefon. Bilderna följer med. Avsändarens namn, telefon och svets-ID följer inte med. De enskilda blanketterna bär inte jobbet och går inte att importera.',
       ]]],
       ['Jobblistan', [
         'Varje jobb visar namn, status, datum och blanketterna. Tryck på ett jobb för att öppna det.',
@@ -112,14 +112,14 @@ export const HJALP = {
       ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
         'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
-        'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder, Lägg till eller ta bort blanketter och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. Uppgifter om jobbet som ändras i efterhand, t.ex. Ao nr, syns ändå på en låst blankett.',
+        'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder, Lägg till eller ta bort blanketter och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. En låst blanketts uppgifter från jobbet, t.ex. Ao nr och datum, ligger kvar som de var när den låstes, även om du ändrar dem under Uppgifter om jobbet. Lås upp blanketten om ändringen ska med.',
       ]],
       ['Skapa filer', [
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',
         [
-          'Dela de … filerna: öppnar telefonens delning, så att du kan skicka filerna med Mail, Teams eller spara dem i OneDrive. Ämnesraden i Mail fyller du i själv: tryck på kopieraknappen bredvid jobbnamnet överst och klistra in.',
-          'Dela allt som en PDF: slår ihop alla blanketter och bilder till en fil. Tryck en gång så görs PDF:en, och tryck sedan på Dela PDF:en; knappen visar antal sidor och storlek. Bra när mottagaren vill ha allt samlat. Den här filen bär också hela jobbet, så att det kan importeras i en annan telefon. Skicka den bara till den som får se alla jobbets uppgifter.',
-          'Länkarna under knapparna öppnar eller laddar ned en fil i taget.',
+          'Dela de … filerna: öppnar telefonens delning, så att du kan skicka filerna med Mail, Teams eller spara dem i OneDrive. Ämnesraden i Mail fyller du i själv: tryck på kopieraknappen bredvid jobbnamnet överst och klistra in. Det här är filerna som går till arbetsledaren, och jobbet blir Skickat.',
+          'Exportera jobbet till en annan enhet: gör en PDF med alla blanketter och bilder som också bär hela jobbet, så att det kan läsas in med Importera jobb från PDF i en annan telefon eller dator. Tryck en gång så görs PDF:en, och tryck sedan på Dela exportfilen. Jobbet blir inte Skickat av det. Skicka filen bara till den som får se alla jobbets uppgifter.',
+          'Länkarna under knapparna öppnar eller laddar ned en fil i taget. Storleken står efter varje fil, så att du kan jämföra med bilagorna i Mail. En bilaga på bara några hundra byte har blivit tom.',
         ],
         'Har svetsrapporten fler än 10 svetsar blir det flera svetsrapporter, del 1, del 2 och så vidare.',
       ]],

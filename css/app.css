@@ -241,6 +241,7 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
 .files { padding-left: 20px; word-break: break-word; }
 .files li { margin-bottom: 8px; }
 .files a { color: var(--accent); }
+.files .storlek { color: var(--muted); white-space: nowrap; }
 
 details summary { cursor: pointer; font-weight: 600; min-height: 32px; }
 /* Sektion i en blankett som går att fälla ihop. */

@@ -1,5 +1,5 @@
 // Jobb i PDF-filen (2026-10-20): appen lägger jobbets uppgifter i den sammanslagna PDF:en
-// (Dela allt som en PDF), så att t.ex. en arbetsledare kan förbereda ett jobb och skicka filen
+// (Exportera jobbet till en annan enhet), så att t.ex. en arbetsledare kan förbereda ett jobb och skicka filen
 // till en tekniker som importerar den i appen. De enskilda blanketterna bär inte jobbet. Uppgifterna ligger i PDF:ens dokumentinformation och syns inte när
 // filen öppnas eller skrivs ut, så den som saknar appen kan fylla i blanketterna på papper.
 // Appens gamla namn; behålls så att PDF:er från alla versioner går att importera.
@@ -10,7 +10,7 @@ const EGNA = ['namn', 'namn_tel', 'svetsid'];
 // bildsidor: bildgruppen för varje bildsida sist i den sammanslagna PDF:en.
 export function jobbText(job, bildsidor) {
   const kopia = { ...job };
-  for (const k of [...EGNA, 'skickad', 'status', 'importerad', 'last']) delete kopia[k];
+  for (const k of [...EGNA, 'skickad', 'status', 'importerad', 'last', 'lastJobb']) delete kopia[k];
   return JSON.stringify({ version: 1, job: kopia, ...(bildsidor?.length ? { bildsidor } : {}) });
 }
 
