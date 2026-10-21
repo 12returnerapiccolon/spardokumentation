@@ -914,9 +914,8 @@ async function enPdf(files, namn, job) {
   return new File([blob], `${namn}.pdf`, { type: 'application/pdf' });
 }
 
-// Dela allt som en PDF i två steg (2026-10-21): första trycket gör PDF:en, andra delar den.
-// iPhone kräver att delningen startar direkt av ett tryck; när sammanslagningen tog några
-// sekunder kom bilagan fram tom (301 byte). PDF:en kontrolleras också innan den delas.
+// Dela allt som en PDF i två steg (2026-10-21): första trycket gör PDF:en, andra delar den,
+// så att delningen startar direkt av ett tryck. PDF:en kontrolleras också innan den delas.
 function samladPdf(files, job, dela) {
   const ruta = h('div', {});
   const knapp = h('button', {
@@ -929,8 +928,7 @@ function samladPdf(files, job, dela) {
         const bytes = new Uint8Array(await pdf.arrayBuffer());
         const sidor = (await PDFLib.PDFDocument.load(bytes)).getPageCount();
         if (bytes.length < 2000 || !sidor) throw new Error('PDF:en blev tom.');
-        // Filen byggs om från bytes i minnet så att delningen inte beror på en Blob som iOS inte kan läsa.
-        const fil = new File([bytes], pdf.name, { type: 'application/pdf' });
+        const fil = await iMinnet(new Blob([bytes]), pdf.name, 'application/pdf');
         const mb = (fil.size / 1048576).toLocaleString('sv-SE', { maximumFractionDigits: 1 });
         ruta.replaceChildren(
           h('button', { class: 'button primary big', type: 'button', onclick: () => dela([fil]) }, `Dela PDF:en (${sidor} sidor, ${mb} MB)`),
@@ -944,6 +942,12 @@ function samladPdf(files, job, dela) {
   }, 'Dela allt som en PDF');
   ruta.append(knapp);
   return ruta;
+}
+
+// Filer som ska delas byggs om från bytes i minnet (2026-10-21). En File som bara pekar på en
+// annan Blob kom fram som en tom bilaga på 301 byte när den mejlades från iPhone.
+async function iMinnet(data, namn, typ) {
+  return new File([new Uint8Array(await data.arrayBuffer())], namn, { type: typ });
 }
 
 async function buildFiles(job, area, onSent) {
@@ -970,7 +974,7 @@ async function buildFiles(job, area, onSent) {
         // dolda uppgifter från andra blanketter.
         const ut = blob;
         const namn = fileName(form, job);
-        files.push(new File([ut], antal > 1 ? namn.replace(/(\.\w+)$/, ` del ${sida + 1}$1`) : namn, { type: ut.type }));
+        files.push(await iMinnet(ut, antal > 1 ? namn.replace(/(\.\w+)$/, ` del ${sida + 1}$1`) : namn, ut.type));
       }
     } catch (e) {
       console.error(e);
@@ -978,7 +982,9 @@ async function buildFiles(job, area, onSent) {
     }
   }
 
-  try { files.push(...await bildfiler(job.id, safeName(jobLabel(job)))); } catch (e) { problems.push('Bilderna: ' + e.message); }
+  try { for (const f of await bildfiler(job.id, safeName(jobLabel(job)))) files.push(await iMinnet(f, f.name, f.type)); } catch (e) { problems.push('Bilderna: ' + e.message); }
+  // En fil som blivit tom stoppas här i stället för att komma fram trasig hos mottagaren.
+  for (const f of files.filter(f => f.size < 1000)) problems.push(`${f.name} blev tom. Försök skapa filerna igen.`);
   const lankar = h('ul', { class: 'files' }, files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
   // Delade filer markerar jobbet som skickat.
   const dela = async list => {
