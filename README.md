@@ -41,7 +41,7 @@ Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilag
 
 - Nytt jobb: rutorna Datum och order, Plats, Arbete och Växel. Blanketterna förväljs efter svaren och kan ändras.
 - Jobbet: status (Pågående, Skickat, Avslutat), blanketter, bilder (Före, Efter, Rälsmärkning), Skapa filer med varningar för det som saknas eller ligger utanför tolerans.
-- Hänglås per blankett och för avsnitten Bilder, blankettval och Uppgifter om jobbet. Skickat låser allt. En låst blankett behåller jobbets uppgifter från när den låstes (`job.lastJobb`).
+- Hänglås per blankett och för avsnitten Bilder, Ändra blanketter och Uppgifter om jobbet. Skickat låser allt. En låst blankett behåller jobbets uppgifter från när den låstes (`job.lastJobb`).
 - Skicka in jobb delar blanketterna och bilderna som separata filer till arbetsledaren, med storlek efter varje fil, och sätter Skickat. Överför jobbet (längst ned i jobbet) gör en PDF som bär jobbet, för en kollega eller en annan enhet, och sätter inte Skickat. Läs in överfört jobb på startsidan läser in den.
 - Växelrapporterna: normalvärden och toleranser fylls i efter modell. Mått utanför tolerans rödmarkeras i appen (inte i PDF:en). Växeltyp och modell kan ändras i blanketten och synkas till jobbet.
 - Svetsrapporten: SFT räknas som på kapmetoden när före kap, efter kap och rältemp är ifyllda. Visas bara i appen.

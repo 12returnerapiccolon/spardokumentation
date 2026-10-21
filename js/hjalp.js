@@ -119,8 +119,13 @@ export const HJALP = {
       ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
         'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
+        'Ändra blanketter under listan fäller ut kryssrutor för alla blanketter. Kryssa i fler eller ta bort en, och tryck Klar. Det du fyllt i finns kvar om du lägger till en blankett igen.',
         'Längst ner i varje blankett finns Dela bara den här blanketten, t.ex. när arbetsledaren ber om en rättad svetsrapport. Den gör en PDF av bara den blanketten och ändrar inte jobbets status.',
-        'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder, Lägg till eller ta bort blanketter och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. En låst blanketts uppgifter från jobbet, t.ex. Ao nr och datum, ligger kvar som de var när den låstes, även om du ändrar dem under Uppgifter om jobbet. Lås upp blanketten om ändringen ska med.',
+        'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder, Ändra blanketter och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. En låst blanketts uppgifter från jobbet, t.ex. Ao nr och datum, ligger kvar som de var när den låstes, även om du ändrar dem under Uppgifter om jobbet. Lås upp blanketten om ändringen ska med.',
+      ]],
+      ['Bilder', [
+        'Tre grupper: Före, Efter och Rälsmärkning/bricka. Tryck på + i gruppen för att ta en bild eller välja bilder. Tryck på en bild för att se den större, och på × för att ta bort den.',
+        'Bilderna ligger ovanför Skapa filer, så att du lägger till dem innan du skickar in. De följer med när du skickar in jobbet. Saknas Efter-bilder eller rälsmärkning får du en påminnelse.',
       ]],
       ['Skapa filer', [
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder, mått utanför tolerans, besiktningstyp eller värden som ser felskrivna ut (t.ex. ett mått med en siffra för mycket). Du kan rätta till det eller trycka Skapa filerna ändå.',
@@ -131,12 +136,7 @@ export const HJALP = {
         ],
         'Har svetsrapporten fler än 10 svetsar blir det flera svetsrapporter, del 1, del 2 och så vidare, numrerade 11–20 osv. med sidnummer, t.ex. 2(3).',
       ]],
-      ['Bilder', [
-        'Tre grupper: Före, Efter och Rälsmärkning/bricka. Tryck på + i gruppen för att ta en bild eller välja bilder. Tryck på en bild för att se den större, och på × för att ta bort den.',
-        'Bilderna följer med när du skickar in jobbet. Saknas Efter-bilder eller rälsmärkning får du en påminnelse.',
-      ]],
       ['Längre ner', [[
-        'Lägg till eller ta bort blanketter: kryssa i fler blanketter eller ta bort en. Det du fyllt i finns kvar om du lägger till den igen.',
         'Nytt jobb med samma uppgifter: gör ett nytt jobb med dagens datum och samma uppgifter och blanketter, men tomma blanketter. Bra när du jobbar på samma ställe flera dagar.',
         'Överför jobbet: gör en PDF med alla blanketter och bilder som också bär hela jobbet, så att en kollega eller en annan enhet (telefon, platta eller dator) kan läsa in det med Läs in överfört jobb på startsidan. Tryck en gång så görs filen, och tryck sedan på Dela överföringsfilen. Jobbet blir inte Skickat av det. Skicka filen bara till den som får se alla jobbets uppgifter.',
         'Ta bort jobbet: tar bort jobbet, blanketterna och bilderna från telefonen. Det går inte att ångra.',

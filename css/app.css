@@ -514,3 +514,9 @@ details.lasbar.last .miniatyr.ny, details.lasbar.last .bort { display: none; }
 .inskickat .files { margin: 6px 0; }
 .export .notis { font-weight: 600; }
 .dela-blankett { margin-top: 16px; }
+/* Ändra blanketter under blankettlistan (2026-10-21). */
+details.andra-blanketter { margin: -4px 0 16px; }
+details.andra-blanketter > summary { display: flex; align-items: center; gap: 8px; list-style: none; color: var(--accent); min-height: 40px; padding: 0 4px; }
+details.andra-blanketter > summary::-webkit-details-marker { display: none; }
+details.andra-blanketter[open] { background: var(--surface); border-radius: 12px; padding: 8px 12px 12px; }
+details.andra-blanketter .button { margin-top: 8px; }

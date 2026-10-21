@@ -699,6 +699,7 @@ async function jobView(id) {
       andrat ? h('p', { class: 'muted note' }, 'Något i jobbet har ändrats efter att det skickades in. Skicka in jobbet igen om arbetsledaren ska få ändringen.') : null));
   };
   inskickatRad.refresh();
+  let andraBlanketter;
   const skapaKnapp = h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, efterSkickat) }, 'Skapa filer');
   const efterSkickat = () => { statusRad.refresh(); inskickatRad.refresh(); docList.replaceChildren(...docItems()); document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.()); };
   const bildDel = bildSektion(id);
@@ -722,13 +723,16 @@ async function jobView(id) {
       }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })), job, '_uppgifter', 'uppgifterna om jobbet', save),
     h('h2', {}, 'Blanketter'),
     docList,
+    // Ändra blanketter direkt under listan, fälls ut på plats (2026-10-21).
+    lasbar(andraBlanketter = h('details', { class: 'andra-blanketter' },
+      h('summary', {}, 'Ändra blanketter'),
+      h('p', { class: 'muted note' }, 'Kryssa i blanketter att lägga till eller ta bort. Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen.'),
+      docBox,
+      h('button', { class: 'button', type: 'button', onclick: () => { andraBlanketter.open = false; } }, 'Klar')), job, '_blanketter', 'valet av blanketter', save),
+    // Bilder före Skapa filer, så att de inte glöms (2026-10-21).
+    lasbar(bildDel, job, '_bilder', 'bilderna', save),
     skapaKnapp,
     exportArea,
-    lasbar(bildDel, job, '_bilder', 'bilderna', save),
-    lasbar(h('details', { class: 'card' },
-      h('summary', {}, 'Lägg till eller ta bort blanketter'),
-      h('p', { class: 'muted note' }, 'Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen.'),
-      docBox), job, '_blanketter', 'valet av blanketter', save),
     h('button', {
       class: 'button big', type: 'button',
       onclick: async () => {
