@@ -518,11 +518,11 @@ details.lasbar.last .miniatyr.ny, details.lasbar.last .bort { display: none; }
 details.andra-blanketter { margin: -4px 0 16px; }
 details.andra-blanketter > summary { display: flex; align-items: center; gap: 8px; list-style: none; color: var(--accent); min-height: 40px; padding: 0 4px; }
 details.andra-blanketter > summary::-webkit-details-marker { display: none; }
-details.andra-blanketter[open] { background: var(--surface); border-radius: 12px; padding: 8px 12px 12px; }
+details.andra-blanketter[open] { background: var(--surface); border-radius: 12px; padding: 8px 16px 12px; }
 details.andra-blanketter .button { margin-top: 8px; }
 /* Alla hänglås i en rak linje med blankettlistans (2026-10-21): 48 px breda, ikonen i mitten,
    högerkanten 6 px innanför kortets kant. */
 details.lasbar > summary .las { width: 48px; justify-content: center; margin-right: -10px; }
-details.andra-blanketter { padding: 0 12px; }
+details.andra-blanketter { padding: 0 16px; }
 details.andra-blanketter > summary { padding: 0; }
-details.andra-blanketter > summary .las { margin-right: -6px; }
+details.andra-blanketter > summary .las { margin-right: -10px; }
