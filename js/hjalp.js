@@ -112,6 +112,10 @@ export const HJALP = {
         'Knappen bredvid jobbnamnet överst kopierar namnet. Klistra in det på ämnesraden när du mejlar filerna; telefonen kan inte fylla i ämnesraden själv.',
         'Rutan Ao nr under Uppgifter om jobbet har en likadan knapp som kopierar numret.',
       ]],
+      ['Uppgifter om jobbet', [
+        'Samma uppgifter som när jobbet skapades. Ändringar här syns på alla blanketter som inte är låsta.',
+        'Avsnittet ligger överst och är ihopfällt. Tryck på rubriken för att fälla ut det.',
+      ]],
       ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
         'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
@@ -133,7 +137,6 @@ export const HJALP = {
       ]],
       ['Längre ner', [[
         'Lägg till eller ta bort blanketter: kryssa i fler blanketter eller ta bort en. Det du fyllt i finns kvar om du lägger till den igen.',
-        'Uppgifter om jobbet: samma uppgifter som när jobbet skapades. Ändringar här syns på alla blanketter som inte är låsta.',
         'Nytt jobb med samma uppgifter: gör ett nytt jobb med dagens datum och samma uppgifter och blanketter, men tomma blanketter. Bra när du jobbar på samma ställe flera dagar.',
         'Överför jobbet: gör en PDF med alla blanketter och bilder som också bär hela jobbet, så att en kollega eller en annan enhet (telefon, platta eller dator) kan läsa in det med Läs in överfört jobb på startsidan. Tryck en gång så görs filen, och tryck sedan på Dela överföringsfilen. Jobbet blir inte Skickat av det. Skicka filen bara till den som får se alla jobbets uppgifter.',
         'Ta bort jobbet: tar bort jobbet, blanketterna och bilderna från telefonen. Det går inte att ångra.',

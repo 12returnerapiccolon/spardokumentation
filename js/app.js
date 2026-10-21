@@ -712,6 +712,14 @@ async function jobView(id) {
   render(
     statusRad,
     inskickatRad,
+    // Uppgifter om jobbet ligger överst, ihopfällt (2026-10-21).
+    lasbar(h('details', { class: 'card' },
+      h('summary', {}, 'Uppgifter om jobbet'),
+      jobInputs(job, k => {
+        save(); docBox.refresh();
+        if (k === 'vaxeltyp') docList.replaceChildren(...docItems());
+        setTitle(jobLabel(job), '#/', { kopiera: true });
+      }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })), job, '_uppgifter', 'uppgifterna om jobbet', save),
     h('h2', {}, 'Blanketter'),
     docList,
     skapaKnapp,
@@ -721,13 +729,6 @@ async function jobView(id) {
       h('summary', {}, 'Lägg till eller ta bort blanketter'),
       h('p', { class: 'muted note' }, 'Det du fyllt i finns kvar om du tar bort en blankett och lägger till den igen.'),
       docBox), job, '_blanketter', 'valet av blanketter', save),
-    lasbar(h('details', { class: 'card' },
-      h('summary', {}, 'Uppgifter om jobbet'),
-      jobInputs(job, k => {
-        save(); docBox.refresh();
-        if (k === 'vaxeltyp') docList.replaceChildren(...docItems());
-        setTitle(jobLabel(job), '#/', { kopiera: true });
-      }, { visaVaxel: j => j.ivaxel === true || j.vxrevision === true || j.docs.includes('vaxel') })), job, '_uppgifter', 'uppgifterna om jobbet', save),
     h('button', {
       class: 'button big', type: 'button',
       onclick: async () => {
