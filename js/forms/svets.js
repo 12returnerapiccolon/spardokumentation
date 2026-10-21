@@ -148,6 +148,8 @@ export default {
     return n ? `${n} ${n === 1 ? 'svets' : 'svetsar'}${sidor > 1 ? `, ${sidor} blanketter` : ''}` : 'Inga svetsar ännu';
   },
   saknas: (job, data) => ((data.svetsar || []).length ? [] : ['inga svetsar ifyllda.']),
+  // Rimlighetskontroll före Skapa filer (2026-10-21).
+  rimlighet: (job, data) => (data.svetsar || []).flatMap((row, i) => (sft(row) === 'Utanför' ? [`svets ${i + 1}: före och efter kap ger en öppning utanför tabellen, kontrollera måtten.`] : [])),
 
   toValues(job, data, { sida = 0 } = {}) {
     const datum = blankettDatum(job);

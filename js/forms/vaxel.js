@@ -281,6 +281,20 @@ export function utanforTol(tol, normal, uppmatt) {
   return (plus != null && d > plus) || (minus != null && d < -minus);
 }
 
+// Rimlighetskontroll före Skapa filer (2026-10-21): ett uppmätt värde som är mycket större
+// eller mindre än normalvärdet är troligen felskrivet, t.ex. 14355 i stället för 1435.
+// Små normalvärden (under 10) kontrolleras inte, där säger toleransen mer.
+export function mattOrimliga(vaxeltyp, job, data) {
+  const auto = autoVarden(vaxeltyp, job, data);
+  return (MATT[vaxeltyp] || []).map(r => r[0]).filter(m => {
+    const row = data.matt?.[m];
+    const u = tal(row?.uppmatt ?? ''), n = tal(effektiv(row, 'normal', auto.normal[m]));
+    if (u == null || n == null || n < 10) return false;
+    const [lag, hog] = n >= 100 ? [0.8, 1.25] : [0.5, 2];
+    return u < n * lag || u > n * hog;
+  });
+}
+
 // Mått utanför toleransen i en ifylld rapport, i tabellens ordning.
 export function mattUtanfor(vaxeltyp, job, data) {
   const auto = autoVarden(vaxeltyp, job, data);
@@ -407,6 +421,12 @@ function buildForm(t) {
         ...(data.typ ? [] : ['besiktningstyp är inte vald.']),
         ...(ute.length ? [`${ute.length === 1 ? 'måttet' : 'måtten'} ${ute.join(', ')} ligger utanför toleransen.`] : []),
       ];
+    },
+    rimlighet: (job, data) => {
+      const fel = mattOrimliga(t.key, job, data);
+      return fel.length ? [fel.length === 1
+        ? `måttet ${fel[0]} ser felskrivet ut, det skiljer sig mycket från normalvärdet.`
+        : `måtten ${fel.join(', ')} ser felskrivna ut, de skiljer sig mycket från normalvärdena.`] : [];
     },
 
     toValues(job, data, { diff }) {

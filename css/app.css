@@ -504,3 +504,13 @@ details.lasbar > summary .las.last { color: var(--accent); }
 details.lasbar > summary .las svg { width: 22px; height: 22px; }
 details.lasbar.last :is(input, select, textarea):disabled { opacity: 0.75; -webkit-text-fill-color: currentColor; }
 details.lasbar.last .miniatyr.ny, details.lasbar.last .bort { display: none; }
+
+/* Förslag att avsluta gamla skickade jobb (2026-10-21). */
+.notice .button { align-self: flex-start; margin-top: 6px; }
+/* Senaste Skicka in på jobbsidan (2026-10-21). */
+.inskickat { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+.inskickat summary { cursor: pointer; }
+.inskickat .varn { color: var(--danger); font-weight: 600; }
+.inskickat .files { margin: 6px 0; }
+.export .notis { font-weight: 600; }
+.dela-blankett { margin-top: 16px; }

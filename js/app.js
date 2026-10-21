@@ -327,7 +327,7 @@ async function komIgangView() {
         'Ditt namn står som underskrift på blanketterna. Fyll också i telefon, svets-ID, företag och kontaktpersoner, så fylls de i automatiskt i varje jobb.',
         !!profile.namn, ['#/installningar', 'Öppna Inställningar']],
       ['Skapa ditt första jobb',
-        ['Fyll i uppgifterna om jobbet. Appen väljer blanketterna efter dina svar. Fyll i blanketterna, lägg till bilder och tryck Skapa filer.', TEXT.dela[enhet]],
+        ['Fyll i uppgifterna om jobbet. Appen väljer blanketterna efter dina svar. Fyll i blanketterna och lägg till bilder. När inget saknas är filerna klara när du öppnar jobbet; annars trycker du Skapa filer.', TEXT.dela[enhet]],
         jobs.length > 0, ['#/nytt', '+ Nytt jobb']],
       ['Spara en säkerhetskopia',
         [`Jobben finns bara ${d ? 'i webbläsaren på den här datorn' : 'i telefonen'}. Spara en kopia ${TEXT.spara[enhet]} då och då under Inställningar, så kan du läsa tillbaka allt om något försvinner.`,
@@ -361,6 +361,18 @@ async function homeView() {
   const kopiaGammal = jobs.length && (!senasteKopia || Date.now() - new Date(senasteKopia) > 7 * 864e5);
   // Avslutade jobb ligger i arkivet (2026-10-20).
   const arkiverat = job => jobStatus(job) === 'Avslutat';
+  // Jobb som varit Skickat i två veckor föreslås bli Avslutade, så att listan inte växer (2026-10-21).
+  const lange = jobs.filter(j => jobStatus(j) === 'Skickat' && Date.now() - new Date(j.skickad || j.updated || 0) > 14 * 864e5);
+  const avslutaRuta = lange.length ? h('div', { class: 'notice' },
+    h('strong', {}, `${lange.length === 1 ? 'Ett jobb' : `${lange.length} jobb`} skickades in för mer än två veckor sedan`),
+    h('span', {}, lange.length === 1 ? jobLabel(lange[0]) : lange.map(jobLabel).join(', ')),
+    h('button', {
+      class: 'button', type: 'button',
+      onclick: async () => {
+        for (const j of lange) { j.status = 'Avslutat'; await db.put('jobs', j); }
+        route();
+      },
+    }, lange.length === 1 ? 'Markera som Avslutat' : 'Markera alla som Avslutade')) : null;
   const lista = list => h('ul', { class: 'list' }, list.map(job => h('li', {},
     h('a', { href: `#/jobb/${job.id}` },
       h('span', { class: 'main' }, jobLabel(job), ' ', h('span', { class: `status-tag s-${STATUSAR.indexOf(jobStatus(job))}` }, jobStatus(job))),
@@ -407,6 +419,7 @@ async function homeView() {
         ? `Senaste kopian är från ${new Date(senasteKopia).toLocaleDateString('sv-SE')}. Tryck här för att spara en ny i Filer.`
         : 'Jobben finns bara i telefonen och kan försvinna om Safari rensar sin lagring. Tryck här för att spara en kopia i Filer.')) : null,
     // navigator.standalone finns bara i Safari på iPhone och är sant när appen öppnas från hemskärmen.
+    avslutaRuta,
     navigator.standalone === false ? h('p', { class: 'muted note' },
       'Tips: Lägg appen på hemskärmen (Dela > Lägg till på hemskärmen). Då rensar Safari inte jobben lika lätt.') : null,
     h('a', { class: 'button primary big', href: '#/nytt' }, '+ Nytt jobb'),
@@ -673,6 +686,21 @@ async function jobView(id) {
       document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.());
     }, job)].flat().filter(Boolean));
   statusRad.refresh();
+  // Senaste Skicka in: när, vilka filer och om något ändrats efter det (2026-10-21).
+  const inskickatRad = h('div', { class: 'inskickat' });
+  inskickatRad.refresh = async () => {
+    const s = job.inskickat;
+    if (!s) { inskickatRad.replaceChildren(); return; }
+    const andrat = (await avtryck(job)) !== s.avtryck;
+    inskickatRad.replaceChildren(h('details', {},
+      h('summary', {}, `Senast inskickat ${new Date(s.datum).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}, ${s.filer.length} ${s.filer.length === 1 ? 'fil' : 'filer'}`,
+        andrat ? h('span', { class: 'varn' }, ' · ändrat efter det') : null),
+      h('ul', { class: 'files' }, s.filer.map(f => h('li', {}, f.namn, h('span', { class: 'storlek' }, ` · ${storlek(f.storlek)}`)))),
+      andrat ? h('p', { class: 'muted note' }, 'Något i jobbet har ändrats efter att det skickades in. Skicka in jobbet igen om arbetsledaren ska få ändringen.') : null));
+  };
+  inskickatRad.refresh();
+  const skapaKnapp = h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, efterSkickat) }, 'Skapa filer');
+  const efterSkickat = () => { statusRad.refresh(); inskickatRad.refresh(); docList.replaceChildren(...docItems()); document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.()); };
   const bildDel = bildSektion(id);
   const docBox = docChecks(job, k => job.docs.includes(k), (k, on) => {
     const docs = new Set(job.docs);
@@ -683,9 +711,10 @@ async function jobView(id) {
 
   render(
     statusRad,
+    inskickatRad,
     h('h2', {}, 'Blanketter'),
     docList,
-    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => { statusRad.refresh(); docList.replaceChildren(...docItems()); document.querySelectorAll('.lasbar').forEach(b => b.lasRefresh?.()); }) }, 'Skapa filer'),
+    skapaKnapp,
     exportArea,
     lasbar(bildDel, job, '_bilder', 'bilderna', save),
     lasbar(h('details', { class: 'card' },
@@ -720,6 +749,14 @@ async function jobView(id) {
       },
     }, 'Ta bort jobbet'),
   );
+  // Filerna förbereds när jobbsidan öppnas, så att Skicka in jobb finns direkt när inget
+  // saknas (2026-10-21). Bara för pågående jobb; annars trycker man Skapa filer.
+  if (jobStatus(job) === 'Pågående' && job.docs.length && !(await varningar(job)).length) {
+    // Är filerna klara blir Skapa filer en vanlig knapp, så att Skicka in jobb är den som syns.
+    buildFiles(job, exportArea, efterSkickat, { forberedd: true })
+      .then(() => { if (exportArea.querySelector('button')) { skapaKnapp.className = 'button big'; skapaKnapp.textContent = 'Skapa filerna igen'; } })
+      .catch(() => {});
+  }
 }
 
 // Bilder i jobbet: en rad per grupp med miniatyrer och en knapp för att lägga till från kameran
@@ -867,7 +904,7 @@ function lasKnapp(last, onToggle, vad = 'blanketten') {
 // Blanketterna börjar tomma; det som ska följa med fylls i av sig själv (profil, sparade val).
 function nyttFranJobb(job) {
   const now = new Date().toISOString();
-  const { id, created, updated, skickad, status, importerad, namnEget, forms, last, lastJobb, ...uppgifter } = job;
+  const { id, created, updated, skickad, status, importerad, namnEget, forms, last, lastJobb, inskickat, ...uppgifter } = job;
   return { ...uppgifter, id: uid(), datum: today(), forms: {}, created: now, updated: now };
 }
 
@@ -890,11 +927,35 @@ function saknas(job) {
       }
     }
     if (form.saknas) out.push(...form.saknas(j, data).map(t => `${form.title}: ${t}`));
+    if (form.rimlighet) out.push(...form.rimlighet(j, data).map(t => `${form.title}: ${t}`));
   }
   return out;
 }
 
-async function kontrollera(job, area, onSent) {
+// Dela bara en blankett inifrån blanketten, t.ex. en rättad svetsrapport som arbetsledaren ber
+// om (2026-10-21). Två steg som Överför jobbet, och jobbets status ändras inte.
+function delaBlankett(job, key, form, save) {
+  const ruta = h('div', { class: 'dela-blankett' });
+  const knapp = h('button', {
+    class: 'button big', type: 'button',
+    onclick: async () => {
+      save.flush();
+      knapp.disabled = true;
+      knapp.textContent = 'Skapar filen …';
+      const { files, problems } = await skapaFiler({ ...job, docs: [key] }, { bilder: false });
+      const lankar = h('ul', { class: 'files' }, files.map(filLank));
+      ruta.replaceChildren(...problems.map(p => h('p', { class: 'error' }, p)),
+        files.length ? h('button', { class: 'button big', type: 'button', onclick: () => delaFiler(files, lankar) },
+          `Dela ${form.kort || form.title} (${files.length === 1 ? '1 fil' : `${files.length} filer`})`) : null,
+        lankar);
+    },
+  }, 'Dela bara den här blanketten');
+  ruta.append(knapp, h('p', { class: 'muted note' }, 'Gör en PDF av bara den här blanketten, t.ex. när arbetsledaren ber om en rättad. Jobbets status ändras inte.'));
+  return ruta;
+}
+
+// Allt som Skapa filer varnar för: det som saknas, mått, bilder och gamla mallar.
+async function varningar(job) {
   const lista = saknas(job);
   // Efter-bilder och rälsmärkning ska finnas, Före är frivilligt (2026-10-20).
   const typer = new Set((await jobbetsBilder(job.id)).map(b => b.typ));
@@ -906,6 +967,11 @@ async function kontrollera(job, area, onSent) {
     const t = form && await db.get('templates', form.key);
     if (t && await gammalMall(t)) lista.push(`${form.title}: mallen är en gammal version. Läs in den senaste under Inställningar > Blankettmallar.`);
   }
+  return lista;
+}
+
+async function kontrollera(job, area, onSent) {
+  const lista = await varningar(job);
   if (!lista.length) { buildFiles(job, area, onSent); return; }
   area.replaceChildren(
     h('div', { class: 'card varning' },
@@ -985,8 +1051,21 @@ async function iMinnet(data, namn, typ) {
   return new File([new Uint8Array(await data.arrayBuffer())], namn, { type: typ });
 }
 
-// Blanketterna och bilderna som filer. problems: det som inte gick.
-async function skapaFiler(job) {
+// Ett kort avtryck av allt som hamnar i filerna: blanketterna, uppgifterna och bilderna
+// (2026-10-21). Ändras det har jobbet ändrats sedan filerna gjordes eller skickades in.
+const EJ_I_AVTRYCK = ['status', 'skickad', 'updated', 'last', 'lastJobb', 'inskickat'];
+async function avtryck(job) {
+  const innehall = Object.fromEntries(Object.entries(job).filter(([k]) => !EJ_I_AVTRYCK.includes(k)).sort(([a], [b]) => a.localeCompare(b)));
+  const bilder = (await jobbetsBilder(job.id)).map(b => b.id).sort();
+  const text = JSON.stringify([innehall, bilder]);
+  let x = 2166136261;
+  for (let i = 0; i < text.length; i++) { x ^= text.charCodeAt(i); x = Math.imul(x, 16777619); }
+  return (x >>> 0).toString(16);
+}
+
+// Blanketterna och bilderna som filer. problems: det som inte gick. bilder: false ger bara
+// blanketterna, t.ex. när en enskild blankett delas.
+async function skapaFiler(job, { bilder = true } = {}) {
   const files = [];
   const problems = [];
   for (const key of job.docs) {
@@ -1018,27 +1097,41 @@ async function skapaFiler(job) {
     }
   }
 
-  try { for (const f of await bildfiler(job.id, safeName(jobLabel(job)))) files.push(await iMinnet(f, f.name, f.type)); } catch (e) { problems.push('Bilderna: ' + e.message); }
+  if (bilder) try { for (const f of await bildfiler(job.id, safeName(jobLabel(job)))) files.push(await iMinnet(f, f.name, f.type)); } catch (e) { problems.push('Bilderna: ' + e.message); }
   // En fil som blivit tom stoppas här i stället för att komma fram trasig hos mottagaren.
   for (const f of files.filter(f => f.size < 1000)) problems.push(`${f.name} blev tom. Försök skapa filerna igen.`);
   return { files, problems };
 }
 
-async function buildFiles(job, area, onSent) {
-  area.replaceChildren(h('p', { class: 'muted' }, 'Skapar filer …'));
+// forberedd: filerna görs när jobbsidan öppnas och inget varnar (2026-10-21). Då visas de
+// bara om allt gick bra. notis: en rad överst, t.ex. att filerna gjorts om.
+async function buildFiles(job, area, onSent, { forberedd = false, notis = '' } = {}) {
+  if (!forberedd) area.replaceChildren(h('p', { class: 'muted' }, 'Skapar filer …'));
+  const fore = await avtryck(job);
   const { files, problems } = await skapaFiler(job);
+  if (forberedd && (problems.length || !files.length)) return;
   const lankar = h('ul', { class: 'files' }, files.map(filLank));
-  // Delade filer markerar jobbet som skickat.
+  // Delade filer markerar jobbet som skickat. Har jobbet ändrats sedan filerna gjordes, t.ex.
+  // en ny bild, görs de om först och man trycker igen.
   const dela = async list => {
-    if (!(await delaFiler(list, lankar)) || jobStatus(job) !== 'Pågående') return;
+    if (await avtryck(job) !== fore) {
+      buildFiles(job, area, onSent, { notis: 'Jobbet hade ändrats sedan filerna gjordes, så de är gjorda på nytt. Tryck Skicka in jobb igen.' });
+      return;
+    }
+    if (!(await delaFiler(list, lankar))) return;
     if (!(navigator.canShare && navigator.canShare({ files: list }))) return;
-    job.status = 'Skickat';
-    job.skickad = new Date().toISOString();
-    lasAlla(job);
+    // Senaste inskicket sparas, så att jobbsidan kan visa om något ändrats efter det (2026-10-21).
+    job.inskickat = { datum: new Date().toISOString(), filer: list.map(f => ({ namn: f.name, storlek: f.size })), avtryck: fore };
+    if (jobStatus(job) === 'Pågående') {
+      job.status = 'Skickat';
+      job.skickad = job.inskickat.datum;
+      lasAlla(job);
+    }
     await db.put('jobs', job);
     onSent && onSent();
   };
   area.replaceChildren(...[
+    notis ? h('p', { class: 'notis' }, notis) : forberedd ? h('p', { class: 'muted note' }, 'Filerna är klara. Inget saknas.') : null,
     ...problems.map(p => h('p', { class: 'error' }, p)),
     files.length ? h('button', { class: 'button primary big', type: 'button', onclick: () => dela(files) },
       `Skicka in jobb (${files.length === 1 ? '1 fil' : `${files.length} filer`})`) : null,
@@ -1617,6 +1710,7 @@ async function formView(id, key) {
         section.help ? h('p', { class: 'muted' }, section.help) : null,
         renderItems(section.items, data, onChange, job)))),
     h('a', { class: 'button primary big', href: `#/jobb/${id}`, onclick: () => save.flush() }, 'Klar'),
+    delaBlankett(lagrat, key, form, save),
   );
   // Låst: rutor och knappar stängs av, men bilder, ⓘ-texter och avsnitt går att öppna.
   if (last) {
@@ -1795,7 +1889,7 @@ async function delaFiler(files, area) {
     try { await navigator.share({ files }); return true; }
     catch (e) { if (e.name !== 'AbortError') alert('Kunde inte dela: ' + e.message); return false; }
   }
-  area.replaceChildren(...files.map(f => h('li', {}, h('a', { href: URL.createObjectURL(f), download: f.name }, f.name))));
+  area.replaceChildren(...files.map(filLank));
   return true;
 }
 

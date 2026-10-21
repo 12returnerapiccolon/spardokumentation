@@ -50,6 +50,11 @@ Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilag
 - TMALL 1481 fylls i mallens formulärfält, som plattas till vid export.
 - Säkerhetskopia som zip (`js/backup.js`), okrypterad. Vid inläsning väljer man att behålla den nyare versionen av varje jobb eller att appen frågar per jobb.
 - Lagring i Inställningar: hur mycket appen använder, och borttagning av bilder i avslutade jobb äldre än tre månader.
+- Filerna förbereds när ett pågående jobb öppnas och inget saknas, så att Skicka in jobb syns direkt. Har jobbet ändrats när man trycker görs filerna om först (avtryck i `avtryck()`).
+- Senaste Skicka in sparas i jobbet (`job.inskickat`: datum, filnamn, storlek, avtryck), och jobbsidan visar om något ändrats efter det.
+- Dela bara den här blanketten längst ner i varje blankett. Ändrar inte status.
+- Rimlighetskontroll före Skapa filer (`rimlighet` i blanketterna): växelmått långt från normalvärdet, öppning utanför tabellen och orimlig rältemperatur. Växelrapporten varnar också när besiktningstyp saknas.
+- Startsidan föreslår Avslutat för jobb som varit Skickat i mer än två veckor.
 - Sök bland jobben, hjälp på varje sida (`js/hjalp.js`) och en Kom igång-sida per enhet.
 
 ## Säkerhet

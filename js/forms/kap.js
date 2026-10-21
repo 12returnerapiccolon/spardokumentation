@@ -111,6 +111,15 @@ export default {
     },
   ],
 
+  // Rimlighetskontroll före Skapa filer (2026-10-21).
+  rimlighet: (job, data) => (data.kap || []).flatMap((row, i) => {
+    const t = tal(row.t);
+    return [
+      ...(berakna(row).dt === 'Utanför' ? [`kapställe ${i + 1}: e ligger utanför tabellen, kontrollera Lf och Le.`] : []),
+      ...(t != null && (t < -40 || t > 70) ? [`kapställe ${i + 1}: rältemperaturen ${row.t} °C ser felskriven ut.`] : []),
+    ];
+  }),
+
   toValues(job, data) {
     const datum = blankettDatum(job);
     const v = {

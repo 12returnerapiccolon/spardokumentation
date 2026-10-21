@@ -8,6 +8,7 @@ const BLANKETT_ALLMANT = ['Så fungerar alla blanketter', [
   'Tryck på en rubrik för att fälla ihop eller fälla ut ett avsnitt. Ihopfällda avsnitt är inte tomma, de är bara gömda.',
   'En ruta med en kort förklarande text under rubriken talar om varifrån värden hämtas eller vilket regelverk som gäller.',
   'Pilen uppe till vänster går tillbaka till jobbet. Där trycker du Skapa filer när blanketterna är klara.',
+  'Dela bara den här blanketten längst ner gör en PDF av just den här blanketten, t.ex. när arbetsledaren ber om en rättad. Jobbets status ändras inte.',
 ]];
 
 const VAXEL = {
@@ -15,7 +16,7 @@ const VAXEL = {
   intro: 'Här fyller du i besiktningsrapporten för växeln. Vilken rapport det blir beror på växeltypen. Normalvärden och toleranser fylls i automatiskt enligt TRVINFRA-00017.',
   delar: [
     ['Besiktningstyp', [
-      'Välj vilken besiktning det är och besiktningsklassen. Båda styr vilka toleranser som gäller. Utan besiktningstyp blir det inga toleranser.',
+      'Välj vilken besiktning det är och besiktningsklassen. Båda styr vilka toleranser som gäller. Utan besiktningstyp blir det inga toleranser och ingen ruta ikryssad på blanketten, så appen varnar i jobbets lista och innan filerna skapas.',
     ]],
     ['Växeldata', [
       'Bandel, Vx.nr och Trafikplats hämtas från jobbet (grått) och går att skriva över för den här rapporten.',
@@ -28,7 +29,7 @@ const VAXEL = {
       'Börja mäta från: för växlar med A- och B-ände väljer du vilken ände du börjar i. Ordningen vänds då.',
       'Skriv bara i Uppmätt. När värdet har lika många siffror som normalvärdet hoppar markören till nästa mått. Telefonens pilar går bara mellan Uppmätt-rutorna.',
       'Normal och Tolerans är text. Tryck på ett värde om du behöver skriva ett eget.',
-      'Diff räknas ut som uppmätt minus normal. Raden blir röd när måttet ligger utanför toleransen, och du får en varning när du skapar filerna.',
+      'Diff räknas ut som uppmätt minus normal. Raden blir röd när måttet ligger utanför toleransen, och du får en varning när du skapar filerna. Du får också en varning om ett uppmätt värde skiljer sig så mycket från normalvärdet att det troligen är felskrivet, t.ex. 14355 i stället för 1435.',
       'Gråa rader är mått som inte tas vid den valda besiktningen. De hoppas över, men du kan fylla i dem ändå.',
       'Grå siffror med snedstreck, t.ex. 43/44, beror på korsningens utförande. Skriv det värde som gäller.',
     ]],
@@ -49,6 +50,7 @@ export const HJALP = {
     delar: [
       ['Rutorna överst', [
         'Gula rutor visar när något behöver göras: mallar som saknas eller är gamla, en säkerhetskopia som bör sparas, eller att du är ny i appen. Tryck på rutan för att åtgärda.',
+        'Har ett jobb varit Skickat i mer än två veckor föreslår appen att det blir Avslutat. Tryck Markera som Avslutat, så flyttas det till arkivet.',
       ]],
       ['Knapparna', [[
         '+ Nytt jobb: skapar ett jobb. Du fyller i uppgifterna en gång, och appen föreslår vilka blanketter som behövs.',
@@ -104,6 +106,7 @@ export const HJALP = {
     delar: [
       ['Status', [
         'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du trycker Skicka in jobb och skickar filerna, och då låses alla blanketter. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
+        'Under statusen står när jobbet senast skickades in och hur många filer det var. Tryck på raden för att se filerna. Står det "ändrat efter det" har något i jobbet ändrats sedan dess, och du kan skicka in det igen.',
       ]],
       ['Kopiera jobbnamn och Ao nr', [
         'Knappen bredvid jobbnamnet överst kopierar namnet. Klistra in det på ämnesraden när du mejlar filerna; telefonen kan inte fylla i ämnesraden själv.',
@@ -112,15 +115,17 @@ export const HJALP = {
       ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
         'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
+        'Längst ner i varje blankett finns Dela bara den här blanketten, t.ex. när arbetsledaren ber om en rättad svetsrapport. Den gör en PDF av bara den blanketten och ändrar inte jobbets status.',
         'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder, Lägg till eller ta bort blanketter och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. En låst blanketts uppgifter från jobbet, t.ex. Ao nr och datum, ligger kvar som de var när den låstes, även om du ändrar dem under Uppgifter om jobbet. Lås upp blanketten om ändringen ska med.',
       ]],
       ['Skapa filer', [
-        'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',
+        'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder, mått utanför tolerans, besiktningstyp eller värden som ser felskrivna ut (t.ex. ett mått med en siffra för mycket). Du kan rätta till det eller trycka Skapa filerna ändå.',
+        'När inget saknas i ett pågående jobb är filerna klara redan när du öppnar jobbet, och Skicka in jobb syns direkt. Knappen Skapa filer heter då Skapa filerna igen. Ändrar du något efter det, t.ex. lägger till en bild, gör appen om filerna när du trycker Skicka in jobb, och du trycker en gång till.',
         [
           'Skicka in jobb: öppnar delningen, så att du kan skicka filerna till arbetsledaren med Mail eller Teams eller spara dem i OneDrive. Ämnesraden i Mail fyller du i själv: tryck på kopieraknappen bredvid jobbnamnet överst och klistra in. Jobbet blir Skickat och alla blanketter låses.',
           'Länkarna under knappen öppnar eller laddar ned en fil i taget. Storleken står efter varje fil, så att du kan jämföra med bilagorna i Mail. En bilaga på bara några hundra byte har blivit tom.',
         ],
-        'Har svetsrapporten fler än 10 svetsar blir det flera svetsrapporter, del 1, del 2 och så vidare.',
+        'Har svetsrapporten fler än 10 svetsar blir det flera svetsrapporter, del 1, del 2 och så vidare, numrerade 11–20 osv. med sidnummer, t.ex. 2(3).',
       ]],
       ['Bilder', [
         'Tre grupper: Före, Efter och Rälsmärkning/bricka. Tryck på + i gruppen för att ta en bild eller välja bilder. Tryck på en bild för att se den större, och på × för att ta bort den.',
@@ -222,7 +227,8 @@ export const HJALP = {
         'SFT bredvid Rältemp räknas ut som på SFT Kapmetoden när Före kap, Efter kap och Rältemp är ifyllda. Den är bara till för dig och kommer inte med på svetsrapporten.',
         'Dag och plats hämtas från jobbet. Km + m är svetsens läge; i en växel kan du i stället skriva svetsens nummer på växelbilden (1–14) i första rutan och lämna meter tom.',
         'Fyll i före och efter kap, rältemperatur, rälsmodell, material, typ av arbete, svetsmetod, tillsatsmaterial, batch och WPS.',
-        'En blankett har plats för 10 svetsar. Fler svetsar ger fler blanketter när du skapar filerna.',
+        'En blankett har plats för 10 svetsar. Fler svetsar ger fler blanketter när du skapar filerna: på den andra står svetsarna 11–20, och nere till höger står t.ex. 2(3).',
+        'Ger före och efter kap en öppning utanför tabellen visar SFT Utanför, och appen varnar innan filerna skapas. Kontrollera då måtten.',
       ]],
       ['Egenkontroll och kommentarer', [
         'Kryssa i det som är utfört; det blir X på blanketten. Avvikelser skriver du sist.',
@@ -293,6 +299,7 @@ export const HJALP = {
     delar: [
       ['Kapställen', [
         'Ett kapställe per rad. Fyll i läge, rältemperatur T och längden före (Lf) och efter (Le) kap. e, ΔT och SFT räknas ut direkt.',
+        'Hamnar e utanför tabellen, eller ser rältemperaturen felskriven ut, varnar appen innan filerna skapas.',
       ]],
       ['Underskrift', [
         'Entreprenör och namn hämtas från Inställningar. Skriv vem på Trafikverket rapporten delges.',
