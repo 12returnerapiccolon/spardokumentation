@@ -957,7 +957,7 @@ function delaBlankett(job, key, form, save) {
         lankar);
     },
   }, 'Dela bara den här blanketten');
-  ruta.append(knapp, h('p', { class: 'muted note' }, 'Gör en PDF av bara den här blanketten, t.ex. när arbetsledaren ber om en rättad. Jobbets status ändras inte.'));
+  ruta.append(knapp, h('p', { class: 'muted note' }, 'Gör en PDF av bara den här blanketten. Jobbets status ändras inte.'));
   return ruta;
 }
 

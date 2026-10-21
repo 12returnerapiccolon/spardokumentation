@@ -8,7 +8,7 @@ const BLANKETT_ALLMANT = ['Så fungerar alla blanketter', [
   'Tryck på en rubrik för att fälla ihop eller fälla ut ett avsnitt. Ihopfällda avsnitt är inte tomma, de är bara gömda.',
   'En ruta med en kort förklarande text under rubriken talar om varifrån värden hämtas eller vilket regelverk som gäller.',
   'Pilen uppe till vänster går tillbaka till jobbet. Där trycker du Skapa filer när blanketterna är klara.',
-  'Dela bara den här blanketten längst ner gör en PDF av just den här blanketten, t.ex. när arbetsledaren ber om en rättad. Jobbets status ändras inte.',
+  'Dela bara den här blanketten längst ner gör en PDF av just den här blanketten. Jobbets status ändras inte.',
 ]];
 
 const VAXEL = {
@@ -120,7 +120,7 @@ export const HJALP = {
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
         'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
         'Lägg till/ta bort blanketter direkt under rubriken fäller ut kryssrutor för alla blanketter. Kryssa i fler eller ta bort en, och tryck Klar. Det du fyllt i finns kvar om du lägger till en blankett igen. En låst blankett går inte att kryssa ur, men nya blanketter går alltid att lägga till.',
-        'Längst ner i varje blankett finns Dela bara den här blanketten, t.ex. när arbetsledaren ber om en rättad svetsrapport. Den gör en PDF av bara den blanketten och ändrar inte jobbets status.',
+        'Längst ner i varje blankett finns Dela bara den här blanketten. Den gör en PDF av bara den blanketten och ändrar inte jobbets status.',
         'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. En låst blanketts uppgifter från jobbet, t.ex. Ao nr och datum, ligger kvar som de var när den låstes, även om du ändrar dem under Uppgifter om jobbet. Lås upp blanketten om ändringen ska med.',
       ]],
       ['Bilder', [
