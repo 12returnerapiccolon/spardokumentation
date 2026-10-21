@@ -103,7 +103,7 @@ export const HJALP = {
     intro: 'Här samlas allt som hör till jobbet: status, blanketterna, bilderna och uppgifterna om jobbet. Härifrån skapar och delar du filerna.',
     delar: [
       ['Status', [
-        'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du delar filerna. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
+        'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du delar filerna, och då låses alla blanketter. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
       ]],
       ['Kopiera jobbnamn och Ao nr', [
         'Knappen bredvid jobbnamnet överst kopierar namnet. Klistra in det på ämnesraden när du mejlar filerna; telefonen kan inte fylla i ämnesraden själv.',
@@ -112,6 +112,7 @@ export const HJALP = {
       ['Blanketter', [
         'Tryck på en blankett för att fylla i den. Under namnet står hur långt den har kommit, t.ex. antal svetsar eller "18 av 24 mått". Rött betyder att något ligger utanför toleransen.',
         'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
+        'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter. Uppgifter om jobbet som ändras i efterhand, t.ex. Ao nr, syns ändå på en låst blankett.',
       ]],
       ['Skapa filer', [
         'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder eller mått utanför tolerans. Du kan rätta till det eller trycka Skapa filerna ändå.',

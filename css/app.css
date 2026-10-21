@@ -480,3 +480,16 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .field:has(> .kopiera) > input { padding-right: 44px; }
 .kopiera.klar svg { display: none; }
 .field > .kopiera.klar::after { content: '✓'; font-size: 20px; font-weight: 700; }
+/* Hänglås till höger om blankettens namn (2026-10-21). */
+.list li.med-las { display: flex; align-items: center; }
+.list li.med-las > a { flex: 1; min-width: 0; }
+.list .las { flex: none; width: 48px; height: 48px; margin-right: 6px; padding: 0; border: 0; background: none; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+.list .las.last { color: var(--accent); }
+.list .las svg { width: 22px; height: 22px; }
+fieldset.blankett { border: 0; padding: 0; margin: 0; min-width: 0; }
+/* Låst: inget går att ändra, men avsnitten går att fälla ihop och bilder att titta på. */
+fieldset.blankett.last :is(input, select, textarea):disabled { opacity: 0.75; -webkit-text-fill-color: currentColor; }
+.las-note { display: flex; align-items: center; gap: 10px; }
+.las-note svg { width: 22px; height: 22px; flex: none; color: var(--accent); }
+.las-note span { flex: 1; }
+.las-note .button { width: auto; margin: 0; padding: 8px 14px; }

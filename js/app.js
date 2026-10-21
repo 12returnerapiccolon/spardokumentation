@@ -642,10 +642,13 @@ async function jobView(id) {
         h('span', { class: 'main' }, 'Besiktningsrapport växel'),
         h('span', { class: 'sub' }, 'Välj växeltyp under Uppgifter om jobbet')));
     }
-    return h('li', {}, h('a', { href: `#/jobb/${id}/${k}` },
+    const last = !!(job.last && job.last[k]);
+    return h('li', { class: 'med-las' }, h('a', { href: `#/jobb/${id}/${k}` },
       // Samma korta namn som sidtiteln (2026-10-20).
       h('span', { class: 'main' }, form.kort || form.title),
-      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], job))));
+      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], job))),
+      // Hänglås: en låst blankett går att läsa men inte ändra (2026-10-21).
+      lasKnapp(last, () => { job.last = { ...job.last, [k]: !last }; save(); docList.replaceChildren(...docItems()); }));
   });
   const docList = h('ul', { class: 'list' }, docItems());
   // Status (2026-10-20). Blir Skickat när filerna delas.
@@ -655,7 +658,9 @@ async function jobView(id) {
     job, async (k, v) => {
       job.status = v;
       if (v === 'Skickat' && !job.skickad) job.skickad = new Date().toISOString();
+      if (v === 'Skickat') lasAlla(job);
       await db.put('jobs', job);
+      docList.replaceChildren(...docItems());
     }, job)].flat().filter(Boolean));
   statusRad.refresh();
   const bildDel = bildSektion(id);
@@ -670,7 +675,7 @@ async function jobView(id) {
     statusRad,
     h('h2', {}, 'Blanketter'),
     docList,
-    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => statusRad.refresh()) }, 'Skapa filer'),
+    h('button', { class: 'button primary big', type: 'button', onclick: () => kontrollera(job, exportArea, () => { statusRad.refresh(); docList.replaceChildren(...docItems()); }) }, 'Skapa filer'),
     exportArea,
     bildDel,
     h('details', { class: 'card' },
@@ -781,12 +786,25 @@ function importKnapp() {
 // Jobbets status (2026-10-20). Jobb från före statusen räknas som skickade om de delats.
 const STATUSAR = ['Pågående', 'Skickat', 'Avslutat'];
 const jobStatus = job => job.status || (job.skickad ? 'Skickat' : 'Pågående');
+// När jobbet skickas låses alla blanketter; de går att låsa upp en och en (2026-10-21).
+const lasAlla = job => { job.last = Object.fromEntries(job.docs.map(k => [k, true])); };
+function lasIkon(last) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
+  const svg = el('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' });
+  // Öppet lås: bygeln är uppfälld åt höger.
+  svg.append(el('rect', { x: 4, y: 11, width: 16, height: 10, rx: 2 }), el('path', { d: last ? 'M8 11V7a4 4 0 0 1 8 0v4' : 'M8 11V7a4 4 0 0 1 7.9-.9' }));
+  return svg;
+}
+function lasKnapp(last, onToggle) {
+  return h('button', { class: 'las' + (last ? ' last' : ''), type: 'button', 'aria-label': last ? 'Lås upp blanketten' : 'Lås blanketten', 'aria-pressed': last ? 'true' : 'false', onclick: onToggle }, lasIkon(last));
+}
 
 // Nytt jobb med samma uppgifter och dokument, t.ex. nästa skift på samma plats (2026-10-20).
 // Blanketterna börjar tomma; det som ska följa med fylls i av sig själv (profil, sparade val).
 function nyttFranJobb(job) {
   const now = new Date().toISOString();
-  const { id, created, updated, skickad, status, importerad, namnEget, forms, ...uppgifter } = job;
+  const { id, created, updated, skickad, status, importerad, namnEget, forms, last, ...uppgifter } = job;
   return { ...uppgifter, id: uid(), datum: today(), forms: {}, created: now, updated: now };
 }
 
@@ -896,6 +914,7 @@ async function buildFiles(job, area, onSent) {
     if (!(navigator.canShare && navigator.canShare({ files: list }))) return;
     job.status = 'Skickat';
     job.skickad = new Date().toISOString();
+    lasAlla(job);
     await db.put('jobs', job);
     onSent && onSent();
   };
@@ -1444,7 +1463,10 @@ async function formView(id, key) {
   const saveRemembered = debounce(() => db.setSetting('remember', remembered), 300);
   window.onpagehide = () => { save.flush(); saveRemembered.flush(); };
   // Tabellen räknas om när något som styr normalvärden och toleranser ändras.
+  const last = !!(job.last && job.last[key]);
+  let blankettRuta;
   const onChange = (k, v) => {
+    if (last) return;
     if (k.startsWith('job.')) {
       job[k.slice(4)] = v;
       // En modell som inte finns för den nya växeltypen tas bort, så att man väljer om.
@@ -1472,13 +1494,22 @@ async function formView(id, key) {
 
   render(
     h('p', { class: 'muted' }, `${form.code} ${form.title}. Uppgifter i grått hämtas från jobbet.`),
+    last ? h('div', { class: 'card las-note' }, lasIkon(true), h('span', {}, 'Blanketten är låst och kan inte ändras.'),
+      h('button', { class: 'button', type: 'button', onclick: async () => { job.last = { ...job.last, [key]: false }; await db.put('jobs', job); route(); } }, 'Lås upp')) : null,
     // Sektionerna går att fälla ihop för överblick och är öppna varje gång blanketten öppnas.
-    ...form.sections.map(section => h('details', { class: 'card section', open: !section.closed },
-      h('summary', {}, h('h2', {}, section.title)),
-      section.help ? h('p', { class: 'muted' }, section.help) : null,
-      renderItems(section.items, data, onChange, job))),
+    // En låst blankett visas i en avstängd fieldset: allt syns men inget går att ändra.
+    blankettRuta = h('fieldset', { class: 'blankett' + (last ? ' last' : '') },
+      ...form.sections.map(section => h('details', { class: 'card section', open: !section.closed },
+        h('summary', {}, h('h2', {}, section.title)),
+        section.help ? h('p', { class: 'muted' }, section.help) : null,
+        renderItems(section.items, data, onChange, job)))),
     h('a', { class: 'button primary big', href: `#/jobb/${id}`, onclick: () => save.flush() }, 'Klar'),
   );
+  // Låst: rutor och knappar stängs av, men bilder, ⓘ-texter och avsnitt går att öppna.
+  if (last) {
+    const stang = () => blankettRuta.querySelectorAll('input, select, textarea, button:not(.figure):not(.info-image):not(.link.inline)').forEach(el => { el.disabled = true; });
+    stang(); setTimeout(stang, 0);
+  }
 }
 
 async function templatesView() {
