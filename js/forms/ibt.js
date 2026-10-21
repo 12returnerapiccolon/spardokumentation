@@ -247,6 +247,7 @@ export default {
     },
     {
       title: 'Noterade anmärkningar',
+      help: 'Rutorna på blanketten är små. En lång anmärkning bryts på två eller tre rader och skrivs mindre, så skriv så kort som möjligt.',
       items: [{
         type: 'rows', key: 'anm', max: 4, rowLabel: 'Anmärkning', addLabel: '+ Lägg till anmärkning',
         fields: [
