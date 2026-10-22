@@ -274,7 +274,7 @@ export const HJALP = {
         'Kontrakt eller projekt, bandel, datum, beställningsnr och arbetet. Under Objekt anger du var och vad som kontrollerats, med arbete enligt TRVINFRA-00271 bilaga 1. Km från och till skrivs som km + m i två rutor, som i jobbet och svetsrapporten. De hämtas från svetsrapportens svetsar, annars från jobbet. Fyller du bara i från gäller det även som till.',
       ]],
       ['Kontrollpunkter', [
-        'Kryssa i det som är kontrollerat; det blir dina initialer på blanketten. Tryck på texten för att läsa kraven ur TDOK 2021:0311. För plankorsning visas kraven ur TDOK 2021:0334 kap 4.1.22, som 0311 hänvisar till.',
+        'Kryssa i det som är kontrollerat; det blir dina initialer på blanketten. Tryck på texten för att läsa kraven ur TDOK 2021:0311. För plankorsning visas kraven ur TDOK 2021:0334 kap 4.1.22, som 0311 hänvisar till; tryck på figur 1 eller figur 2 för att se figuren.',
         'Egenkontroller som hör till jobbets blanketter är förkryssade som bifogade.',
       ]],
       ['Anmärkningar och godkännande', [

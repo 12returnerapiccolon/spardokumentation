@@ -1336,9 +1336,9 @@ function renderItem(item, data, onChange, job) {
             h('summary', {}, item.label),
             h('div', { class: 'tdok' },
               (item.details.intro || []).filter(Boolean).map(t => h('p', { class: 'muted' }, t)),
-              (item.details.blocks || []).map(([rubrik, stycken]) => [
+              (item.details.blocks || []).map(([rubrik, stycken, figurer]) => [
                 h('h4', {}, rubrik),
-                stycken.map(t => h('p', { class: /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null }, t)),
+                stycken.map(t => h('p', { class: /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null }, ...medFigurer(t, figurer))),
               ]))));
       }
       return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },
@@ -1488,6 +1488,15 @@ function kommIhagNamn(value) {
 
 // Visar en bild i helskärm. Hela bilden syns först; nyp eller dubbeltryck för att zooma
 // och dra med fingret för att flytta. Sidans egen zoom används inte, den flyttar även knapparna.
+// Text där t.ex. "figur 1" blir en knapp som visar figuren (2026-10-22). figurer: text → [bild, beskrivning].
+function medFigurer(t, figurer) {
+  if (!figurer) return [t];
+  const namn = Object.keys(figurer);
+  return t.split(new RegExp(`(${namn.join('|')})`)).map(del => (figurer[del]
+    ? h('button', { type: 'button', class: 'link inline', onclick: () => showImage(...figurer[del]) }, del)
+    : del));
+}
+
 function showImage(src, alt) {
   const img = h('img', { src, alt, draggable: false });
   const stage = h('div', { class: 'zoom-stage' }, img);

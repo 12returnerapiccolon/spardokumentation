@@ -1,7 +1,7 @@
 // Kraven i TDOK 2021:0311 Säkerhetsbesiktning – Banöverbyggnad, version 7.0 (gäller från 2026-01-01),
 // för kontrollpunkterna i TMALL 0824. Plankorsning hänvisar till TDOK 2021:0334 Säkerhetsbesiktning –
 // Signalsystem, version 7.0, kap 4.1.22, som ligger här som 0334-4.1.22 (2026-10-22). Bara kraven ("Kontrollera att …"), inte bedömningsstöden.
-// Avsnitt: [rubrik, stycken]. PUNKT: rad i mallen → avsnitt.
+// Avsnitt: [rubrik, stycken, figurer?]; figurer: text i styckena → [bild, beskrivning]. PUNKT: rad i mallen → avsnitt.
 export const AVSNITT = {
  "4.1.1": [
   "4.1.1 Spårläge",
@@ -320,7 +320,9 @@ export const AVSNITT = {
    "8. att aktuell spårvidd inte överstiger 1455 millimeter",
    "9. att flänsrännor är fria från främmande föremål.",
    "Punkt 1-5 tillhör risktyp O3m. Punkt 6-9 tillhör risktyp Tsäk."
-  ]
+  ],
+  // Kapitlet har en enda figur (märkt Figur 2 i TDOK:en), som både punkt 6 och 7 hänvisar till.
+  { "figur 1": ["img/tdok/0334-fritt-utrymme.png", "Fritt utrymme för järnvägshjul (TDOK 2021:0334)"], "figur 2": ["img/tdok/0334-fritt-utrymme.png", "Fritt utrymme för järnvägshjul (TDOK 2021:0334)"] }
  ],
  "4.4.1": [
   "4.4.1 Kolvbromsar",
