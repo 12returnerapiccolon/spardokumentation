@@ -961,5 +961,57 @@
   ],
   "dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
   "rubrik": "4.5.1 Bromsens höjdläge till räls"
+ },
+ "kolv-1": {
+  "fil": "Instruktion+underh%c3%a5ll+kolvbroms+Ultra.pdf",
+  "start": [
+   4,
+   72
+  ],
+  "slut": [
+   5,
+   74
+  ],
+  "dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+  "rubrik": "1 Underhållsinstruktioner"
+ },
+ "kolv-1-1-1": {
+  "fil": "Instruktion+underh%c3%a5ll+kolvbroms+Ultra.pdf",
+  "start": [
+   5,
+   74
+  ],
+  "slut": [
+   6,
+   238
+  ],
+  "dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+  "rubrik": "1.1.1 Kolvbromsbesiktning"
+ },
+ "kolv-1-2": {
+  "fil": "Instruktion+underh%c3%a5ll+kolvbroms+Ultra.pdf",
+  "start": [
+   6,
+   238
+  ],
+  "slut": [
+   6,
+   300
+  ],
+  "dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+  "rubrik": "1.2 Efter 50 000–80 000 cykler (axlar)"
+ },
+ "kolv-3-3": {
+  "fil": "Instruktion+underh%c3%a5ll+kolvbroms+Ultra.pdf",
+  "start": [
+   11,
+   72
+  ],
+  "slut": [
+   12,
+   126
+  ],
+  "dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+  "rubrik": "3.3 Bromskapselbyte"
  }
 }

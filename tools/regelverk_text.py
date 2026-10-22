@@ -20,13 +20,14 @@ F360 = 'TDOK_2022-0360.pdf'
 F448 = 'TDOK_2014-0448.pdf'
 F311 = 'TDOK_2021-0311.pdf'
 FSPIRAL = 'Instruktion+spiralbroms.pdf'
+FKOLV = 'Instruktion+underh%c3%a5ll+kolvbroms+Ultra.pdf'
 # Sidhuvudets nederkant och sidfotens överkant per dokument (pt).
-HUVUD = {F12: 132, F13: 114, F14: 132, F15: 132, F17: 132, F18: 132, F398: 132, F514: 115, F360: 115, F448: 115, F311: 112, FSPIRAL: 50}
+HUVUD = {F12: 132, F13: 114, F14: 132, F15: 132, F17: 132, F18: 132, F398: 132, F514: 115, F360: 115, F448: 115, F311: 112, FSPIRAL: 50, FKOLV: 60}
 
 # Dokument utan sidfot: sidan används ända ned.
 UTAN_FOT = {F514, F360, F448}
 # Sidfotens överkant som andel av sidhöjden, där den avviker från 0,956.
-FOT = {FSPIRAL: 0.94}
+FOT = {FSPIRAL: 0.94, FKOLV: 0.94}
 
 # namn: (fil, (sida, y) start, (sida, y) slut). Slutet är nästa rubrik. Samma namn som bilderna
 # i img/tdok/ (originalet).
@@ -324,8 +325,17 @@ def avsnitt(namn, fil, start, slut, kropp_storlek=None, huvud=None):
     for b in block:
         if b[0] == 'p' and re.match(r'^(Figur|Bild)\b', b[1]) and ut and ut[-1][0] == 'figur' and not ut[-1][2]:
             ut[-1][2] = b[1]; continue
+        # en numrerad förklaring på en rad (1. Tryckluftskolv. 2. Bromskapsel. …) blir en lista
+        if b[0] == 'p' and ut and ut[-1][0] == 'li' and re.search(r'\s2\.\s', ut[-1][3]):
+            ut[-1][3] += ' ' + b[1]; continue
         ut.append(b)
-    return ut
+    ut2 = []
+    for b in ut:
+        if b[0] == 'li' and re.match(r'^1\.$', b[2]) and re.search(r'\s2\.\s', b[3]):
+            delar = re.split(r'\s(?=\d{1,2}\.\s)', '1. ' + b[3])
+            ut2 += [['li', b[1], d.split(' ', 1)[0], d.split(' ', 1)[1].rstrip('.')] for d in delar]
+        else: ut2.append(b)
+    return ut2
 
 
 os.makedirs(UT_FIG, exist_ok=True)

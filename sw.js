@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v189';
+const VERSION = 'v190';
 const FILES = [
   './',
   'index.html',
@@ -330,6 +330,12 @@ const REGELVERK_FILES = [
   'img/tdok/fig/spiral-2-5-1.png',
   'img/tdok/fig/spiral-4-4-2-1.png',
   'img/tdok/fig/spiral-4-4-4-1.png',
+  'img/tdok/kolv-1-1-1.png',
+  'img/tdok/kolv-1-2.png',
+  'img/tdok/kolv-1.png',
+  'img/tdok/kolv-3-3.png',
+  'img/tdok/fig/kolv-1-1.png',
+  'img/tdok/fig/kolv-3-3-1.jpg',
 ];
 
 const REGELVERK_SET = new Set(REGELVERK_FILES.map(f => new URL(f, self.location).pathname));

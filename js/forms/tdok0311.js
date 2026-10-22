@@ -478,6 +478,12 @@ const DEF = avsnitt('TDOK 2014:0514', [
   ['7 Övriga skador', '0514-7'],
   ['8 Säkerhetskrav som skall innehållas', '0514-8'],
 ]);
+const KOLV = avsnitt('Underhållsinstruktion Ultra kolvbromsar', [
+  ['1 Underhållsinstruktioner, 1.1 Periodisk översyn', 'kolv-1'],
+  ['1.1.1 Kolvbromsbesiktning', 'kolv-1-1-1'],
+  ['1.2 Efter 50 000–80 000 cykler', 'kolv-1-2'],
+  ['3.3 Bromskapselbyte', 'kolv-3-3'],
+]);
 // Kapitel 3.7 är det IBT hänvisar till; avsnitten som checklistan bygger på följer efter.
 const SPIRAL = avsnitt('Instruktionsbok spiralbromsar', [
   ['3.7 Slutkontroll av bromsen', 'spiral-3-7'],
@@ -511,6 +517,7 @@ const HANVISNINGAR = {
   '00398': { [T398]: BANUTFORMNING },
   '00014': { [T14]: STABILITET },
   '4.1.3.2': { 'TDOK 2014:0514 Spårkomponenter DEF-sliprar Besiktning': DEF },
+  '4.4.1': { 'Underhållsinstruktion Ultra kolvbromsar, ritning 805974': KOLV },
   '4.4.2': { 'Instruktionsbok spiralbromsar, ritning 805970': SPIRAL },
   '4.4.3': { 'TDOK 2022:0360 Spårkomponenter Balkbromsar Thyssen TW-4E och TW-5F': BALK_HALLSBERG, 'TDOK 2014:0448 Balkbromsar Thyssen TW5': BALK_MALMO },
   '4.1.1': { [T13]: SPARLAGE },

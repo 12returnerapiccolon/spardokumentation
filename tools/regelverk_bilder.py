@@ -11,8 +11,8 @@ AVSNITT = json.load(open(os.path.join(os.path.dirname(__file__), 'regelverk_avsn
 VALDA = sys.argv[3:]
 # Sidhuvudets nederkant per dokument (pt).
 UTAN_FOT = {'TDOK_2014-0514.pdf', 'TDOK_2022-0360.pdf', 'TDOK_2014-0448.pdf'}
-HUVUD = {'Krav med raadstexter TRVINFRA-00013 Sparlaege v2_0.pdf': 114, 'TDOK_2014-0514.pdf': 115, 'TDOK_2022-0360.pdf': 115, 'TDOK_2014-0448.pdf': 115, 'Instruktion+spiralbroms.pdf': 50}
-FOT = {'Instruktion+spiralbroms.pdf': 0.94}
+HUVUD = {'Krav med raadstexter TRVINFRA-00013 Sparlaege v2_0.pdf': 114, 'TDOK_2014-0514.pdf': 115, 'TDOK_2022-0360.pdf': 115, 'TDOK_2014-0448.pdf': 115, 'Instruktion+spiralbroms.pdf': 50, 'Instruktion+underh%c3%a5ll+kolvbroms+Ultra.pdf': 60}
+FOT = {'Instruktion+spiralbroms.pdf': 0.94, 'Instruktion+underh%c3%a5ll+kolvbroms+Ultra.pdf': 0.94}
 
 def bit(doc, pn, y0, y1, dpi=130):
     p = doc[pn - 1]

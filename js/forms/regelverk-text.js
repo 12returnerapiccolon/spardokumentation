@@ -20135,5 +20135,472 @@ export default {
 "Koppla på tryckluften."
 ]
 ]
+},
+"kolv-1": {
+"dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+"rubrik": "1 Underhållsinstruktioner",
+"block": [
+[
+"h",
+"1 Underhållsinstruktioner"
+],
+[
+"p",
+"Dessa underhållsinstruktioner avser Ultra kolvbromssystem som är installerat på 32 riktningsspår på Hallsbergs Rangerbangård från och med oktober 2004. Styrsystemet består av 24 123 stycken kolvbromsar. Det finns två typer av kolvbromsar, 15 398 stycken 1,5m/s bromsar och 8 725 stycken 0,5m/s bromsar. Båda typerna underhålls på samma sätt."
+],
+[
+"figur",
+"img/tdok/fig/kolv-1-1.png",
+"Figur 1 Ultra kolvbroms"
+],
+[
+"li",
+0,
+"1.",
+"Tryckluftskolv"
+],
+[
+"li",
+0,
+"2.",
+"Bromskapsel"
+],
+[
+"li",
+0,
+"3.",
+"Skrapring"
+],
+[
+"li",
+0,
+"4.",
+"R-sprint"
+],
+[
+"li",
+0,
+"5.",
+"Mutter (M27)"
+],
+[
+"li",
+0,
+"6.",
+"Pinnbult"
+],
+[
+"li",
+0,
+"7.",
+"Sprint"
+],
+[
+"li",
+0,
+"8.",
+"Stålplatta och låsbrickor"
+],
+[
+"li",
+0,
+"9.",
+"Smörjnippel"
+],
+[
+"li",
+0,
+"10.",
+"Hus"
+],
+[
+"h",
+"1.1. Periodisk översyn"
+],
+[
+"p",
+"En regelbunden översyn ska göras för att upptäcka saknade, skadade eller felaktiga komponenter/bromsar. En okulärbesiktning skall ske en gång per månad."
+]
+]
+},
+"kolv-1-1-1": {
+"dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+"rubrik": "1.1.1 Kolvbromsbesiktning",
+"block": [
+[
+"h",
+"1.1.1. Kolvbromsbesiktning"
+],
+[
+"p",
+"På sidorna 5 och 6 följer två checklistor som hjälp för underhållspersonalen att upptäcka skadade komponenter/bromsar samt vilka åtgärder som behövs för att rätta till eventuella fel."
+],
+[
+"p",
+"Okulärbesiktning utan att avlägsna tryckluftskolv eller bromskapsel"
+],
+[
+"tabell",
+[
+[
+[
+"Komponent",
+1
+],
+[
+"Fel",
+1
+],
+[
+"Åtgärd",
+1
+]
+],
+[
+[
+"Smörjnippel\nFig.1 -( 9)",
+1,
+2
+],
+[
+"Lös",
+1
+],
+[
+"Dra åt till 11 + 0.5Nm",
+1
+]
+],
+[
+[
+"Saknas",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Skrapring",
+1
+],
+[
+"Skadad/saknas",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Mutter",
+1,
+2
+],
+[
+"! Lös",
+1
+],
+[
+"Dra åt till 1000 ±100Nm",
+1
+]
+],
+[
+[
+"! Saknas",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Låsbrickor/tvåhållsplatta\nFig.1 - (8)",
+1
+],
+[
+"! Skadad/saknas",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Bult\nFig.1 - (6)",
+1
+],
+[
+"! Skadad/lös",
+1
+],
+[
+"Byt ut bromshuset",
+1
+]
+],
+[
+[
+"Sprint till tryckluftskolv\nFig.1 - (4 & 7)",
+1
+],
+[
+"Skadad/saknas",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Tillförsel tryckluft",
+1
+],
+[
+"Skadad/hörbart läckage",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Tryckluftskolv\nFig.1 - (1)",
+1
+],
+[
+"Skadad/hörbart läckage",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Kapsel\nFig.1 - (2)",
+1,
+3
+],
+[
+"! Skadad",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Nedtryckt",
+1
+],
+[
+"Se efter om det finns något\nsom har fastnat. Byt ut om\nfelet kvarstår",
+1
+]
+],
+[
+[
+"! Kapseln trycks inte ner\nvid belastning",
+1
+],
+[
+"Se efter om det finns något\nsom har fastnat. Byt ut om\nfelet kvarstår",
+1
+]
+],
+[
+[
+"Ballast",
+1,
+2
+],
+[
+"För mycket ballast under\noch runt huset",
+1
+],
+[
+"Frilägg huset. Ballast till\nnivå strax under rälfoten",
+1
+]
+],
+[
+[
+"Ballast för hårt packad runt\noch under huset",
+1
+],
+[
+"Tag bort ballast så att\nhuset är fritt",
+1
+]
+]
+]
+],
+[
+"p",
+"Okulärbesiktning med borttagen tryckluftskolv och bromskapsel"
+],
+[
+"p",
+"Detta utförs i samband med kapselbyte eller om kapseln uttages av annan anledning."
+],
+[
+"tabell",
+[
+[
+[
+"Komponent",
+1
+],
+[
+"Fel",
+1
+],
+[
+"Åtgärd",
+1
+]
+],
+[
+[
+"Hus - Botten av\nbromskapselutrymmet",
+1
+],
+[
+"Gropar 0.5mm eller mer",
+1
+],
+[
+"Ersätt",
+1
+]
+],
+[
+[
+"Lager",
+1,
+2
+],
+[
+"Torra, avsaknad av fett",
+1
+],
+[
+"Smörj",
+1
+]
+],
+[
+[
+"Slitna, ref. förslitningsfåror.\nSe 3.4.2",
+1
+],
+[
+"Ersätt, renovering\nbromshus",
+1
+]
+]
+]
+]
+]
+},
+"kolv-1-2": {
+"dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+"rubrik": "1.2 Efter 50 000–80 000 cykler (axlar)",
+"block": [
+[
+"h",
+"1.2. Efter 50 000-80 000 cykler (axlar) (År 1-2)"
+],
+[
+"p",
+"Kontrollera åtdragningen av huset med momentnyckel. Den ska vara 1000 ±100Nm."
+]
+]
+},
+"kolv-3-3": {
+"dok": "Underhållsinstruktion Ultra kolvbromsar, Hallsberg rangerbangård, ritning 805974, version 3.0",
+"rubrik": "3.3 Bromskapselbyte",
+"block": [
+[
+"h",
+"3.3. Bromskapselbyte"
+],
+[
+"li",
+1,
+"1.",
+"Kontrollera åtdragningen av muttrarna med hjälp av en momentnyckel. En 41mm hylsa används till de båda M27 muttrarna. Momentet ska vara 1000Nm ± 100Nm."
+],
+[
+"li",
+1,
+"2.",
+"Tryck ned bromskapseln med foten och kontrollera att kapseln återgår till ursprungsläge med en mjuk gång och utan att fastna. Undersök kapseln om den fastnar och byt ut huset om det visar sig att det är skadat."
+],
+[
+"li",
+1,
+"3.",
+"Undersök tryckluftskolven om det finns defekter. Trycksätt kolven och kontrollera att funktionen är korrekt och att kolven blir neddragen. Kontrollera att det inte finns något luftläckage under tiden som kolven är i nedfällt läge. Byt ut kolven mot en servad eller ny om det finns några defekter. Täta eventuellt luftläckage."
+],
+[
+"li",
+1,
+"4.",
+"Ta bort R-sprinten, sprinten och tryckluftskolven (låt luftanslutningen vara kvar). Ta bort kapseln. Gör en övergripande okulär besiktning av huset och tag bort eventuella främmande föremål och smuts. Kontrollera att de två ventilations/dräneringshålen är rena genom att använda den 3-6 mm tjocka spiken eller ståltråd."
+],
+[
+"figur",
+"img/tdok/fig/kolv-3-3-1.jpg",
+"Figur 3 Husets övre lager"
+],
+[
+"li",
+1,
+"5.",
+"Kontrollera att både övre och nedre lagrens slitringar är synliga i en komplett cirkel (se Figur 3). Om så inte är fallet måste huset in på översyn. Ersätt huset med ett nytt och sänd det gamla till Rangersystem i Sverige AB för reparation."
+],
+[
+"li",
+1,
+"6.",
+"Gör en bedömning av hur mycket fett (%) som är kvar på väggarna mellan det övre och det undre lagret. Resultatet av denna bedömning ger en indikering om smörjintervallerna kan behöva ändras. Vid full smörjning beräknas mängden fett vara cirka 20 ml."
+],
+[
+"li",
+1,
+"7.",
+"Använd en skruvmejsel för att lossa den gamla skrapringen och montera en ny. När skrapringen har blå färg är huset nytt och servade hus har grön färg."
+],
+[
+"li",
+1,
+"8.",
+"Placera den servade kapseln och tryckluftkolven i huset och återmontera sprinten och R-sprinten[se Figur 1 (4&7)]."
+],
+[
+"li",
+1,
+"9.",
+"Anslut smörjsprutan till husets smörjnipplar (AM10x1 straight nipple to DIN3404). En erfaren reparatör känner till hur många pumptag på smörjsprutan som behövs för att uppnå den föreskrivna mängden fett. Var noga med att inte överfylla (fett får inte komma ut runt skrapringen). (Kontrollera mängden fett som kommer ut på ett pumptag på smörjsprutan genom att väga detta)"
+]
+]
 }
 };
