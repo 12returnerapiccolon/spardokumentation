@@ -1,6 +1,7 @@
 // Kraven i TDOK 2021:0311 Säkerhetsbesiktning – Banöverbyggnad, version 7.0 (gäller från 2026-01-01),
 // för kontrollpunkterna i TMALL 0824. Plankorsning hänvisar till TDOK 2021:0334 Säkerhetsbesiktning –
-// Signalsystem, version 7.0, kap 4.1.22, som ligger här som 0334-4.1.22 (2026-10-22). Bara kraven ("Kontrollera att …"), inte bedömningsstöden.
+// Signalsystem, version 9.0 (gäller från 2026-03-25), där det är kap 4.1.23; 0311 hänvisar till 4.1.22
+// i en äldre version. Ligger här som 0334-4.1.22 (2026-10-22). Bara kraven ("Kontrollera att …"), inte bedömningsstöden.
 // Avsnitt: [rubrik, stycken, figurer?, bedömningsstöd?], se FIGURER och BEDOMNING längst ner. PUNKT: rad i mallen → avsnitt.
 export const AVSNITT = {
  "4.1.1": [
@@ -307,16 +308,16 @@ export const AVSNITT = {
   ]
  ],
  "0334-4.1.22": [
-  "TDOK 2021:0334 4.1.22 Väg-/gångbanan",
+  "TDOK 2021:0334 4.1.23 Väg-/gångbanan",
   [
-   "Ur TDOK 2021:0334 Säkerhetsbesiktning – Signalsystem, version 7.0. Följande ska kontrolleras av säkerhetsbesiktningsman bana:",
+   "Ur TDOK 2021:0334 Säkerhetsbesiktning – Signalsystem, version 9.0. Följande ska kontrolleras av säkerhetsbesiktningsman bana:",
    "1. att vägbeläggning inte når högre än 30 millimeter över räls överkant inom besiktningsklass B4 - B5 och inte högre än 50 millimeter inom de andra besiktningsklasserna. Vägbeläggningen får dock inte, frånsett utrymmet för järnvägshjulet, vara lägre än RÖK oavsett besiktningsklass",
    "2. att plattor inte glidit isär, är trasiga eller saknas",
    "3. att plankor inte är ruttna, trasiga, ligger löst eller saknas",
    "4. att nedtrampningsskydd är intakt",
    "5. att beläggningen vid plankorsningen är intakt",
-   "6. att vägbeläggningen inte inkräktar på utrymmet för järnvägshjulet (figur 1 i TDOK 2021:0334)",
-   "7. att respektive flänsrännas bredd f är max 80 och minst aktuell spårvidd minus 1375 millimeter (figur 2 i TDOK 2021:0334)",
+   "6. att vägbeläggningen inte inkräktar på utrymmet för järnvägshjulet (figur 4 i TDOK 2021:0334)",
+   "7. att respektive flänsrännas bredd f är max 80 och minst aktuell spårvidd minus 1375 millimeter (figur 4 i TDOK 2021:0334)",
    "8. att aktuell spårvidd inte överstiger 1455 millimeter",
    "9. att flänsrännor är fria från främmande föremål.",
    "Punkt 1-5 tillhör risktyp O3m. Punkt 6-9 tillhör risktyp Tsäk."
@@ -405,7 +406,7 @@ export const PUNKT = {"21": ["4.1.1"], "22": ["4.1.2.2", "4.1.2.3"], "23": ["4.1
 // ur TDOK:erna (2026-10-22). FIGURER: text i styckena som blir en knapp → [bild, beskrivning].
 // HANVISNINGAR: dokumentnamn i styckena som fäller ut en lista med avsnitt ur dokumentet.
 // BEDOMNING: knappen Bedömningsstöd under avsnittet. Läggs som tredje och fjärde del i AVSNITT.
-const fritt = ['img/tdok/0334-fritt-utrymme.png', 'Figur 2 Fritt utrymme för järnvägshjul (TDOK 2021:0334)'];
+const fritt = ['img/tdok/0334-fritt-utrymme.png', 'Figur 4 Fritt utrymme för järnvägshjul (TDOK 2021:0334)'];
 // Hänvisningar till andra dokument: en lista [rubrik, bild, beskrivning] fälls ut under stycket.
 const T13 = 'TRVINFRA-00013 Banöverbyggnad Spårläge';
 const T17 = 'TRVINFRA-00017 Banöverbyggnad Spårväxel';
@@ -452,8 +453,7 @@ const FIGURER = {
     'tabell 52': ['img/tdok/0311-tabell52-lastkaj.png', 'Tabell 52 Säkerhetsgränser för lastkaj'],
     'Tabell 53': ['img/tdok/0311-tabell53-lastkaj.png', 'Tabell 53 Utvidgning i cirkulär kurva'],
   },
-  // Kapitlet har en enda figur (märkt Figur 2 i TDOK:en), som både punkt 6 och 7 hänvisar till.
-  '0334-4.1.22': { 'figur 1': fritt, 'figur 2': fritt },
+  '0334-4.1.22': { 'figur 4': fritt },
 };
 const TABELL = { '4.1.2.2': 3, '4.1.2.3': 4, '4.1.3.1': 5, '4.1.4': 6, '4.1.5': 7, '4.1.6.2': 8, '4.1.7.2': 9, '4.1.8': 10, '4.1.8.1': 12, '4.1.9': 13, '4.1.9.1': 13, '4.1.10': 14, '4.1.11': 15, '4.2.7': 16, '4.2.8.1': 17, '4.2.8.2': 18, '4.2.8.3': 19, '4.2.9': 20, '4.2.10': 21, '4.3.1': 51, '4.3.2': 54, '4.6': 64, '4.7.1': 65, '4.7.1.1': 66, '4.7.2': 67, '4.7.2.1': 68 };
 const BEDOMNING = {

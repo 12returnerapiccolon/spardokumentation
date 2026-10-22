@@ -274,7 +274,7 @@ export const HJALP = {
         'Kontrakt eller projekt, bandel, datum, beställningsnr och arbetet. Under Objekt anger du var och vad som kontrollerats, med arbete enligt TRVINFRA-00271 bilaga 1. Km från och till skrivs som km + m i två rutor, som i jobbet och svetsrapporten. De hämtas från svetsrapportens svetsar, annars från jobbet. Fyller du bara i från gäller det även som till.',
       ]],
       ['Kontrollpunkter', [
-        'Kryssa i det som är kontrollerat; det blir dina initialer på blanketten. Tryck på texten för att läsa kraven ur TDOK 2021:0311. För plankorsning visas kraven ur TDOK 2021:0334 kap 4.1.22, som 0311 hänvisar till. Figurer och tabeller som kraven hänvisar till, t.ex. Tabell 11 för skarvöppning, är orange och visas när du trycker på dem. Hänvisningar till andra dokument, t.ex. TRVINFRA-00013 Spårläge, har ▾ och fäller ut de avsnitt ur dokumentet som gäller. Knappen 📋 Bedömningsstöd visar TDOK:ens tabell över vad som är Akut, V, M och B för punkten; nyp för att zooma.',
+        'Kryssa i det som är kontrollerat; det blir dina initialer på blanketten. Tryck på texten för att läsa kraven ur TDOK 2021:0311. För plankorsning visas kraven ur TDOK 2021:0334 (version 9.0, kap 4.1.23), som 0311 hänvisar till. Figurer och tabeller som kraven hänvisar till, t.ex. Tabell 11 för skarvöppning, är orange och visas när du trycker på dem. Hänvisningar till andra dokument, t.ex. TRVINFRA-00013 Spårläge, har ▾ och fäller ut de avsnitt ur dokumentet som gäller. Knappen 📋 Bedömningsstöd visar TDOK:ens tabell över vad som är Akut, V, M och B för punkten; nyp för att zooma.',
         'Egenkontroller som hör till jobbets blanketter är förkryssade som bifogade.',
       ]],
       ['Anmärkningar och godkännande', [

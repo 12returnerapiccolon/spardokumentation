@@ -86,7 +86,7 @@ const PUNKTER = [
   ]],
 ];
 // Prioritet på besiktningsanmärkningar enligt TDOK 2021:0299 Säkerhetsbesiktning – genomföra
-// (v 2.0, kap 5.4.2) och TDOK 2021:0303 Underhållsbesiktning – genomföra (v 2.0, kap 5.4.2).
+// (v 3.0, kap 5.4.2; oförändrat mot v 2.0, kontrollerat 2026-10-22) och TDOK 2021:0303 Underhållsbesiktning – genomföra (v 2.0, kap 5.4.2).
 const PRIO = [
   ['A-anm', 'A – akut, åtgärdas omedelbart'],
   ['V-anm', 'V – inom 14 dagar'],

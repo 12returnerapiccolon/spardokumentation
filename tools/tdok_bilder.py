@@ -74,6 +74,9 @@ for t in tab:
     segs=[(p+1, y0-3 if p==p0 else TOP, y1+2 if p==p1 else BOT) for p in range(p0,p1+1)]
     bild(d,segs,f"0311-tabell{t['nr']}-bedomning",syihop=True)
 bild(d,[(37,68,BOT),(38,TOP,find(d,38,'Tabell 15')[3]+2)],'0311-tabell15-bedomning',syihop=True)
-y=find(d334,33,'Bedömningsstöd')[1]-3
-bild(d334,[(33,y,BOT),(34,TOP,BOT),(35,TOP,BOT)],'0334-bedomning-vag',syihop=True)
+# TDOK 2021:0334 version 9.0: kap 4.1.23 på sidan 36, bedömningsstödet på 37–39. Tabellens rubrikrader
+# upprepas överst på varje sida och hoppas över (de slutar vid linjen y 163,1).
+pm=d334[35].get_pixmap(dpi=200, clip=pymupdf.Rect(55,398,450,550)); pm.save(f'{ut}/0334-fritt-utrymme.png'); print('0334-fritt-utrymme')
+y=find(d334,37,'Bedömningsstöd')[1]-3
+bild(d334,[(37,y,453),(38,163.1,443),(39,163.1,408)],'0334-bedomning-vag',syihop=True)
 print('SYDDA',SOM)
