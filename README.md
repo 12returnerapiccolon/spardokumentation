@@ -47,6 +47,7 @@ Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilag
 - Svetsrapporten: SFT räknas som på kapmetoden när före kap, efter kap och rältemp är ifyllda. Visas bara i appen. Rältemp följer inte med från ett tidigare jobb. Rältemp under 0 °C ger en varning före Skapa filer om rutorna för kallt klimat, gasflöde och skyddad svalning inte är ikryssade.
 - Överföringsfilen (Överför jobbet) bär jobbet i dokumentinformationen (`js/jobbfil.js`), så att jobbet kan läsas in igen. De enskilda blanketterna bär det inte, så att de inte innehåller dolda uppgifter från andra blanketter.
 - Svetsrapporten: fler än tio svetsar ger fler blanketter, numrerade 11–20 osv. med sidnummer, t.ex. 2(3).
+- IBT: km från och till skrivs som km + m i två rutor, förval från svetsrapportens svetsar eller jobbet.
 - TMALL 1481 fylls i mallens formulärfält, som plattas till vid export.
 - Säkerhetskopia som zip (`js/backup.js`), okrypterad. Vid inläsning väljer man att behålla den nyare versionen av varje jobb eller att appen frågar per jobb.
 - Lagring i Inställningar: hur mycket appen använder, och borttagning av bilder i avslutade jobb äldre än tre månader.
