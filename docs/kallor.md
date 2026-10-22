@@ -6,7 +6,8 @@ som behöver kontrolleras och skrivas om. Senast genomgången 2026-10-22 (app v1
 
 Kolumnen *Version* är den version som står i dokumentet appen bygger på. *Datum* är dokumentdatum
 eller fastställd/gäller från, när det finns i underlaget. Där det står "–" finns uppgiften inte i
-de filer som använts och bör fyllas i nästa gång dokumentet öppnas.
+de filer som använts (gäller blankettmallarna, som inte har något datum) och bör fyllas i om
+det går att få fram.
 
 ## Så gör man när en ny version kommer
 
@@ -64,14 +65,14 @@ Att tänka på:
 
 | Dokument | Version | Datum | Vad appen hämtar | Beror på i appen |
 |---|---|---|---|---|
-| TRVINFRA-00012 Banöverbyggnad Spårsystem | 5.0 | – | Avsnitt 7.3 och 8.2 (trafikering på arbetsplats) och K-krav som TMALL 0737 hänvisar till; bilaga 2 tabell B2.1 (rälsbrottsöppning → ΔT) för kapmetoden och SFT i svetsrapporten; avsnitt 7.1.1.7 och 8.1.1.15 (ballast) som bilder till IBT | `js/forms/trvinfra0737.js`, `js/forms/k0737.js`, `js/forms/kap.js` (tabellen), `js/forms/svets.js` (SFT via `kap.js`), `js/forms/tdok0311.js`, `img/tdok/00012-*.png` (`tools/regelverk_bilder.py`), `js/hjalp.js` |
-| TRVINFRA-00013 Banöverbyggnad Spårläge | 2.0 | – | Tabell K6.1 (belastad/obelastad spårlägesmätning per typ av arbete); avsnitt 11.3 tabell K11.15, K11.18, K11.19 (UH2-gränser obelastad mätning) i skevningsprotokollet; avsnitt 11 och 13 som bilder till IBT; avsnitt 12.2/12.3 i texterna till TMALL 0737 | `js/jobb.js` (`ARBETEN[].k61`, `SPARLAGE`), `js/app.js` (rad i K6.1 visas vid nytt jobb), `js/forms/skev.js` (gränserna), `js/forms/tdok0311.js`, `js/forms/trvinfra0737.js`, `img/tdok/00013-*.png` (`tools/regelverk_bilder.py`) |
-| TRVINFRA-00014 Banöverbyggnad Stabilitetspåverkande arbete | 5.0 | – | Kategori 1–3 (kap 7), ΔT = Tf − To (kap 8, K38701), stabiliserande åtgärder (kap 9), tabell K11.1–K11.3 tillåtna hastigheter (kap 11) | `js/forms/k0737.js`, `js/forms/trvinfra0737.js`, `img/0737/k11-*.png`, `js/jobb.js` och `js/forms/ibt.js` (kategori 1–3 som typ av arbete), `js/hjalp.js` |
-| TRVINFRA-00015 Banöverbyggnad Oförstörande provning | 2.x (enligt filnamnet, exakt version ej noterad) | – | Kap 7 Åtgärdstider för rälfel som bild till IBT | `js/forms/tdok0311.js`, `img/tdok/00015-7.png` (`tools/regelverk_bilder.py`) |
-| TRVINFRA-00016 Svetsning | 3.0 | – | Regler för kallt klimat (nämns i en varning) | `js/svetsstod.js` (varning vid rältemp under 0 °C), `js/forms/svets.js` (egenkontrollen kallt klimat/gasflöde/svalning) |
-| TRVINFRA-00017 Banöverbyggnad Spårväxel | 5.0 | – | Bilaga 2–4 växelmodeller; bilaga 7 placering av mått; bilaga 8 normalvärden; bilaga 9–11 toleranser (nybyggnad, säkerhet, underhåll); avsnitt 9.3, 10.6 och 10.8 som bilder till IBT | `js/forms/vaxelmodeller.js`, `js/forms/vaxel-normal.js`, `js/forms/vaxel-tolerans.js`, `js/forms/vaxel.js`, `img/placering/*.png`, `img/tdok/00017-*.png` (`tools/regelverk_bilder.py`), `js/hjalp.js` |
-| TRVINFRA-00018 Banöverbyggnad Spårkomponenter | 7.x (enligt filnamnet, exakt version ej noterad) | – | Kap 10 Skyddsräler och kap 11 Stoppbock som bilder till IBT | `js/forms/tdok0311.js`, `img/tdok/00018-*.png` (`tools/regelverk_bilder.py`) |
-| TRVINFRA-00271 Banöverbyggnad Teknisk säkerhetsstyrning | 2.0 | – | Bilaga 1 tabell B1.1: typ av arbete och vem som får ibruktaga (spårsvetsare, bankontrollant, säkerhetsbesiktningsman) | `js/jobb.js` (`ARBETEN`, `BEHORIGHET`), `js/forms/ibt.js` (arbete under Objekt), `js/app.js` (nytt jobb), `js/hjalp.js` |
+| TRVINFRA-00012 Banöverbyggnad Spårsystem | 5.0 | publicerad 2025-07-01 | Avsnitt 7.3 och 8.2 (trafikering på arbetsplats) och K-krav som TMALL 0737 hänvisar till; bilaga 2 tabell B2.1 (rälsbrottsöppning → ΔT) för kapmetoden och SFT i svetsrapporten; avsnitt 7.1.1.7 och 8.1.1.15 (ballast) som bilder till IBT | `js/forms/trvinfra0737.js`, `js/forms/k0737.js`, `js/forms/kap.js` (tabellen), `js/forms/svets.js` (SFT via `kap.js`), `js/forms/tdok0311.js`, `img/tdok/00012-*.png` (`tools/regelverk_bilder.py`), `js/hjalp.js` |
+| TRVINFRA-00013 Banöverbyggnad Spårläge | 2.0 | publicerad 2021-10-11 | Tabell K6.1 (belastad/obelastad spårlägesmätning per typ av arbete); avsnitt 11.3 tabell K11.15, K11.18, K11.19 (UH2-gränser obelastad mätning) i skevningsprotokollet; avsnitt 11 och 13 som bilder till IBT; avsnitt 12.2/12.3 i texterna till TMALL 0737 | `js/jobb.js` (`ARBETEN[].k61`, `SPARLAGE`), `js/app.js` (rad i K6.1 visas vid nytt jobb), `js/forms/skev.js` (gränserna), `js/forms/tdok0311.js`, `js/forms/trvinfra0737.js`, `img/tdok/00013-*.png` (`tools/regelverk_bilder.py`) |
+| TRVINFRA-00014 Banöverbyggnad Stabilitetspåverkande arbete | 5.0 | publicerad 2023-07-03 | Kategori 1–3 (kap 7), ΔT = Tf − To (kap 8, K38701), stabiliserande åtgärder (kap 9), tabell K11.1–K11.3 tillåtna hastigheter (kap 11) | `js/forms/k0737.js`, `js/forms/trvinfra0737.js`, `img/0737/k11-*.png`, `js/jobb.js` och `js/forms/ibt.js` (kategori 1–3 som typ av arbete), `js/hjalp.js` |
+| TRVINFRA-00015 Banöverbyggnad Oförstörande provning | 2.0 | publicerad 2026-01-01 | Kap 7 Åtgärdstider för rälfel som bild till IBT | `js/forms/tdok0311.js`, `img/tdok/00015-7.png` (`tools/regelverk_bilder.py`) |
+| TRVINFRA-00016 Svetsning | 3.0 | publicerad 2025-01-01 | Regler för kallt klimat (nämns i en varning) | `js/svetsstod.js` (varning vid rältemp under 0 °C), `js/forms/svets.js` (egenkontrollen kallt klimat/gasflöde/svalning) |
+| TRVINFRA-00017 Banöverbyggnad Spårväxel | 5.0 | publicerad 2024-01-01 | Bilaga 2–4 växelmodeller; bilaga 7 placering av mått; bilaga 8 normalvärden; bilaga 9–11 toleranser (nybyggnad, säkerhet, underhåll); avsnitt 9.3, 10.6 och 10.8 som bilder till IBT | `js/forms/vaxelmodeller.js`, `js/forms/vaxel-normal.js`, `js/forms/vaxel-tolerans.js`, `js/forms/vaxel.js`, `img/placering/*.png`, `img/tdok/00017-*.png` (`tools/regelverk_bilder.py`), `js/hjalp.js` |
+| TRVINFRA-00018 Banöverbyggnad Spårkomponenter | 7.0 | publicerad 2025-11-01 | Kap 10 Skyddsräler och kap 11 Stoppbock som bilder till IBT | `js/forms/tdok0311.js`, `img/tdok/00018-*.png` (`tools/regelverk_bilder.py`) |
+| TRVINFRA-00271 Banöverbyggnad Teknisk säkerhetsstyrning | 2.0 | publicerad 2024-05-01 | Bilaga 1 tabell B1.1: typ av arbete och vem som får ibruktaga (spårsvetsare, bankontrollant, säkerhetsbesiktningsman) | `js/jobb.js` (`ARBETEN`, `BEHORIGHET`), `js/forms/ibt.js` (arbete under Objekt), `js/app.js` (nytt jobb), `js/hjalp.js` |
 
 ### TDOK
 
@@ -109,4 +110,5 @@ men hänvisningen kan bli inaktuell.
 Dessa har lästs in under arbetet men inget i appen bygger på dem: TDOK 2014:0587 Svetsarprövning
 (v3.0, 2024-04-29), TDOK 2019:0174 Säkerhetsbesiktning – periodicitet (v3.0, 2022-11-01),
 TDOK 2021:0309 Säkerhetsbesiktning – behörighetshantering (v4.0, 2024-11-01) och TDOK 2021:0479
-Säkerhetsbesiktning – Byggnadsverk Tunnel (2026-03-20).
+Säkerhetsbesiktning – Byggnadsverk Tunnel (2026-03-20), TRVINFRA-00019 (v1.0.0, 2020-04-01) och
+den äldre TRVINFRA-00012 v3.0 (2021-10-11), som ersatts av v5.0.
