@@ -172,6 +172,9 @@ export const HJALP = {
       ['Blankettmallar', [
         'Visar vilka mallar som finns i telefonen och läser in nya.',
       ]],
+      ['Svetsstöd', [
+        'Visa svetsstöd slår på eller av knapparna Lathund och Börja svetsa under svetsar med WPS TDOK 2014:0664 i svetsrapporten. Påslaget från början.',
+      ]],
       ['Säkerhetskopia', [
         'Jobben finns bara i telefonen. Spara säkerhetskopia gör en zip-fil med alla jobb, bilder, mallar och inställningar som du sparar i Filer, t.ex. i iCloud Drive eller OneDrive.',
         'Kopian är inte krypterad. Den som får tag i zip-filen kan öppna den och läsa alla jobb, dina uppgifter och bilderna. Spara den bara där andra inte kommer åt den.',
@@ -232,6 +235,13 @@ export const HJALP = {
         'Fyll i före och efter kap, rältemperatur, rälsmodell, material, typ av arbete, svetsmetod, tillsatsmaterial, batch och WPS.',
         'En blankett har plats för 10 svetsar. Fler svetsar ger fler blanketter när du skapar filerna: på den andra står svetsarna 11–20, och nere till höger står t.ex. 2(3).',
         'Ger före och efter kap en öppning utanför tabellen visar SFT Utanför, och appen varnar innan filerna skapas. Kontrollera då måtten.',
+      ]],
+      ['Svetsstöd (SkV-Elite)', [
+        'När WPS är TDOK 2014:0664 finns knapparna Lathund och Börja svetsa under svetsen. De går att stänga av under Svetsstöd i Inställningar.',
+        'Lathund: välj rälsprofil, stålsort, spalt (L25 eller L50) och rältemp. Rälsmodell, material, svetsmetod och rältemp hämtas från svetsen. Lathunden visar svetsportionen enligt Tabell 1 (lägre hårdhet vid olika stålsorter, större profil vid övergångar) och kan sätta Tillsatsmaterial. Under den finns varningar, faktabladet, vad som gäller efter svetsningen och en bockningslista att gå igenom före.',
+        'Börja svetsa: justera först tiderna för förvärmning, formhållarplåtar och avskrotning om det behövs. De sparas till nästa svets och Återställ ger faktabladets tider. Starta förvärmningen när lågorna är fullt utbildade. Efter 30 s påminner appen om att kontrollera lågan.',
+        'Tryck Tappning när degeln tappar. Den stora klockan räknar ner till formhållarplåtarna och sedan till avskrotningen, båda räknat från tappningen. De små klockorna visar tid sedan förra momentet och sedan tappningen. Vid varje moment piper telefonen och skärmen blinkar orange. Ljudet hörs inte om telefonen står på ljudlöst. Skärmen hålls tänd medan klockorna går.',
+        'Tiden för tappningen sparas, och tiden sedan tappningen står under svetsen tills jobbet är Avslutat. Den kommer inte med på svetsrapporten.',
       ]],
       ['Egenkontroll och kommentarer', [
         'Kryssa i det som är utfört; det blir X på blanketten. Avvikelser skriver du sist.',

@@ -20,6 +20,7 @@ import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
 import MALLVERSIONER from './mallversioner.js';
 import { HJALP, blankettHjalp } from './hjalp.js';
 import { klassificera } from './ralsfel.js';
+import { svetsstodRad } from './svetsstod.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
 const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
@@ -1251,6 +1252,9 @@ function renderItem(item, data, onChange, job) {
       wrap.refreshMatrix = refresh;
       return wrap;
     }
+    // Lathund och Börja svetsa under en svets med WPS TDOK 2014:0664 (2026-10-22).
+    case 'svetsstod':
+      return svetsstodRad(h, { row: data, onChange, job, pa: svetsstodPa, avslutat: jobStatus(job) === 'Avslutat' });
     case 'calc': {
       // Uträknat värde som inte går att skriva i, t.ex. SFT. Räknas om när något ändras.
       const out = h('output', { 'data-calc': '' }, item.value(data, job) || '–');
@@ -1393,7 +1397,7 @@ function renderItem(item, data, onChange, job) {
       return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, label),
         info,
         // noEmpty: inget tomt val; utan värde visas "– välj –", som inte går att välja tillbaka.
-        h('select', { onchange: e => onChange(item.key, e.target.value) },
+        h('select', { 'data-key': item.key, onchange: e => onChange(item.key, e.target.value) },
           item.noEmpty && !data[item.key] ? h('option', { value: '', selected: true, disabled: true }, '– välj –') : null,
           (item.noEmpty ? item.options : ['', ...item.options]).map(opt => {
             const [value, text] = Array.isArray(opt) ? opt : [opt, opt];
@@ -1481,6 +1485,8 @@ function rowsEditor(item, data, onChange, job) {
 
 // Senast använda värden för fält med remember, se formView.
 let remembered = {};
+// Svetsstöd på eller av (Inställningar), läses i formView.
+let svetsstodPa = true;
 
 // Namn som skrivits i fält med names sparas som förslag, de senaste först.
 function kommIhagNamn(value) {
@@ -1698,6 +1704,7 @@ async function formView(id, key) {
   const save = debounce(async () => { if (job !== lagrat) return; job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   // Fält med remember får förra jobbets värde, t.ex. enhet och svetsansvarig.
   remembered = await db.getSetting('remember', {});
+  svetsstodPa = await db.getSetting('svetsstod', true);
   const remember = new Set();
   const walk = items => items.forEach(i => { if (i.remember) { remember.add(i.key); i.form = form.key; } if (i.items) walk(i.items); });
   form.sections.forEach(s => walk(s.items));
@@ -1823,6 +1830,8 @@ async function settingsView() {
     ]),
     h('h2', {}, 'Blankettmallar'),
     h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
+    h('h2', {}, 'Svetsstöd'),
+    svetsstodKort(),
     h('h2', {}, 'Säkerhetskopia'),
     kopiaKort(),
     h('h2', {}, 'Lagring'),
@@ -1832,6 +1841,17 @@ async function settingsView() {
     h('p', { class: 'muted' }, 'Allt du fyller i och alla mallar sparas bara i den här telefonen. Inget skickas till någon server, utom när du använder Min position eller kartan: då skickas positionen eller kartutsnittet till OpenStreetMap för att hitta platsen. Filerna lämnar telefonen först när du delar dem.'),
     version,
   );
+}
+
+// Svetsstöd på eller av (2026-10-22): Lathund och Börja svetsa under svetsar med WPS TDOK 2014:0664.
+function svetsstodKort() {
+  const ruta = h('div', { class: 'card' });
+  db.getSetting('svetsstod', true).then(pa => ruta.replaceChildren(
+    h('label', { class: 'check' },
+      h('input', { type: 'checkbox', checked: pa, onchange: e => db.setSetting('svetsstod', e.target.checked) }),
+      h('span', {}, 'Visa svetsstöd')),
+    h('p', { class: 'muted note' }, 'Knapparna Lathund och Börja svetsa under varje svets i svetsrapporten när WPS är TDOK 2014:0664 (SkV-Elite). Lathunden visar portion, faktablad och varningar, och Börja svetsa har klockor för förvärmning, formhållarplåtar och avskrotning.')));
+  return ruta;
 }
 
 // Hur mycket appen använder av telefonens lagring, och rensning av bilder i gamla avslutade

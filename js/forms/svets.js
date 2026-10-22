@@ -50,7 +50,7 @@ const jobKmm = job => (job.vxnr || !job.km ? '' : kmm(job.km, job.m));
 const lage = (row, job) => (row.lagekm ? (row.lagem ? kmm(row.lagekm, row.lagem) : row.lagekm) : '') || row.nr || row.km || jobKmm(job);
 
 // Rader som läggs till kopierar föregående svets, utom det som skiljer mellan svetsar.
-const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter'];
+const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter', 'tappning'];
 // Rältemp följer bara med inom jobbet, inte från ett tidigare jobb (2026-10-21).
 const INTE_FRAN_ANNAT_JOBB = ['temp'];
 
@@ -125,6 +125,7 @@ export default {
           { type: 'select', key: 'tillsats', label: 'Tillsatsmaterial', options: TILLSATS, half: true },
           { type: 'text', key: 'batch', label: 'Batch nr', half: true },
           { type: 'select', key: 'wps', label: 'WPS nr', options: WPS, half: true },
+          { type: 'svetsstod' },
         ],
         newRow(previous, job, franAnnatJobb) {
           const bort = franAnnatJobb ? [...KOPIERAS_INTE, ...INTE_FRAN_ANNAT_JOBB] : KOPIERAS_INTE;

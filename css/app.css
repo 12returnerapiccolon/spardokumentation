@@ -550,3 +550,26 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 .guide-spar { font-size: 14px; margin: 0 0 8px; }
 .guide-nr { font-size: 44px; font-weight: 700; color: var(--accent); margin: 8px 0 0; }
 .guide-namn { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+/* Svetsstöd, se js/svetsstod.js. */
+.svetsstod { display: flex; gap: 8px; margin-top: 8px; }
+.svetsstod .button { flex: 1; }
+.tappning { margin: 6px 0 0; }
+.guide-namn .rad { display: block; }
+.guide-body .row { display: flex; gap: 8px; }
+.guide-body .row .field { flex: 1; min-width: 0; }
+.guide-body .varningar { margin: 8px 0; }
+.guide-body ul { padding-left: 1.2em; }
+.guide-body li { margin-bottom: 4px; }
+.tidrad { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.tidrad span { flex: 1; }
+.tidrad output { min-width: 3.2em; text-align: center; font-size: 22px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.guide-body .tidrad .button { display: inline-block; width: 52px; margin: 0; text-align: center; font-size: 22px; }
+.svetsa .fasrubrik { font-size: 22px; font-weight: 600; text-align: center; margin: 16px 0 0; }
+.storklocka { font-size: min(30vw, 30vh); line-height: 1; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; margin: 8px 0; }
+.storklocka.over { color: var(--accent); }
+.svetsa .fasbesked { text-align: center; font-size: 18px; min-height: 3em; }
+.smaklockor { display: flex; justify-content: center; gap: 24px; margin: 12px 0 20px; text-align: center; }
+.smaklockor span { display: block; font-size: 13px; color: var(--muted); }
+.smaklockor strong { font-size: 28px; font-variant-numeric: tabular-nums; }
+@keyframes blink { 0%, 60% { background: var(--accent); } 100% { background: var(--bg); } }
+.overlay.guide.blink { animation: blink 1.2s ease-out 2; }
