@@ -1,5 +1,6 @@
 // Kraven i TDOK 2021:0311 Säkerhetsbesiktning – Banöverbyggnad, version 7.0 (gäller från 2026-01-01),
-// för kontrollpunkterna i TMALL 0824. Bara kraven ("Kontrollera att …"), inte bedömningsstöden.
+// för kontrollpunkterna i TMALL 0824. Plankorsning hänvisar till TDOK 2021:0334 Säkerhetsbesiktning –
+// Signalsystem, version 7.0, kap 4.1.22, som ligger här som 0334-4.1.22 (2026-10-22). Bara kraven ("Kontrollera att …"), inte bedömningsstöden.
 // Avsnitt: [rubrik, stycken]. PUNKT: rad i mallen → avsnitt.
 export const AVSNITT = {
  "4.1.1": [
@@ -305,6 +306,22 @@ export const AVSNITT = {
    "Se TDOK 2021:0334 Säkerhetsbesiktning - Signalsystem kapitel 4.1.22 Väg-/gångbanan."
   ]
  ],
+ "0334-4.1.22": [
+  "TDOK 2021:0334 4.1.22 Väg-/gångbanan",
+  [
+   "Ur TDOK 2021:0334 Säkerhetsbesiktning – Signalsystem, version 7.0. Följande ska kontrolleras av säkerhetsbesiktningsman bana:",
+   "1. att vägbeläggning inte når högre än 30 millimeter över räls överkant inom besiktningsklass B4 - B5 och inte högre än 50 millimeter inom de andra besiktningsklasserna. Vägbeläggningen får dock inte, frånsett utrymmet för järnvägshjulet, vara lägre än RÖK oavsett besiktningsklass",
+   "2. att plattor inte glidit isär, är trasiga eller saknas",
+   "3. att plankor inte är ruttna, trasiga, ligger löst eller saknas",
+   "4. att nedtrampningsskydd är intakt",
+   "5. att beläggningen vid plankorsningen är intakt",
+   "6. att vägbeläggningen inte inkräktar på utrymmet för järnvägshjulet (figur 1 i TDOK 2021:0334)",
+   "7. att respektive flänsrännas bredd f är max 80 och minst aktuell spårvidd minus 1375 millimeter (figur 2 i TDOK 2021:0334)",
+   "8. att aktuell spårvidd inte överstiger 1455 millimeter",
+   "9. att flänsrännor är fria från främmande föremål.",
+   "Punkt 1-5 tillhör risktyp O3m. Punkt 6-9 tillhör risktyp Tsäk."
+  ]
+ ],
  "4.4.1": [
   "4.4.1 Kolvbromsar",
   [
@@ -382,4 +399,4 @@ export const AVSNITT = {
  ]
 };
 
-export const PUNKT = {"21": ["4.1.1"], "22": ["4.1.2.2", "4.1.2.3"], "23": ["4.1.3.1", "4.1.3.2"], "24": ["4.1.4"], "25": ["4.1.5"], "26": ["4.1.6.2"], "27": ["4.1.7.2", "4.1.7.3", "4.1.7.4", "4.1.8"], "28": ["4.1.8.1"], "29": ["4.1.9"], "30": ["4.1.9.1"], "31": ["4.1.10"], "32": ["4.1.11"], "34": ["4.2.1", "4.1.1"], "35": ["4.2.1"], "36": ["4.2.2.2", "4.1.2.2"], "37": ["4.2.3"], "38": ["4.2.4"], "39": ["4.2.5", "4.1.5", "4.1.8"], "40": ["4.2.6", "4.1.11"], "41": ["4.2.7"], "42": ["4.2.8.1"], "43": ["4.2.8.2"], "44": ["4.2.8.3"], "45": ["4.2.9"], "46": ["4.2.10"], "48": ["4.3.1", "4.3.2"], "49": ["4.9.1"], "50": ["4.4.1"], "51": ["4.4.2"], "52": ["4.4.3"], "53": ["4.6"], "54": ["4.7.1", "4.7.1.1", "4.7.2", "4.7.2.1"]};
+export const PUNKT = {"21": ["4.1.1"], "22": ["4.1.2.2", "4.1.2.3"], "23": ["4.1.3.1", "4.1.3.2"], "24": ["4.1.4"], "25": ["4.1.5"], "26": ["4.1.6.2"], "27": ["4.1.7.2", "4.1.7.3", "4.1.7.4", "4.1.8"], "28": ["4.1.8.1"], "29": ["4.1.9"], "30": ["4.1.9.1"], "31": ["4.1.10"], "32": ["4.1.11"], "34": ["4.2.1", "4.1.1"], "35": ["4.2.1"], "36": ["4.2.2.2", "4.1.2.2"], "37": ["4.2.3"], "38": ["4.2.4"], "39": ["4.2.5", "4.1.5", "4.1.8"], "40": ["4.2.6", "4.1.11"], "41": ["4.2.7"], "42": ["4.2.8.1"], "43": ["4.2.8.2"], "44": ["4.2.8.3"], "45": ["4.2.9"], "46": ["4.2.10"], "48": ["4.3.1", "4.3.2"], "49": ["4.9.1", "0334-4.1.22"], "50": ["4.4.1"], "51": ["4.4.2"], "52": ["4.4.3"], "53": ["4.6"], "54": ["4.7.1", "4.7.1.1", "4.7.2", "4.7.2.1"]};
