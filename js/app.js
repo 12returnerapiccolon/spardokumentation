@@ -1158,7 +1158,7 @@ function renderItem(item, data, onChange, job) {
     case 'shared':
       return h('div', { class: 'field shared' }, h('span', {}, item.label),
         h('output', {}, item.value ? item.value(job) || '–' : item.from === 'datum'
-          ? (blankettDatum(job) ? blankettDatum(job) + (job.natt ? ' (nattarbete)' : '') : '–')
+          ? blankettDatum(job) || '–'
           : job[item.from] || '–'));
     case 'info': {
       // Text ur regelverket som fälls ut när man trycker på rubriken. summary: [vad, värde]
