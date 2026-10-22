@@ -50,7 +50,7 @@ const jobKmm = job => (job.vxnr || !job.km ? '' : kmm(job.km, job.m));
 const lage = (row, job) => (row.lagekm ? (row.lagem ? kmm(row.lagekm, row.lagem) : row.lagekm) : '') || row.nr || row.km || jobKmm(job);
 
 // Rader som läggs till kopierar föregående svets, utom det som skiljer mellan svetsar.
-const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter', 'tappning', 'mattTid', 'uppmatt'];
+const KOPIERAS_INTE = ['dag', 'plats', 'km', 'lagekm', 'lagem', 'nr', 'fore', 'efter', 'tappning', 'mattTid', 'uppmatt', 'kommentar'];
 // Rältemp följer bara med inom jobbet, inte från ett tidigare jobb (2026-10-21).
 const INTE_FRAN_ANNAT_JOBB = ['temp'];
 
@@ -125,6 +125,9 @@ export default {
           { type: 'select', key: 'tillsats', label: 'Tillsatsmaterial', options: TILLSATS, half: true },
           { type: 'text', key: 'batch', label: 'Batch nr', half: true },
           { type: 'select', key: 'wps', label: 'WPS nr', options: WPS, half: true },
+          // Kommentar för just den här svetsen. På blanketten skrivs den under den gemensamma
+          // rutan Avvikelser eller kommentarer, som "Svets 1: …" (2026-10-22).
+          { type: 'textarea', key: 'kommentar', label: 'Avvikelser eller kommentarer för svetsen', fallbar: true },
           { type: 'svetsstod' },
         ],
         newRow(previous, job, franAnnatJobb) {
@@ -170,6 +173,8 @@ export default {
   rimlighet: (job, data) => (data.svetsar || []).flatMap((row, i) => (sft(row) === 'Utanför' ? [`svets ${i + 1}: före och efter kap ger en öppning utanför tabellen, kontrollera måtten.`] : [])),
 
   toValues(job, data, { sida = 0 } = {}) {
+    const kommentarer = (d, s) => [(d.kommentar || '').trim(), ...(d.svetsar || []).map((row, i) => [i, (row.kommentar || '').trim()])
+      .filter(([i, t]) => t && Math.floor(i / RADER) === s).map(([i, t]) => `Svets ${i + 1}: ${t}`)].filter(Boolean).join('\n');
     const datum = blankettDatum(job);
     const v = {
       // Det som skrivits i rapporten går före Inställningar.
@@ -182,7 +187,7 @@ export default {
       P4: data.bessy || '',
       R26: data.ansvarig || job.svetsansvarig || '',
       R27: data.telefon || job.svetsansvarig_tel || '',
-      O29: data.kommentar || '',
+      O29: kommentarer(data, sida),
     };
     const auto = { dag: dag(job), plats: plats(job) };
     (data.svetsar || []).slice(sida * RADER, (sida + 1) * RADER).forEach((row, i) => {

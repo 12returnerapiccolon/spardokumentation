@@ -247,7 +247,7 @@ export const HJALP = {
         'Tiden för tappningen sparas, och tiden sedan tappningen står under svetsen tills jobbet är Avslutat. Den kommer inte med på svetsrapporten.',
       ]],
       ['Egenkontroll och kommentarer', [
-        'Kryssa i det som är utfört; det blir X på blanketten. Avvikelser skriver du sist.',
+        'Kryssa i det som är utfört; det blir X på blanketten. Avvikelser skriver du sist. Varje svets har också en egen ruta, Avvikelser eller kommentarer för svetsen, som är minimerad tills du trycker på den. På blanketten kommer den gemensamma texten först och sedan svetsarnas, t.ex. "Svets 1: …". Blir texten lång skrivs den mindre så att den får plats.',
         'Har någon svets rältemp under 0 °C varnar appen innan filerna skapas om Svetsad i kallt klimat, Säkerställt gasflödet och Skyddad svalning av svetsobjekt inte alla är ikryssade.',
       ]],
       BLANKETT_ALLMANT,

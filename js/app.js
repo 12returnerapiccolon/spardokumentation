@@ -1334,9 +1334,15 @@ function renderItem(item, data, onChange, job) {
       }
       return field;
     }
-    case 'textarea':
-      return h('label', { class: 'field' }, h('span', {}, item.label),
-        h('textarea', { rows: 3, oninput: e => onChange(item.key, e.target.value) }, data[item.key] || ''));
+    case 'textarea': {
+      const ruta = h('label', { class: 'field' }, item.fallbar ? null : h('span', {}, item.label),
+        h('textarea', { rows: 3, oninput: e => { onChange(item.key, e.target.value); visa(); } }, data[item.key] || ''));
+      // fallbar: minimerad från start, rubriken visar om något är skrivet (2026-10-22).
+      const rubrik = h('summary', {});
+      const visa = () => { rubrik.textContent = item.label + ((data[item.key] || '').trim() ? ' ✎' : ''); };
+      visa();
+      return item.fallbar ? h('details', { class: 'fallbar-text' }, rubrik, ruta) : ruta;
+    }
     case 'check': {
       // defaultValue: ikryssad tills man ändrar den (värde eller funktion av jobbet).
       // isChecked: tolkar sparade värden från äldre versioner av blanketten. sub: hör till punkten ovanför.

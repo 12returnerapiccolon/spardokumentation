@@ -607,3 +607,7 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 .bedomning .bed-b { border-color: #9e9e9e; }
 .bedomning .bed-niva.tom { opacity: .6; }
 .bedomning .button.liten { width: auto; padding: 6px 12px; font-size: 14px; margin-top: 6px; min-height: 0; }
+/* Fällbar textruta, t.ex. kommentar per svets (2026-10-22). */
+.fallbar-text { margin: 8px 0; }
+.fallbar-text summary { cursor: pointer; color: var(--accent); font-weight: 600; padding: 6px 0; }
+.fallbar-text .field { margin-top: 4px; }
