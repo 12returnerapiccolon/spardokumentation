@@ -4,7 +4,7 @@ import { fillPdf, pdfInfo } from './fill-pdf.js';
 import { fillOverlay, isPdf } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
-import svets from './forms/svets.js';
+import svets, { svets0435, svetsmall } from './forms/svets.js';
 import heta from './forms/heta.js';
 import ibt from './forms/ibt.js';
 import k0737 from './forms/k0737.js';
@@ -24,10 +24,13 @@ import { visaBedomning } from './bedomning.js';
 import { svetsstodRad } from './svetsstod.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
-const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
+const FORMS = [heta, svets, svets0435, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
+// Mallen som blanketten fylls i på: svetsrapporten på TMALL 0435 i stället för DOK 2630 när
+// den är vald i Inställningar (2026-10-22). Uppgifterna är desamma (form.dataKey).
+const mallForm = form => (form?.key === 'svets' && svetsmall.val === '0435' ? svets0435 : form);
 function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
@@ -292,7 +295,7 @@ async function komIgangView() {
   setTitle('Kom igång', '#/');
   const profile = await db.getSetting('profile', {});
   const templates = await db.getAll('templates');
-  const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
+  const missing = FORMS.filter(f => !f.valfri && !templates.some(t => t.key === f.key));
   const jobs = await db.getAll('jobs');
   const senasteKopia = await db.getSetting('senasteKopia', null);
   // Öppnad från hemskärmen eller som installerad app.
@@ -360,7 +363,7 @@ async function homeView() {
   setTitle('Svetsjobb');
   const jobs = (await db.getAll('jobs')).sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
   const templates = await db.getAll('templates');
-  const missing = FORMS.filter(f => !templates.some(t => t.key === f.key));
+  const missing = FORMS.filter(f => !f.valfri && !templates.some(t => t.key === f.key));
   const gamla = (await Promise.all(templates.map(async t => (await gammalMall(t)) && t))).filter(Boolean);
   const senasteKopia = await db.getSetting('senasteKopia', null);
   const kopiaGammal = jobs.length && (!senasteKopia || Date.now() - new Date(senasteKopia) > 7 * 864e5);
@@ -672,7 +675,7 @@ async function jobView(id) {
     return h('li', { class: 'med-las' }, h('a', { href: `#/jobb/${id}/${k}` },
       // Samma korta namn som sidtiteln (2026-10-20).
       h('span', { class: 'main' }, form.kort || form.title),
-      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${form.code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], jobbFor(job, k)))),
+      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${mallForm(form).code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], jobbFor(job, k)))),
       // Hänglås: en låst blankett går att läsa men inte ändra (2026-10-21).
       lasKnapp(last, () => {
         if (last && !bekraftaUpplasning(form.kort || form.title)) return;
@@ -976,7 +979,7 @@ async function varningar(job) {
   }
   for (const key of job.docs) {
     const form = docForm(jobbFor(job, key), key);
-    const t = form && await db.get('templates', form.key);
+    const t = form && await db.get('templates', mallForm(form).key);
     if (t && await gammalMall(t)) lista.push(`${form.title}: mallen är en gammal version. Läs in den senaste under Inställningar > Blankettmallar.`);
   }
   return lista;
@@ -1082,7 +1085,7 @@ async function skapaFiler(job, { bilder = true } = {}) {
   const problems = [];
   for (const key of job.docs) {
     const j = jobbFor(job, key);
-    const form = docForm(j, key);
+    const form = mallForm(docForm(j, key));
     if (!form) { problems.push('Välj växeltyp för växelbesiktningsrapporten.'); continue; }
     const tpl = await db.get('templates', form.key);
     if (!tpl || (form.format === 'overlay' && !isPdf(tpl.data))) {
@@ -1090,7 +1093,7 @@ async function skapaFiler(job, { bilder = true } = {}) {
     }
     try {
       // form.sidor: fler ifyllda blanketter när en inte räcker, t.ex. fler än 10 svetsar.
-      const data = job.forms[form.key] || {};
+      const data = job.forms[form.dataKey || form.key] || {};
       const antal = form.sidor ? form.sidor(j, data) : 1;
       for (let sida = 0; sida < antal; sida++) {
         const values = form.toValues(j, data, { diff, sida });
@@ -1431,7 +1434,7 @@ function renderItem(item, data, onChange, job) {
       const label = item.info
         ? h('button', { type: 'button', class: 'link inline', onclick: e => { e.preventDefault(); info.hidden = !info.hidden; } }, `${item.label} ⓘ`)
         : item.label;
-      return h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, label),
+      const falt = h('label', { class: 'field' + (item.half ? ' half' : '') }, h('span', {}, label),
         info,
         // noEmpty: inget tomt val; utan värde visas "– välj –", som inte går att välja tillbaka.
         h('select', { 'data-key': item.key, onchange: e => onChange(item.key, e.target.value) },
@@ -1440,6 +1443,13 @@ function renderItem(item, data, onChange, job) {
             const [value, text] = Array.isArray(opt) ? opt : [opt, opt];
             return h('option', { value, selected: (data[item.key] || '') === value }, text || '–');
           })));
+      // hideIf som för textrutor (2026-10-22).
+      if (item.hideIf) {
+        falt.dataset.hideif = '';
+        falt.refreshHide = () => { falt.hidden = !!item.hideIf(job, data); };
+        falt.refreshHide();
+      }
+      return falt;
     }
     case 'group': {
       const body = h('div', { class: 'group-body' }, renderItems(item.items, data, onChange, job));
@@ -1852,8 +1862,8 @@ async function templatesView() {
       // En gammal Word-mall räknas inte när blanketten fylls som PDF.
       const t = found && (form.format !== 'overlay' || isPdf(found.data)) ? found : null;
       return h('li', {}, h('div', { class: 'item' },
-        h('span', { class: 'main' }, `${!t ? '○' : gamla.has(t.key) ? '⚠' : '✓'} ${form.title}`),
-        h('span', { class: 'sub' }, !t ? `Saknas: ${form.templateHint}`
+        h('span', { class: 'main' }, `${!t ? '○' : gamla.has(t.key) ? '⚠' : '✓'} ${form.valfri ? `${form.title} ${form.code} (valfri)` : form.title}`),
+        h('span', { class: 'sub' }, !t ? `${form.valfri ? 'Inte inläst' : 'Saknas'}: ${form.templateHint}`
           : gamla.has(t.key) ? `Gammal version: ${t.name}. Läs in den senaste.`
           : `Inläst: ${t.name}${MALLVERSIONER[t.key] ? ` · version ${MALLVERSIONER[t.key].datum}` : ''}`)));
     })),
@@ -1892,6 +1902,8 @@ async function settingsView() {
     ]),
     h('h2', {}, 'Blankettmallar'),
     h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
+    h('h2', {}, 'Svetsrapport'),
+    svetsmallKort(),
     h('h2', {}, 'Svetsstöd'),
     svetsstodKort(),
     h('h2', {}, 'Säkerhetskopia'),
@@ -1906,6 +1918,25 @@ async function settingsView() {
 }
 
 // Svetsstöd på eller av (2026-10-22): Lathund och Börja svetsa under svetsar med SkV-Elite. Av från början.
+// Mall för svetsrapporten (2026-10-22): DOK 2630 eller Trafikverkets TMALL 0435, när den är
+// inläst under Blankettmallar.
+function svetsmallKort() {
+  const ruta = h('div', { class: 'card' });
+  db.get('templates', 'svets0435').then(t => {
+    const val = (v, text) => h('label', { class: 'check' },
+      h('input', { type: 'radio', name: 'svetsmall', checked: svetsmall.val === v, disabled: v === '0435' && !t,
+        onchange: () => { svetsmall.val = v; db.setSetting('svetsmall', v); } }),
+      h('span', {}, text));
+    ruta.replaceChildren(
+      val('2630', 'DOK 2630 Svetsrapport'),
+      val('0435', 'TMALL 0435 Svetsrapport (Trafikverket)'),
+      h('p', { class: 'muted note' }, t
+        ? 'Mallen som svetsrapporten fylls i på. Uppgifterna är desamma; med TMALL 0435 kan du också välja en avvikelse ur mallens lista under Avvikelser och kommentarer.'
+        : 'TMALL 0435 går att välja när den är inläst under Blankettmallar.'));
+  });
+  return ruta;
+}
+
 function svetsstodKort() {
   const ruta = h('div', { class: 'card' });
   db.getSetting('svetsstod', false).then(pa => ruta.replaceChildren(
@@ -2018,6 +2049,7 @@ async function delaFiler(files, area) {
 
 async function route() {
   window.onpagehide = null;
+  svetsmall.val = await db.getSetting('svetsmall', '2630');
   const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   document.querySelector('.hjalp-overlay')?.remove();
   hjalpNyckel = parts[0] === 'jobb' ? 'jobb' : HJALP[parts[0]] ? parts[0] : 'start';

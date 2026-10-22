@@ -173,6 +173,9 @@ export const HJALP = {
       ['Blankettmallar', [
         'Visar vilka mallar som finns i telefonen och läser in nya.',
       ]],
+      ['Svetsrapport', [
+        'Välj om svetsrapporten ska fyllas i på DOK 2630 eller Trafikverkets TMALL 0435. TMALL 0435 går att välja när den är inläst under Blankettmallar. Uppgifterna är desamma, så du kan byta när som helst. Med TMALL 0435 finns också en rullista med mallens avvikelser (t.ex. Solkurva) under Avvikelser och kommentarer.',
+      ]],
       ['Svetsstöd', [
         'Visa svetsstöd slår på eller av knapparna Lathund och Börja svetsa under svetsar med svetsmetod SkV Elite L25 eller SkV L50 (och WPS TDOK 2014:0664 eller ingen WPS vald) i svetsrapporten. Avstängt från början; slå på det här om du svetsar SkV-Elite.',
       ]],
@@ -225,7 +228,7 @@ export const HJALP = {
 
   svets: {
     titel: 'Svetsrapport',
-    intro: 'Rapporten över dagens svetsar (DOK 2630). En rad per svets.',
+    intro: 'Rapporten över dagens svetsar (DOK 2630, eller Trafikverkets TMALL 0435 om den är vald i Inställningar). En rad per svets.',
     delar: [
       ['Rapportuppgifter', [
         'Företag/enhet, svetsansvarig och ditt namn och svets-ID hämtas från Inställningar. Eget Ao nr hämtas från jobbet. Kundens Ao nr och Bessy/Ofelia skriver du själv.',

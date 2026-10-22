@@ -45,6 +45,10 @@ export default {
     "sha": "5190ea89a42b7c2e68034a7fcfba354a443d8ce4b7cca6f6994cee2e7e20a7ad",
     "datum": "2026-10-20"
   },
+  "svets0435": {
+    "sha": "b0ded14bcb0a9c2aa1cf13dbd086cd5e978c31631ff763e0cbe463582a6c638e",
+    "datum": "2026-10-22"
+  },
   "0737": {
     "sha": "e1dafea2bb8fe5164c8a9c599ba40af702a4b9e75536723d5c8b1cb026ea8a27",
     "datum": "2026-10-21"

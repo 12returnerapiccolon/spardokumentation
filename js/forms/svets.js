@@ -2,6 +2,7 @@
 // till en tom PDF-mall och fälten skrivs på cellernas platser (svets-layout.js).
 // Värdelistorna är mallens egna rullistor.
 import LAYOUT from './svets-layout.js';
+import LAYOUT_0435 from './svets0435-layout.js';
 import { blankettDatum } from '../datum.js';
 import { berakna } from './kap.js';
 
@@ -25,6 +26,11 @@ const LAYOUT_DELAR = {
   text: { ...LAYOUT.text, ...Object.fromEntries(RAD_BAS.map((y, i) => [`nr${i}`, [0, 31.9, y, 10, 'right']])), sida: [0, 824.9, 25.3, 9, 'right'] },
   tack: { ...Object.fromEntries(RAD_BAS.map((y, i) => [`nr${i}`, [0, 20.8, y - 2.6, 11.3, 11.4]])), sida: [0, 800, 21.5, 26.5, 13] },
 };
+// Vilken mall svetsrapporten fylls i på, väljs i Inställningar när TMALL 0435 är inläst
+// (2026-10-22). Sätts av app.js.
+export const svetsmall = { val: '2630' };
+// Mallens lista över avvikelser (bara TMALL 0435).
+const AVVIKELSER = ['Solkurva', 'Räl höjdsliten', 'Räl sidosliten', 'Isolerskarv sliten', 'Sliprar dåliga', 'Befästningar, dåliga', 'Befästningar, mellanlägg slitna (gummin)', 'Befästningar, isolatorer slitna (plast)', 'Spår ostoppad', 'Korsning ostoppad', 'Växel ostoppad', 'Ballast saknas', 'Ballast dålig', 'Spårvidd stor', 'Spårvidd liten'];
 const COLS = { dag: 'C', plats: 'E', km: 'G', fore: 'I', efter: 'K', temp: 'M', modell: 'O', material: 'Q', hv: 'S', typ: 'U', metod: 'W', tillsats: 'Y', batch: 'AA', wps: 'AC' };
 
 const EGENKONTROLL = [
@@ -64,7 +70,7 @@ function sft(row) {
   return r.dt === 'Utanför' ? 'Utanför' : r.sft;
 }
 
-export default {
+const svets = {
   key: 'svets',
   code: 'DOK 2630',
   title: 'Svetsrapport',
@@ -145,6 +151,7 @@ export default {
     {
       title: 'Avvikelser och kommentarer',
       items: [
+        { type: 'select', key: 'avvikelse', label: 'Avvikelse (TMALL 0435)', options: AVVIKELSER, hideIf: () => svetsmall.val !== '0435' },
         { type: 'textarea', key: 'kommentar', label: 'Avvikelser eller kommentarer' },
       ],
     },
@@ -202,3 +209,37 @@ export default {
     return v;
   },
 };
+
+// Trafikverkets TMALL 0435 Svetsrapport ver. 6.0 (2026-10-22). Samma uppgifter som DOK 2630,
+// skrivs på en tom PDF-mall av formuläret (svets0435-layout.js). Används i stället för DOK 2630
+// när den är vald i Inställningar. valfri: saknas den varnar inte Blankettmallar.
+const MALL_0435 = { C2: 'enhet', H2: 'ao', P2: 'kundao', C4: 'namnId', P4: 'bessy', R26: 'ansvarig', R27: 'telefon', O29: 'kommentar', sida: 'sida' };
+const RAD_0435 = Object.fromEntries(Object.entries(COLS).map(([k, col]) => [col, k]));
+export const svets0435 = {
+  ...svets,
+  key: 'svets0435',
+  dataKey: 'svets',
+  code: 'TMALL 0435',
+  valfri: true,
+  layout: LAYOUT_0435,
+  templateHint: 'TMALL 0435 Svetsrapport (PDF-mall)',
+  async matches({ pdf }) {
+    return !!pdf && pdf.subject === 'Spårdokumentation mall svets0435';
+  },
+  toValues(job, data, opts = {}) {
+    const v = svets.toValues(job, data, opts);
+    const ut = { ar: v.H4, manad: v.K4, avvikelse: data.avvikelse || '' };
+    for (const [cell, value] of Object.entries(v)) {
+      if (MALL_0435[cell]) ut[MALL_0435[cell]] = value;
+      else if (/^nr\d$/.test(cell)) ut[cell] = value;
+      else {
+        const m = /^([A-Z]+)(\d+)$/.exec(cell);
+        if (m && RAD_0435[m[1]] && Number(m[2]) >= 6 && Number(m[2]) <= 24) ut[`${RAD_0435[m[1]]}${(Number(m[2]) - 6) / 2}`] = value;
+      }
+    }
+    for (const [key, , cell] of EGENKONTROLL) ut[key] = v[cell] === 'X';
+    return ut;
+  },
+};
+
+export default svets;
