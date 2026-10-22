@@ -57,7 +57,9 @@ Att tänka på:
 - TMALL 0737 v2.0 hänvisar till tabell K10.1–K10.3 i TRVINFRA-00014, men i TRVINFRA-00014 v5.0
   heter tabellerna K11.1–K11.3. Appen visar K11 och skriver det i hjälptexten (`k0737.js`).
 - TMALL 1481 hänvisar i sina fotnoter till TDOK 2014:0240, 2014:0516, 2014:0462 och 2014:0469.
-  Det är mallens egen text, appen använder inte de dokumenten.
+  Det är mallens egen text, appen använder inte de dokumenten. Flera av dem är ersatta:
+  TDOK 2014:0240 är slopad (ersatt av bl.a. TDOK 2021:0311 och 2021:0302) och TDOK 2014:0469 är
+  ersatt av TDOK 2021:0335. Fotnoterna rättas när Trafikverket ger ut en ny version av mallen.
 
 ## Regelverk
 
@@ -91,24 +93,27 @@ De här står i texter som appen visar (oftast avskrivna ur TDOK 2021:0311, TRVI
 en blankettmall), men appen hämtar inget innehåll ur dem. Ändras de behöver appen normalt inte ändras,
 men hänvisningen kan bli inaktuell.
 
-| Dokument | Var det nämns |
-|---|---|
-| IRS 70712 Rail Defects | `js/forms/tdok0311.js` (kap 4.1.2) |
-| TDOK 2013:0658 Urspårningsfarliga spårlägesfel | `js/forms/tdok0311.js` |
-| TDOK 2014:0514 Spårkomponenter DEF-sliprar Besiktning | `js/forms/tdok0311.js` |
-| TDOK 2022:0360 och TDOK 2014:0448 Balkbromsar | `js/forms/tdok0311.js`, `js/forms/ibt.js` (kontrollpunkt 52) |
-| TDOK 2021:0322 Säkerhetsbesiktning – Elkraft högspänning | `js/forms/tdok0311.js` |
-| TDOK 2012:90 Begäran om dispens från tekniska regler | `js/forms/trvinfra0737.js` |
-| TRVINFRA-00398 Banutformning | `js/forms/ibt.js` (kontrollpunkt 17, mallens text) |
-| TMALL 0842 Spårläge på arbetsplats | `js/forms/trvinfra0737.js` |
-| SBF 175 (blankett för urkopplat brandlarm) | `js/forms/heta.js` |
-| DOK 5821 och WPS-numren i svetsrapporten | `js/forms/svets.js` (`WPS`, mallens rullista) |
-| Underlag till linjeboken (Sth) | `js/forms/k0737.js` (hjälptext) |
+| Dokument | Version (om den finns i underlaget) | Var det nämns |
+|---|---|---|
+| IRS 70712 Rail Defects | – | `js/forms/tdok0311.js` (kap 4.1.2) |
+| TDOK 2013:0658 Urspårningsfarliga spårlägesfel – Anmälan och trafikal åtgärd | 2.0, dokumentdatum 2026-10-19, gäller från 2026-10-28 | `js/forms/tdok0311.js` (titeln stämmer med v2.0) |
+| TDOK 2014:0514 Spårkomponenter DEF-sliprar Besiktning | 2.0, gäller från 2025-01-01 | `js/forms/tdok0311.js` |
+| TDOK 2022:0360 och TDOK 2014:0448 Balkbromsar | – | `js/forms/tdok0311.js`, `js/forms/ibt.js` (kontrollpunkt 52) |
+| TDOK 2021:0322 Säkerhetsbesiktning – Elkraft högspänning | – | `js/forms/tdok0311.js` |
+| TDOK 2012:90 Begäran om dispens från tekniska regler | – | `js/forms/trvinfra0737.js` |
+| TRVINFRA-00398 Banutformning | 3.0, publicerad 2026-01-01 | `js/forms/ibt.js` (kontrollpunkt 17, mallens text) |
+| TMALL 0842 Spårläge på arbetsplats | – | `js/forms/trvinfra0737.js` |
+| TDOK 2014:0516 Underhållsbesiktning av banöverbyggnad (tidigare BVH 807.30) | 0.1, dokumentdatum 2015-04-01 | TMALL 1481 (mallens fotnot) |
+| SBF 175 (blankett för urkopplat brandlarm) | – | `js/forms/heta.js` |
+| DOK 5821 och WPS-numren i svetsrapporten | – | `js/forms/svets.js` (`WPS`, mallens rullista) |
+| Underlag till linjeboken (Sth) | – | `js/forms/k0737.js` (hjälptext) |
 
 ## Underlag som finns men inte används
 
 Dessa har lästs in under arbetet men inget i appen bygger på dem: TDOK 2014:0587 Svetsarprövning
 (v3.0, 2024-04-29), TDOK 2019:0174 Säkerhetsbesiktning – periodicitet (v3.0, 2022-11-01),
 TDOK 2021:0309 Säkerhetsbesiktning – behörighetshantering (v4.0, 2024-11-01) och TDOK 2021:0479
-Säkerhetsbesiktning – Byggnadsverk Tunnel (2026-03-20), TRVINFRA-00019 (v1.0.0, 2020-04-01) och
-den äldre TRVINFRA-00012 v3.0 (2021-10-11), som ersatts av v5.0.
+Säkerhetsbesiktning – Byggnadsverk Tunnel (2026-03-20), TDOK 2021:0302 Säkerhetsbesiktning –
+genomföra åtgärd (v3.0, 2025-12-18, gäller från 2026-01-01), TDOK 2021:0335 Underhållsbesiktning –
+Signalsystem (v9.0, 2026-03-20, gäller från 2026-03-25), TRVINFRA-00019 Banöverbyggnad
+Makadamballast (v1.0.0, 2020-04-01) och den äldre TRVINFRA-00012 v3.0 (2021-10-11), som ersatts av v5.0.
