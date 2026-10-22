@@ -196,8 +196,10 @@ function debounce(fn, ms) {
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') window.onpagehide?.(); });
 document.addEventListener('focusout', () => window.onpagehide?.(), true);
 
+// & blir "och" och # % blir -, eftersom en del mappar och länkar i OneDrive, Teams och mail
+// hanterar dem dåligt (2026-10-22). Jobbet i en överförd PDF påverkas inte av filnamnet.
 function safeName(s) {
-  return s.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim();
+  return s.replace(/\s*&\s*/g, ' och ').replace(/[\\/:*?"<>|#%]+/g, '-').replace(/\s+/g, ' ').trim();
 }
 
 function fileName(form, job) {
