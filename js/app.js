@@ -1338,7 +1338,7 @@ function renderItem(item, data, onChange, job) {
               (item.details.intro || []).filter(Boolean).map(t => h('p', { class: 'muted' }, t)),
               (item.details.blocks || []).map(([rubrik, stycken, figurer, bedomning]) => [
                 h('h4', {}, rubrik),
-                stycken.map(t => h('p', { class: /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null }, ...medFigurer(t, figurer))),
+                stycken.map(t => medFigurer(t, figurer, /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null)),
                 // Bedömningsstödet visas först när man trycker (2026-10-22).
                 bedomning ? h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(...bedomning) }, '📋 Bedömningsstöd') : null,
               ]))));
@@ -1490,13 +1490,24 @@ function kommIhagNamn(value) {
 
 // Visar en bild i helskärm. Hela bilden syns först; nyp eller dubbeltryck för att zooma
 // och dra med fingret för att flytta. Sidans egen zoom används inte, den flyttar även knapparna.
-// Text där t.ex. "figur 1" blir en knapp som visar figuren (2026-10-22). figurer: text → [bild, beskrivning].
-function medFigurer(t, figurer) {
-  if (!figurer) return [t];
-  const namn = Object.keys(figurer);
-  return t.split(new RegExp(`(${namn.join('|')})`)).map(del => (figurer[del]
-    ? h('button', { type: 'button', class: 'link inline', onclick: () => showImage(...figurer[del]) }, del)
-    : del));
+// Stycke där t.ex. "figur 1" blir en knapp som visar figuren (2026-10-22). figurer: text → [bild, beskrivning],
+// eller en lista [rubrik, bild, beskrivning] (hänvisning till ett annat dokument) som fälls ut under stycket.
+function medFigurer(t, figurer, klass) {
+  if (!figurer) return h('p', { class: klass }, t);
+  const namn = Object.keys(figurer).sort((a, b) => b.length - a.length).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const listor = [];
+  const delar = t.split(new RegExp(`(${namn.join('|')})`)).map(del => {
+    const f = figurer[del];
+    if (!f) return del;
+    // span i stället för knapp: en knapp blir inline-block och bryter raden i Safari och Chrome.
+    const lank = (onclick, text, extra = {}) => h('span', { class: 'ref', role: 'button', tabindex: '0', onclick, onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onclick(e); } }, ...extra }, text);
+    if (!Array.isArray(f[0])) return lank(() => showImage(...f), del);
+    const lista = h('div', { class: 'hanvisning', hidden: true },
+      f.map(([rubrik, src, alt]) => h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(src, alt) }, `📄 ${rubrik}`)));
+    listor.push(lista);
+    return lank(e => { lista.hidden = !lista.hidden; e.currentTarget.setAttribute('aria-expanded', String(!lista.hidden)); }, `${del} ▾`, { 'aria-expanded': 'false' });
+  });
+  return [h('p', { class: klass }, ...delar), ...listor];
 }
 
 function showImage(src, alt) {

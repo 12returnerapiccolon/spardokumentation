@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v167';
+const VERSION = 'v168';
 const FILES = [
   './',
   'index.html',
@@ -49,6 +49,25 @@ const FILES = [
   'js/forms/ibt.js',
   'js/forms/tdok0311.js',
   'img/tdok/0334-fritt-utrymme.png',
+  'img/tdok/00012-7-1-1-7.png',
+  'img/tdok/00012-8-1-1-15.png',
+  'img/tdok/00013-11-1.png',
+  'img/tdok/00013-11-2-1.png',
+  'img/tdok/00013-11-2-2.png',
+  'img/tdok/00013-11-2-3.png',
+  'img/tdok/00013-11-2-4.png',
+  'img/tdok/00013-11-2-5.png',
+  'img/tdok/00013-11-2-6.png',
+  'img/tdok/00013-11-2-7.png',
+  'img/tdok/00013-11-3.png',
+  'img/tdok/00013-11-4.png',
+  'img/tdok/00013-13.png',
+  'img/tdok/00015-7.png',
+  'img/tdok/00017-10-6.png',
+  'img/tdok/00017-10-8.png',
+  'img/tdok/00017-9-3.png',
+  'img/tdok/00018-10.png',
+  'img/tdok/00018-11.png',
   'img/tdok/0311-figur1-gatural.png',
   'img/tdok/0311-tabell10-bedomning.png',
   'img/tdok/0311-tabell11-skarvoppning.png',

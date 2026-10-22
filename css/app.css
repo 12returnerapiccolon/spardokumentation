@@ -535,3 +535,7 @@ details.andra-blanketter { margin: -6px 0 8px; padding: 0 2px; }
 details.andra-blanketter:not([open]) > summary { min-height: 28px; font-size: 14px; font-weight: 500; }
 details.andra-blanketter:not([open]) > summary::before { font-size: 18px; }
 details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
+/* Utfällda hänvisningar till andra dokument under ett stycke i kraven (2026-10-22) */
+.tdok .hanvisning { margin: 4px 0 12px 1.4em; }
+.tdok .hanvisning .button.info-image { min-height: 0; padding: 8px 12px; margin: 0 0 6px; font-size: 14px; }
+.tdok .ref { color: var(--accent); text-decoration: underline; cursor: pointer; }

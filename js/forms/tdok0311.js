@@ -403,8 +403,42 @@ export const PUNKT = {"21": ["4.1.1"], "22": ["4.1.2.2", "4.1.2.3"], "23": ["4.1
 
 // Figurer och tabeller som kraven hänvisar till, och bedömningsstöden (Akut/V/M/B), som bilder
 // ur TDOK:erna (2026-10-22). FIGURER: text i styckena som blir en knapp → [bild, beskrivning].
+// HANVISNINGAR: dokumentnamn i styckena som fäller ut en lista med avsnitt ur dokumentet.
 // BEDOMNING: knappen Bedömningsstöd under avsnittet. Läggs som tredje och fjärde del i AVSNITT.
 const fritt = ['img/tdok/0334-fritt-utrymme.png', 'Figur 2 Fritt utrymme för järnvägshjul (TDOK 2021:0334)'];
+// Hänvisningar till andra dokument: en lista [rubrik, bild, beskrivning] fälls ut under stycket.
+const T13 = 'TRVINFRA-00013 Banöverbyggnad Spårläge';
+const T17 = 'TRVINFRA-00017 Banöverbyggnad Spårväxel';
+const avsnitt = (dok, lista) => lista.map(([rubrik, fil]) => [rubrik, `img/tdok/${fil}.png`, `${dok} ${rubrik}`]);
+const SPARLAGE = avsnitt('TRVINFRA-00013', [
+  ['11.1 Allmänt', '00013-11-1'],
+  ['11.2.1 Spårvidd (belastad mätning)', '00013-11-2-1'],
+  ['11.2.2 Höjdläge (belastad)', '00013-11-2-2'],
+  ['11.2.3 Sidoläge (belastad)', '00013-11-2-3'],
+  ['11.2.4 Rälsförhöjning (belastad)', '00013-11-2-4'],
+  ['11.2.5 Skevning (belastad)', '00013-11-2-5'],
+  ['11.2.6 Standardavvikelse (belastad)', '00013-11-2-6'],
+  ['11.2.7 Ekvivalent konicitet (belastad)', '00013-11-2-7'],
+  ['11.3 Toleranser obelastad spårlägesmätning', '00013-11-3'],
+  ['11.4 Spårläge i spårväxel', '00013-11-4'],
+  ['13 Åtgärd vid fel över KRIT-gräns', '00013-13'],
+]);
+const TUNGOR = avsnitt('TRVINFRA-00017', [['10.6 Kontroll av växeltungors, stödräls slitage', '00017-10-6']]);
+const SAKERHET17 = avsnitt('TRVINFRA-00017', [['9.3 Säkerhetsbesiktning', '00017-9-3']]);
+const HANVISNINGAR = {
+  '4.1.1': { [T13]: SPARLAGE },
+  '4.1.2.2': {
+    'TRVINFRA-00015 Banöverbyggnad Oförstörande provning': avsnitt('TRVINFRA-00015', [['7 Åtgärdstider för rälfel', '00015-7']]),
+    [T17]: avsnitt('TRVINFRA-00017', [['10.8 Mangankorsning', '00017-10-8']]),
+  },
+  '4.1.6.2': { [T17]: TUNGOR },
+  '4.1.10': { 'TRVINFRA-00018 Banöverbyggnad Spårkomponenter kapitel 10': avsnitt('TRVINFRA-00018', [['10 Skyddsräler', '00018-10']]) },
+  '4.1.11': { 'TRVINFRA-00012 Banöverbyggnad Spårsystem': avsnitt('TRVINFRA-00012', [['7.1.1.7 Ballast och ballastsektion (skarvfritt spår)', '00012-7-1-1-7'], ['8.1.1.15 Ballast och ballastsektion (skarvspår)', '00012-8-1-1-15']]) },
+  '4.2.1': { [T17]: SAKERHET17 },
+  '4.2.7': { [T17]: TUNGOR },
+  '4.2.8.3': { [`${T17}, kapitel 9.3 Säkerhetsbesiktning`]: SAKERHET17 },
+  '4.6': { 'TRVINFRA-00018 Banöverbyggnad Spårkomponenter': avsnitt('TRVINFRA-00018', [['11 Stoppbock', '00018-11']]) },
+};
 const FIGURER = {
   '4.1.2.3': { 'Figur 1': ['img/tdok/0311-figur1-gatural.png', 'Figur 1 Gaturäl'] },
   '4.1.8.1': { 'Tabell 11': ['img/tdok/0311-tabell11-skarvoppning.png', 'Tabell 11 Säkerhetsgränsvärden för skarvöppnings storlek'] },
@@ -426,5 +460,8 @@ const BEDOMNING = {
   ...Object.fromEntries(Object.entries(TABELL).map(([k, nr]) => [k, [`img/tdok/0311-tabell${nr}-bedomning.png`, `Tabell ${nr} Bedömningsstöd ${AVSNITT[k][0].replace(/^[\d.]+ /, '')} (TDOK 2021:0311)`]])),
   '0334-4.1.22': ['img/tdok/0334-bedomning-vag.png', 'Bedömningsstöd Väg-/gångbana (TDOK 2021:0334)'],
 };
-for (const [k, a] of Object.entries(AVSNITT)) { a[2] = FIGURER[k]; a[3] = BEDOMNING[k]; }
+for (const [k, a] of Object.entries(AVSNITT)) {
+  const f = { ...FIGURER[k], ...HANVISNINGAR[k] };
+  a[2] = Object.keys(f).length ? f : undefined; a[3] = BEDOMNING[k];
+}
 
