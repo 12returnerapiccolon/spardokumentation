@@ -587,9 +587,9 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 @keyframes text-vit { 0%, 60% { color: #fff; } }
 @keyframes text-mork { 0%, 60% { color: #1d1d1b; } }
 @keyframes knapp-vit { 0%, 60% { background: #fff; color: #c2410c; } }
-.overlay.guide.blink :is(h2, .storklocka, .fasrubrik, .fasbesked, .smaklockor span, .smaklockor strong, .notis) { animation: text-vit 1.2s ease-out 2; }
+.overlay.guide.blink :is(h2, .storklocka, .fasrubrik, .fasbesked, .smaklockor span, .smaklockor strong) { animation: text-vit 1.2s ease-out 2; }
 .overlay.guide.blink .button { animation: knapp-vit 1.2s ease-out 2; }
-.overlay.guide.blink-gul :is(h2, .storklocka, .fasrubrik, .fasbesked, .smaklockor span, .smaklockor strong, .notis) { animation: text-mork 1s ease-out 1; }
+.overlay.guide.blink-gul :is(h2, .storklocka, .fasrubrik, .fasbesked, .smaklockor span, .smaklockor strong) { animation: text-mork 1s ease-out 1; }
 /* Varningar i lathunden och klockrutan, som varningarna före Skapa filer. */
 .guide-body .notis { background: #fff4e5; color: #7a3e00; border-radius: 10px; padding: 10px 12px; margin: 0 0 8px; }
 @media (prefers-color-scheme: dark) { .guide-body .notis { background: #3b2a14; color: #fcd9a8; } }

@@ -2,6 +2,16 @@
 // för listan under Räl i IBT, och frågorna i guiden Klassificera rälsfel.
 // Namnen följer bladen, som skiljer sig från förteckningen i kapitel 9 på några ställen.
 
+// Kort namn för anmärkningsrutan på IBT, som är liten (2026-10-22). Fullt namn i guiden och katalogen.
+export const KORTNAMN = {
+  100: 'Sprödbrott', 111: 'Njurbrott', 113: 'Vertikal spricka', 133: 'Pipe', 135: 'Spricka skarvskruvhål',
+  153: 'Vertikal fotspricka', 200: 'Sprödbrott', 211: 'Njurbrott', 213: 'Vertikal spricka', 227: 'Squat', 233: 'Pipe',
+  235: 'Spricka från hål', 236: 'Sned spricka', 253: 'Fotspricka', 303: 'Krökt räl',
+  412: 'Livspricka, brännsvets', 422: 'Livspricka, termitsvets', 432: 'Livspricka, ljusbågssvets',
+  471: 'Tvärspricka, påsvetsning', 472: 'Avskalning, påsvetsning', 481: 'Spricka kontaktförbindning',
+  1321: 'Spricka liv–huvud', 1322: 'Spricka liv–fot', 2321: 'Spricka liv–huvud', 2322: 'Spricka liv–fot',
+  2222: 'Shelling', 2223: 'Head checking', 2251: 'Slirsår, enstaka', 2252: 'Slirsår, flera',
+};
 export const NAMN = {
   100: 'Sprödbrott utan synbar orsak', 111: 'Tvärspricka av inre ursprung (njurbrott)', 112: 'Vågrät spricka',
   113: 'Vertikalt längsgående spricka', 121: 'Ytfel', 122: 'Avskalning', 123: 'Utplattning', 124: 'Svacka', 125: 'Slirsår',
@@ -193,7 +203,7 @@ export function klassificera(h, showImage, somAnm) {
           somAnm ? h('button', {
             type: 'button', class: 'button',
             onclick: e => {
-              const svar = somAnm(nr, NAMN[nr]);
+              const svar = somAnm(nr, KORTNAMN[nr] || NAMN[nr]);
               e.target.replaceWith(h('p', { class: 'muted' }, svar === 'last' ? 'Blanketten är låst, lås upp den för att lägga till anmärkningar.'
                 : svar === 'full' ? 'Blanketten har plats för 4 anmärkningar och alla är använda.'
                 : `Tillagd som anmärkning ${svar}. Välj prioritet under Noterade anmärkningar.`));

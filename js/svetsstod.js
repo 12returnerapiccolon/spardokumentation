@@ -213,6 +213,10 @@ function signal(overlay, typ = 'moment') {
   if (!overlay) return;
   const klass = typ === 'forvarning' ? 'blink-gul' : 'blink';
   overlay.classList.remove('blink', 'blink-gul'); void overlay.offsetWidth; overlay.classList.add(klass);
+  // Klassen tas bort när blinkningen är slut. Annars startar text som läggs in senare samma
+  // animation och kan bli kvar vit i ljust läge (2026-10-22).
+  clearTimeout(overlay.blinkSlut);
+  overlay.blinkSlut = setTimeout(() => overlay.classList.remove('blink', 'blink-gul'), 2600);
 }
 
 // Börja svetsa: först tiderna, sedan förvärmning, tappning, formhållarplåtar och avskrotning.
