@@ -49,6 +49,8 @@ function block(h, lista, showImage) {
         rubrik = rubrik && (i === 0 || !r.some(([t]) => /^[\d+\-–±≤≥<>]/.test(t.trim())));
         return h('tr', {}, r.map(([t, cs, rs]) => h(rubrik ? 'th' : 'td', { colspan: cs > 1 ? cs : null, rowspan: rs > 1 ? rs : null }, t)));
       }))));
+    } else if (typ === 'ruta') {
+      ut.push(h('div', { class: 'rv-rad' }, h('strong', {}, `⚠ ${b[1]}`), h('p', {}, b[2])));
     } else if (typ === 'figur') {
       const [, src, text] = b;
       lagg(h('figure', { class: 'rv-figur' },

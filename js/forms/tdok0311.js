@@ -478,6 +478,15 @@ const DEF = avsnitt('TDOK 2014:0514', [
   ['7 Övriga skador', '0514-7'],
   ['8 Säkerhetskrav som skall innehållas', '0514-8'],
 ]);
+// Kapitel 3.7 är det IBT hänvisar till; avsnitten som checklistan bygger på följer efter.
+const SPIRAL = avsnitt('Instruktionsbok spiralbromsar', [
+  ['3.7 Slutkontroll av bromsen', 'spiral-3-7'],
+  ['4.4.2 Åtdragningsmoment', 'spiral-4-4-2'],
+  ['4.4.4 Bromsens sidoläge till räls', 'spiral-4-4-4'],
+  ['4.5.1 Bromsens höjdläge till räls', 'spiral-4-5-1'],
+  ['3.8 Åtgärder efter idrifttagning', 'spiral-3-8'],
+  ['2.5 Räls och vagnshjul', 'spiral-2-5'],
+]);
 const BALK_HALLSBERG = avsnitt('TDOK 2022:0360', [
   ['2.1 Kontrollpunkter balkbroms Thyssen', '0360-2-1'],
   ['2.2 Kontrollpunkter hydraulikanläggning', '0360-2-2'],
@@ -502,6 +511,7 @@ const HANVISNINGAR = {
   '00398': { [T398]: BANUTFORMNING },
   '00014': { [T14]: STABILITET },
   '4.1.3.2': { 'TDOK 2014:0514 Spårkomponenter DEF-sliprar Besiktning': DEF },
+  '4.4.2': { 'Instruktionsbok spiralbromsar, ritning 805970': SPIRAL },
   '4.4.3': { 'TDOK 2022:0360 Spårkomponenter Balkbromsar Thyssen TW-4E och TW-5F': BALK_HALLSBERG, 'TDOK 2014:0448 Balkbromsar Thyssen TW5': BALK_MALMO },
   '4.1.1': { [T13]: SPARLAGE },
   '4.1.2.2': {

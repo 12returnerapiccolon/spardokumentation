@@ -11,7 +11,8 @@ AVSNITT = json.load(open(os.path.join(os.path.dirname(__file__), 'regelverk_avsn
 VALDA = sys.argv[3:]
 # Sidhuvudets nederkant per dokument (pt).
 UTAN_FOT = {'TDOK_2014-0514.pdf', 'TDOK_2022-0360.pdf', 'TDOK_2014-0448.pdf'}
-HUVUD = {'Krav med raadstexter TRVINFRA-00013 Sparlaege v2_0.pdf': 114, 'TDOK_2014-0514.pdf': 115, 'TDOK_2022-0360.pdf': 115, 'TDOK_2014-0448.pdf': 115}
+HUVUD = {'Krav med raadstexter TRVINFRA-00013 Sparlaege v2_0.pdf': 114, 'TDOK_2014-0514.pdf': 115, 'TDOK_2022-0360.pdf': 115, 'TDOK_2014-0448.pdf': 115, 'Instruktion+spiralbroms.pdf': 50}
+FOT = {'Instruktion+spiralbroms.pdf': 0.94}
 
 def bit(doc, pn, y0, y1, dpi=130):
     p = doc[pn - 1]
@@ -24,8 +25,8 @@ for namn, spec in AVSNITT.items():
     if VALDA and not any(namn.startswith(v) for v in VALDA): continue
     fil, (p0, y0), (p1, y1) = spec['fil'], spec['start'], spec['slut']
     doc = pymupdf.open(os.path.join(MAPP, fil)); h = spec.get('huvud') or HUVUD.get(fil, 132)
-    if y1 <= h + 12: p1, y1 = p1 - 1, doc[p1 - 2].rect.height * 0.956  # slutar vid sidans början: ta hela förra sidan
-    ims = [b for b in (bit(doc, p, max(h, y0 - 4) if p == p0 else h, y1 - 4 if p == p1 else doc[p - 1].rect.height * (0.99 if fil in UTAN_FOT else 0.956)) for p in range(p0, p1 + 1)) if b]
+    if y1 <= h + 12: p1, y1 = p1 - 1, doc[p1 - 2].rect.height * FOT.get(fil, 0.956)  # slutar vid sidans början: ta hela förra sidan
+    ims = [b for b in (bit(doc, p, max(h, y0 - 4) if p == p0 else h, y1 - 4 if p == p1 else doc[p - 1].rect.height * (0.99 if fil in UTAN_FOT else FOT.get(fil, 0.956))) for p in range(p0, p1 + 1)) if b]
     w = max(i.width for i in ims); c = Image.new('RGB', (w, sum(i.height for i in ims)), 'white'); y = 0
     for i in ims: c.paste(i, (0, y)); y += i.height
     bb = ImageChops.difference(c, Image.new('RGB', c.size, 'white')).convert('L').point(lambda v: 255 if v > 20 else 0).getbbox()

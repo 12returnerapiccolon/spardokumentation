@@ -1,7 +1,7 @@
 // Genererad av tools/regelverk_text.py (2026-10-22): avsnitten ur regelverken som text, tabeller och
 // figurer. namn (samma som originalbilden img/tdok/<namn>.png) → { dok, rubrik, block }.
 // block: [h, rubrik] [k, kravnummer] [etikett, Råd] [p, text] [li, nivå, markering, text]
-// [tabell, rader av [text, kolumner, rader?]] [figur, bild, bildtext].
+// [tabell, rader av [text, kolumner, rader?]] [figur, bild, bildtext] [ruta, Varning|Obs, text].
 export default {
 "00013-11-1": {
 "dok": "TRVINFRA-00013 Banöverbyggnad Spårläge",
@@ -19791,6 +19791,348 @@ export default {
 [
 "p",
 "Tabell 53 Utvidgning i cirkulär kurva"
+]
+]
+},
+"spiral-2-5": {
+"dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+"rubrik": "2.5 Räls och vagnshjul",
+"block": [
+[
+"h",
+"2.5 Räls och vagnshjul"
+],
+[
+"p",
+"Bild 5. Räls och vagnshjul"
+],
+[
+"figur",
+"img/tdok/fig/spiral-2-5-1.png",
+""
+],
+[
+"p",
+"Stativet är anpassat för följande standardräls: SJ50, SJ46, SJ43, S49, K54, DSB V, UJ48. Stativets instyrningslängd och vinkel, är konstruerade för en flänsränna som inte får överstiga 85 mm [Bild 5]."
+]
+]
+},
+"spiral-3-7": {
+"dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+"rubrik": "3.7 Slutkontroll av bromsen",
+"block": [
+[
+"h",
+"3.7 Slutkontroll av bromsen"
+],
+[
+"p",
+"För att säkra kvalitén på installationen och undvika misstag bör ett protokoll upprättas, innehållande följande uppgifter:"
+],
+[
+"li",
+0,
+"-",
+"Bromsens individnummer och placering på bangården."
+],
+[
+"li",
+0,
+"-",
+"Höjd över RÖK i uppfällt och nerfällt läge."
+],
+[
+"li",
+0,
+"-",
+"Datum för idrifttagning"
+],
+[
+"p",
+"Före idrifttagande skall bromsmontaget kontrolleras och manöverprov genomföras. Här följer ett förslag till checklista:"
+],
+[
+"li",
+0,
+"1.",
+"Kontrollera bromsens infästning i höjd- och sidled."
+],
+[
+"li",
+0,
+"2.",
+"Kontrollera att smörjning av stativlagringarna är utförd."
+],
+[
+"li",
+0,
+"3.",
+"Kontrollera att alla skruvar och muttrar är dragna till rätt moment."
+],
+[
+"ruta",
+"Varning",
+"Vridning av bromscylindern får ej göras för hand. Stor risk för klämskador mellan spiralkam och räls."
+],
+[
+"li",
+0,
+"4.",
+"Kontrollera att luftcylindern går helt fri från ballasten."
+],
+[
+"li",
+0,
+"5.",
+"Kontrollera att vriddonet spärrar i uppfällt läge. I uppfällt läge skall den med avlastad torsionsfjäder kunna falla in av sig själv mot stoppklackarna från ett avstånd av ca 15 mm från rälshuvudet."
+],
+[
+"li",
+0,
+"6.",
+"Vrid bromsen till rätt utgångsläge."
+],
+[
+"ruta",
+"Varning",
+"Tryckluften får ej kopplas på och vriddonen manövreras medan monteringsarbete pågår. Risk för klämskador."
+]
+]
+},
+"spiral-3-8": {
+"dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+"rubrik": "3.8 Åtgärder efter idrifttagning",
+"block": [
+[
+"h",
+"3.8 Åtgärder efter idrifttagning"
+],
+[
+"ruta",
+"Varning",
+"Tryckluften får ej kopplas på och vriddonen manövreras medan monteringsarbete pågår. Risk för klämskador."
+],
+[
+"p",
+"Sedan rangerbromsarna tagits i drift skall skruvar och muttrar efterdras, stativens axialspel och bromsspiralens avstånd till räls kontrolleras och justeras enligt följande schema:"
+],
+[
+"p",
+"Dagen efter idrifttagning eller sedan bromsen passerats av några vagnar:"
+],
+[
+"li",
+0,
+"-",
+"Efterdrag klämförbandens muttrar."
+],
+[
+"p",
+"Efter ca 2000 hjulpassager:"
+],
+[
+"li",
+0,
+"-",
+"Efterdrag stativfästenas muttrar."
+],
+[
+"li",
+0,
+"-",
+"Kontrollera och justera vid behov stativets axialspel enligt avsnitt 3.5, punkt 7."
+],
+[
+"p",
+"Efter ca 10 000 hjulpassager:"
+],
+[
+"li",
+0,
+"-",
+"Efterdrag stativfästenas muttrar."
+],
+[
+"li",
+0,
+"-",
+"Efterdrag skruvarna för bromscylinderns infästning."
+],
+[
+"li",
+0,
+"-",
+"Efterdrag skruvarna för vriddonet."
+],
+[
+"li",
+0,
+"-",
+"Kontrollera och justera vid behov stativets axialspel enligt avsnitt 3.5, punkt 7."
+],
+[
+"li",
+0,
+"-",
+"Kontrollera att avståndet mellan räls och spiralkam. Justera vid behov enligt avsnitt 4.4.4"
+]
+]
+},
+"spiral-4-4-2": {
+"dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+"rubrik": "4.4.2 Åtdragningsmoment",
+"block": [
+[
+"h",
+"4.4.2 Åtdragningsmoment"
+],
+[
+"p",
+"Bild 13: Åtdragningsmoment"
+],
+[
+"figur",
+"img/tdok/fig/spiral-4-4-2-1.png",
+""
+],
+[
+"p",
+"Kontrollera åtdragningsmomenten för skruvar och muttrar. Kontrollen sker genom stickprov på var tionde broms. Vid vallen kontrolleras var femte broms. Vid behov kontrolleras och justeras åtdragningsmomenten till rekommenderade värden. OBS! Två olika ögleskruvar kan förekomma. Gammal typ (svart) som skall dras med det lägre momentet och ny typ (ljusgrå, färgvariationer kan förekomma) som skall dras med det högre momentet. Blanda aldrig ny och gammal typ av ögleskruv på samma stativ."
+]
+]
+},
+"spiral-4-4-4": {
+"dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+"rubrik": "4.4.4 Bromsens sidoläge till räls",
+"block": [
+[
+"h",
+"4.4.4 Bromsens sidoläge till räls"
+],
+[
+"p",
+"Bild 14: Justering av bromsens infästning till räls"
+],
+[
+"figur",
+"img/tdok/fig/spiral-4-4-4-1.png",
+""
+],
+[
+"p",
+"Kontrollera bromsens sidoläge till räls. [Bild 14]. Om avståndet mellan spiralkammen och rälshuvudet är mindre än 1,5 mm eller större än 2,5 mm skall sidoläget justeras. Det sker genom att lägga in, ta bort eller byta shimsbrickor under stoppbulten. När bromsens sidoläge justerats kontrolleras även bromsens höjdläge till RÖK i ut- och ingångsänden enligt avsnitt 4.5.1."
+],
+[
+"p",
+"Justering av bromsen läge i förhållande till rälshuvudet sker separat i båda ändarna enligt följande:"
+],
+[
+"ruta",
+"Varning",
+"Tryckluften får ej kopplas på och vriddonen manövreras medan monteringsarbete pågår. Risk för klämskador."
+],
+[
+"li",
+0,
+"1.",
+"Fäll upp bromsen och stäng av tryckluften."
+],
+[
+"li",
+0,
+"2.",
+"Demontera stoppbulten i utgångsänden."
+],
+[
+"li",
+0,
+"3.",
+"Justera minsta rälsavståndet till 1,5 -2,5 mm för spiralkammens främre halva med shimsbrickor under stoppbulten i ingångsänden."
+],
+[
+"li",
+0,
+"4.",
+"Demontera stoppbult och shimsbrickor vid ingångsänden."
+],
+[
+"li",
+0,
+"5.",
+"Smörj stoppbulten vid utgångsänden med fett och återmontera den. Justera minsta rälsavståndet till 1,5 -2,5 mm för spiralkammens bakre halva med shimsbrickor under stoppbulten i utgångsänden."
+],
+[
+"li",
+0,
+"6.",
+"Smörj stoppbulten vid ingångsänden med fett och återmontera den tillsammans med shimsbrickorna."
+],
+[
+"li",
+0,
+"7.",
+"Koppla på tryckluften."
+]
+]
+},
+"spiral-4-5-1": {
+"dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+"rubrik": "4.5.1 Bromsens höjdläge till räls",
+"block": [
+[
+"h",
+"4.5.1 Bromsens höjdläge till räls"
+],
+[
+"p",
+"Kontrollera bromsens höjd över RÖK [Bild 14]. Vid nymontage skall bromsens infästningsmått till räls vara 118-120 mm. Ligger den befintliga bromshöjden utanför 118 -125 mm över RÖK skall infästningsmåttet justeras enligt följande:"
+],
+[
+"ruta",
+"Varning",
+"Tryckluften får ej kopplas på och vriddonen manövreras medan monteringsarbete pågår. Risk för klämskador."
+],
+[
+"li",
+0,
+"1.",
+"Fäll ned bromsen och stäng av tryckluften."
+],
+[
+"li",
+0,
+"2.",
+"Demontera båda stoppbultarna och shimsbrickorna. Fäll upp bromsen för hand och lägg en 2,5 mm tjock plåt mellan spiralkam och rälshuvud."
+],
+[
+"li",
+0,
+"3.",
+"Lossa stativhållarnas klämförband och släpp ner det inre fästet."
+],
+[
+"li",
+0,
+"4.",
+"Justera med ställskruven bromsens höjd över RÖK vid in- och utgångsändarna till 118 -120 mm. Smörj ögleskruvarnas gängor, brickor och muttrar med olja. Dra åt muttrarna med ett lätt åtdragningsmoment."
+],
+[
+"li",
+0,
+"5.",
+"Justera axialspelet enligt avsnitt 3.5, punkt 7."
+],
+[
+"li",
+0,
+"6.",
+"Fäll ner bromsen och kontrollera att höjdmåttet är max. 55 mm."
+],
+[
+"li",
+0,
+"7.",
+"Koppla på tryckluften."
 ]
 ]
 }

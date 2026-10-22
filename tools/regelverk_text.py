@@ -19,11 +19,14 @@ F514 = 'TDOK_2014-0514.pdf'
 F360 = 'TDOK_2022-0360.pdf'
 F448 = 'TDOK_2014-0448.pdf'
 F311 = 'TDOK_2021-0311.pdf'
+FSPIRAL = 'Instruktion+spiralbroms.pdf'
 # Sidhuvudets nederkant och sidfotens överkant per dokument (pt).
-HUVUD = {F12: 132, F13: 114, F14: 132, F15: 132, F17: 132, F18: 132, F398: 132, F514: 115, F360: 115, F448: 115, F311: 112}
+HUVUD = {F12: 132, F13: 114, F14: 132, F15: 132, F17: 132, F18: 132, F398: 132, F514: 115, F360: 115, F448: 115, F311: 112, FSPIRAL: 50}
 
 # Dokument utan sidfot: sidan används ända ned.
 UTAN_FOT = {F514, F360, F448}
+# Sidfotens överkant som andel av sidhöjden, där den avviker från 0,956.
+FOT = {FSPIRAL: 0.94}
 
 # namn: (fil, (sida, y) start, (sida, y) slut). Slutet är nästa rubrik. Samma namn som bilderna
 # i img/tdok/ (originalet).
@@ -218,7 +221,7 @@ def avsnitt(namn, fil, start, slut, kropp_storlek=None, huvud=None):
         page = doc[p - 1]
         W = page.rect.width
         top = max(h, y0 - 4) if p == p0 else h
-        bot = y1 - 4 if p == p1 else page.rect.height * (0.99 if fil in UTAN_FOT else 0.956)
+        bot = y1 - 4 if p == p1 else page.rect.height * (0.99 if fil in UTAN_FOT else FOT.get(fil, 0.956))
         if bot <= top + 5: continue
         clip = pymupdf.Rect(0, top, W, bot)
         storlekar = [sp['size'] for b in page.get_text('dict')['blocks'] if b['type'] == 0 for l in b['lines'] for sp in l['spans'] for _ in sp['text'].strip()]
@@ -226,11 +229,18 @@ def avsnitt(namn, fil, start, slut, kropp_storlek=None, huvud=None):
         tabs = tabeller(page, clip, kropp)
         tab_rects = [bb for bb, _ in tabs]
         figs = figurer(page, clip, tab_rects)
+        # inramade varningar (VARNING, OBS) blir text i en ruta i stället för bild
+        rutor = []
+        for f in figs:
+            t = ' '.join(page.get_textbox(f).split())
+            m = re.match(r'^(VARNING|OBS)!?\s+(.*)', t)
+            if m: rutor.append((f, m.group(1).capitalize(), re.sub(r'(\w)- (?=[a-zåäö])', r'\1', m.group(2))))
+        figs = [f for f in figs if not any(f is r[0] for r in rutor)]
         rader = spans_i(page, clip, kropp)
         # text inne i figurer hör till figuren, utom bildtexten
         def i_fig(r):
             rr = pymupdf.Rect(r['x0'], r['y0'], r['x1'], r['y1'])
-            return any((rr & f).get_area() > rr.get_area() * 0.6 for f in figs)
+            return any((rr & f).get_area() > rr.get_area() * 0.6 for f in figs + [r[0] for r in rutor])
         def i_tab(r):
             rr = pymupdf.Rect(r['x0'], r['y0'], r['x1'], r['y1'])
             return any((rr & t).get_area() > rr.get_area() * 0.5 for t in tab_rects)
@@ -240,6 +250,8 @@ def avsnitt(namn, fil, start, slut, kropp_storlek=None, huvud=None):
             poster.append((p, r['y0'], 'rad', r))
         for bb, tr in tabs:
             poster.append((p, bb.y0, 'tabell', tr))
+        for f, rub, t in rutor:
+            poster.append((p, f.y0, 'ruta', (rub, t)))
         for f in figs:
             nfig += 1
             poster.append((p, f.y0, 'figur', klipp(page, f, f'{namn}-{nfig}')))
@@ -257,6 +269,7 @@ def avsnitt(namn, fil, start, slut, kropp_storlek=None, huvud=None):
         if typ != 'rad':
             avsluta()
             if typ == 'tabell': block.append(['tabell', d])
+            elif typ == 'ruta': block.append(['ruta', *d])
             else: block.append(['figur', d.replace(os.sep, '/'), ''])
             prev = None; continue
         t = d['t']
@@ -329,5 +342,5 @@ with open(UT_JS, 'w') as f:
     f.write('// Genererad av tools/regelverk_text.py (2026-10-22): avsnitten ur regelverken som text, tabeller och\n')
     f.write('// figurer. namn (samma som originalbilden img/tdok/<namn>.png) → { dok, rubrik, block }.\n')
     f.write('// block: [h, rubrik] [k, kravnummer] [etikett, Råd] [p, text] [li, nivå, markering, text]\n')
-    f.write('// [tabell, rader av [text, kolumner, rader?]] [figur, bild, bildtext].\n')
+    f.write('// [tabell, rader av [text, kolumner, rader?]] [figur, bild, bildtext] [ruta, Varning|Obs, text].\n')
     f.write('export default ' + json.dumps(ALLA, ensure_ascii=False, indent=0) + ';\n')

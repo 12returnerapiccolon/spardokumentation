@@ -883,5 +883,83 @@
   ],
   "dok": "TDOK 2021:0311 Säkerhetsbesiktning – Banöverbyggnad",
   "rubrik": "Tabell 53 Utvidgning i cirkulär kurva"
+ },
+ "spiral-2-5": {
+  "fil": "Instruktion+spiralbroms.pdf",
+  "start": [
+   9,
+   71
+  ],
+  "slut": [
+   9,
+   415
+  ],
+  "dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+  "rubrik": "2.5 Räls och vagnshjul"
+ },
+ "spiral-3-7": {
+  "fil": "Instruktion+spiralbroms.pdf",
+  "start": [
+   21,
+   71
+  ],
+  "slut": [
+   22,
+   71
+  ],
+  "dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+  "rubrik": "3.7 Slutkontroll av bromsen"
+ },
+ "spiral-3-8": {
+  "fil": "Instruktion+spiralbroms.pdf",
+  "start": [
+   22,
+   71
+  ],
+  "slut": [
+   23,
+   50
+  ],
+  "dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+  "rubrik": "3.8 Åtgärder efter idrifttagning"
+ },
+ "spiral-4-4-2": {
+  "fil": "Instruktion+spiralbroms.pdf",
+  "start": [
+   27,
+   321
+  ],
+  "slut": [
+   27,
+   680
+  ],
+  "dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+  "rubrik": "4.4.2 Åtdragningsmoment"
+ },
+ "spiral-4-4-4": {
+  "fil": "Instruktion+spiralbroms.pdf",
+  "start": [
+   28,
+   72
+  ],
+  "slut": [
+   29,
+   71
+  ],
+  "dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+  "rubrik": "4.4.4 Bromsens sidoläge till räls"
+ },
+ "spiral-4-5-1": {
+  "fil": "Instruktion+spiralbroms.pdf",
+  "start": [
+   29,
+   280
+  ],
+  "slut": [
+   30,
+   71
+  ],
+  "dok": "Instruktionsbok spiralbromsar (rangerbroms BZFF), ritning 805970, version 1.4",
+  "rubrik": "4.5.1 Bromsens höjdläge till räls"
  }
 }
