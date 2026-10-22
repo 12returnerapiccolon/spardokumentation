@@ -4,6 +4,8 @@
 // Med höjd radbryts texten inom rutan, uppifrån (baslinjen är då rutans nederkant). Med
 // layout.mittHojd står de radbrutna raderna i stället mitt i rutan i höjdled.
 // check: fältindex → [sida, x, y, bredd, höjd]
+// skala: { s, x, y } förstorar mallens sidor med s och flyttar dem x, y pt på utskriften, och
+// fälten följer med. IBT blev annars smalare än originalet i Excel (2026-10-22).
 
 let fontBytes;
 
@@ -65,7 +67,26 @@ export async function fillOverlay(blankBuffer, layout, values, { title } = {}) {
   const { PDFDocument, rgb } = PDFLib;
   const pdf = await PDFDocument.load(blankBuffer);
   const f = await font(pdf);
-  const pages = pdf.getPages();
+  let pages = pdf.getPages();
+  if (layout.skala) {
+    const { s, x: dx, y: dy } = layout.skala;
+    const sidor = await pdf.embedPages(pages);
+    const storlek = pages.map(p => p.getSize());
+    pages.forEach(() => pdf.removePage(0));
+    pages = sidor.map((sida, i) => {
+      const p = pdf.addPage([storlek[i].width, storlek[i].height]);
+      p.drawPage(sida, { x: dx, y: dy, xScale: s, yScale: s });
+      return p;
+    });
+    const ruta = ([p, x, y, w, h]) => [p, s * x + dx, s * y + dy, w * s, h * s];
+    layout = {
+      ...layout,
+      text: Object.fromEntries(Object.entries(layout.text).map(([k, [p, x, base, size, align, maxW, h]]) =>
+        [k, [p, s * x + dx, s * base + dy, size * s, align, maxW && maxW * s, h && h * s]])),
+      check: Object.fromEntries(Object.entries(layout.check || {}).map(([k, v]) => [k, ruta(v)])),
+      tack: layout.tack && Object.fromEntries(Object.entries(layout.tack).map(([k, v]) => [k, ruta(v)])),
+    };
+  }
   const ink = rgb(0, 0, 0);
 
   for (const [key, value] of Object.entries(values)) {
