@@ -19,6 +19,7 @@ import { skapaKopia, lasInKopia } from './backup.js';
 import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
 import MALLVERSIONER from './mallversioner.js';
 import { HJALP, blankettHjalp } from './hjalp.js';
+import { klassificera } from './ralsfel.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
 const FORMS = [heta, svets, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
@@ -1336,11 +1337,12 @@ function renderItem(item, data, onChange, job) {
             h('summary', {}, item.label),
             h('div', { class: 'tdok' },
               (item.details.intro || []).filter(Boolean).map(t => h('p', { class: 'muted' }, t)),
-              (item.details.blocks || []).map(([rubrik, stycken, figurer, bedomning]) => [
+              (item.details.blocks || []).map(([rubrik, stycken, figurer, bedomning, verktyg]) => [
                 h('h4', {}, rubrik),
                 stycken.map(t => medFigurer(t, figurer, /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null)),
                 // Bedömningsstödet visas först när man trycker (2026-10-22).
                 bedomning ? h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(...bedomning) }, '📋 Bedömningsstöd') : null,
+                verktyg === 'ralsfel' ? h('button', { type: 'button', class: 'button info-image', onclick: () => klassificera(h, showImage) }, '🔎 Klassificera rälsfel') : null,
               ]))));
       }
       return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },

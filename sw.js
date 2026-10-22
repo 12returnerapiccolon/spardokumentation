@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v170';
+const VERSION = 'v171';
 const FILES = [
   './',
   'index.html',
@@ -25,6 +25,7 @@ const FILES = [
   'js/jobbfil.js',
   'js/mallversioner.js',
   'js/hjalp.js',
+  'js/ralsfel.js',
   'img/vaxelbild/evk.png',
   'img/vaxelbild/spkk.png',
   'img/vaxelbild/ev.png',
