@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v172';
+const VERSION = 'v173';
 const FILES = [
   './',
   'index.html',
@@ -102,6 +102,8 @@ const FILES = [
   'img/tdok/0311-tabell8-bedomning.png',
   'img/tdok/0311-tabell9-bedomning.png',
   'img/tdok/0334-bedomning-vag.png',
+  'img/tdok/0664-tabell1-portion.png',
+  'img/tdok/0664-tabell2-l25.png',
   'js/forms/k0737.js',
   'js/forms/k0737-layout.js',
   'js/forms/trvinfra0737.js',

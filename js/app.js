@@ -1254,7 +1254,7 @@ function renderItem(item, data, onChange, job) {
     }
     // Lathund och Börja svetsa under en svets med WPS TDOK 2014:0664 (2026-10-22).
     case 'svetsstod':
-      return svetsstodRad(h, { row: data, onChange, job, pa: svetsstodPa, avslutat: jobStatus(job) === 'Avslutat' });
+      return svetsstodRad(h, { row: data, onChange, pa: svetsstodPa, avslutat: jobStatus(job) === 'Avslutat', showImage });
     case 'calc': {
       // Uträknat värde som inte går att skriva i, t.ex. SFT. Räknas om när något ändras.
       const out = h('output', { 'data-calc': '' }, item.value(data, job) || '–');

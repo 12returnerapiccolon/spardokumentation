@@ -20,14 +20,22 @@ const FAKTA = {
   L25: {
     namn: 'Standardspalt L25', spalt: '24–26 mm', overhojning: '1,2–1,8 mm på båda sidor, på 0,5 m (rekommenderad)',
     brannarhojd: '30–35 mm', sliprar: 3, tider: { forvarm: 120, platar: 210, avskrot: 300 },
-    tidtext: ['Förvärmning 2,0 min (Tabell 2)', 'Formhållarplåtar tidigast 3,5 min efter tappning', 'Formhuvud tidigast 4,5 min efter tappning', 'Avskrotning 5,0 min efter tappning, med Euro-degel upp till 1 min senare. Z120 så sent som möjligt.'],
+    tidtext: ['Förvärmning 2,0 min enligt Tabell 2', 'Formhållarplåtar tidigast 3,5 min efter tappning', 'Formhuvud tidigast 4,5 min efter tappning', 'Avskrotning 5,0 min efter tappning (Tabell 2), med Euro-degel upp till 1 min senare. Z120 så sent som möjligt.'],
   },
   L50: {
     namn: 'Lucka L50', spalt: '40–50 mm', overhojning: '1,8–2,2 mm på båda sidor, på 0,5 m (rekommenderad)',
     brannarhojd: '30–45 mm, minsta möjliga', sliprar: 4, tider: { forvarm: 120, platar: 300, avskrot: 480 },
-    tidtext: ['Förvärmning 2,0 min (Tabell 2)', 'Formhållarplåtar tidigast 5 min efter tappning', 'Formhuvud tidigast 8 min efter tappning', 'Avskrotning tidigast 8,0–9,0 min efter tappning, med Euro-degel upp till 0,5 min senare. Z120 så sent som möjligt.'],
+    tidtext: ['Förvärmning 2,0 min enligt Tabell 2', 'Formhållarplåtar tidigast 5 min efter tappning', 'Formhuvud tidigast 8 min efter tappning', 'Avskrotning tidigast 8,0–9,0 min efter tappning, med Euro-degel upp till 0,5 min senare. Z120 så sent som möjligt.'],
   },
 };
+// Tabellerna går att öppna genom att trycka på "Tabell 1" eller "Tabell 2" i texten (2026-10-22).
+const TABELL = {
+  'Tabell 1': ['img/tdok/0664-tabell1-portion.png', 'TDOK 2014:0664 Tabell 1 Val av termitportion'],
+  'Tabell 2': ['img/tdok/0664-tabell2-l25.png', 'TDOK 2014:0664 Tabell 2 Svetsparametrar för SkV-Elite L25 standardlucka'],
+};
+const medTabell = (h, showImage, text) => text.split(/(Tabell [12])/).map(del => (TABELL[del]
+  ? h('span', { class: 'ref', role: 'button', tabindex: '0', onclick: () => showImage(...TABELL[del]), onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showImage(...TABELL[del]); } } }, del)
+  : del));
 const lucka = row => (/L50/.test(row.metod || '') ? 'L50' : 'L25');
 const grader = t => Number(String(t ?? '').replace('−', '-'));
 
@@ -44,9 +52,9 @@ const tidSedan = iso => {
 };
 
 // Raden under en svets: knapparna och tiden sedan tappning.
-export function svetsstodRad(h, { row, onChange, job, pa, avslutat }) {
+export function svetsstodRad(h, { row, onChange, pa, avslutat, showImage }) {
   const knappar = h('div', { class: 'svetsstod' },
-    h('button', { type: 'button', class: 'button', onclick: () => lathund(h, row, satt) }, '📋 Lathund'),
+    h('button', { type: 'button', class: 'button', onclick: () => lathund(h, row, satt, showImage) }, '📋 Lathund'),
     h('button', { type: 'button', class: 'button primary', onclick: () => borjaSvetsa(h, row, onChange) }, '🔥 Börja svetsa'));
   const tappning = h('p', { class: 'muted note tappning' });
   const visa = () => {
@@ -69,7 +77,8 @@ export function svetsstodRad(h, { row, onChange, job, pa, avslutat }) {
 }
 
 // Lathund före svetsningen.
-function lathund(h, row, satt) {
+function lathund(h, row, satt, showImage) {
+  const t = text => medTabell(h, showImage, text);
   const val = { profil: PROFIL[row.modell] ? row.modell : '60 E1', profil2: '', stal: STALSORTER.includes(row.material) ? row.material : 'R260', stal2: '', lucka: lucka(row), temp: row.temp ?? '' };
   const innehall = h('div', { class: 'guide-body' });
   const select = (key, label, options, tom) => h('label', { class: 'field' }, h('span', {}, label),
@@ -100,6 +109,7 @@ function lathund(h, row, satt) {
       h('div', { class: 'row' }, select('stal', 'Stålsort (rälsmärkning)', STALSORTER), select('stal2', 'Andra sidan', STALSORTER, 'Samma')),
       h('div', { class: 'row' }, select('lucka', 'Spalt', ['L25', 'L50']), select('temp', 'Rältemp °C', Array.from({ length: 71 }, (_, i) => String(40 - i).replace('-', '−')), '–')),
       h('h3', {}, 'Svetsportion'),
+      h('p', { class: 'muted note' }, t('Enligt Tabell 1 och Tabell 2.')),
       h('p', { class: 'guide-namn' }, portion.map(p => h('span', { class: 'rad' }, p))),
       tillsats && row.tillsats !== tillsats ? h('button', { type: 'button', class: 'button', onclick: e => { satt('tillsats', tillsats); e.currentTarget.replaceWith(h('p', { class: 'muted note' }, `Tillsatsmaterial är satt till ${tillsats.replace(/\s+/g, ' ')}.`)); } }, `Sätt Tillsatsmaterial till ${tillsats.replace(/\s+/g, ' ')}`) : null,
       varningar.length ? h('div', { class: 'varningar' }, varningar.map(v => h('p', { class: 'notis' }, v))) : null,
@@ -110,7 +120,7 @@ function lathund(h, row, satt) {
         h('li', {}, `Överhöjning ${f.overhojning}. Farkanten rak, +0,0/−0,3 mm.`),
         h('li', {}, `Brännarhöjd ${f.brannarhojd}.`),
         h('li', {}, `Lossa befästningen på minst ${f.sliprar} sliprar på varje sida.`),
-        f.tidtext.map(t => h('li', {}, t))),
+        f.tidtext.map(x => h('li', {}, t(x)))),
       h('h3', {}, 'Efter svetsningen'),
       h('ul', {},
         h('li', {}, 'Kilarna sitter kvar tills svetsen är under 150 °C.'),
@@ -131,7 +141,7 @@ function lathund(h, row, satt) {
         'Gasskärning: R260, R260Mn och värmebehandlad förvärms 10 cm till minst 400 °C (R320Cr 500 °C), 50 cm till ca 50 °C',
       ].map(t => h('label', { class: 'check' }, h('input', { type: 'checkbox' }), h('span', {}, t))),
       h('p', { class: 'muted note' }, 'Ur TDOK 2014:0664 Arbetsinstruktioner för termitsvetsning, version 3.0, kap 4.1–4.2.'),
-    ].filter(Boolean));
+    ].flat(2).filter(Boolean));
   };
   oppna(h, 'Lathund SkV-Elite', innehall);
   rita();
