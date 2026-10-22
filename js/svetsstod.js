@@ -155,20 +155,24 @@ function oppna(h, titel, innehall, vidStang) {
   return overlay;
 }
 
-// Signal vid varje moment: pip, vibration (inte på iPhone) och en blinkande skärm.
+// Signal vid varje moment: tre höga pip, vibration (inte på iPhone) och orange blinkning.
+// Förvarning tio sekunder före: två längre, lägre toner och gul blinkning (2026-10-22).
 let ljud;
-function signal(overlay) {
+const FORVARNING = 10;
+function signal(overlay, forvarning = false) {
   try {
     ljud = ljud || new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.35, 0.7].forEach(t => {
+    const [toner, hz, langd] = forvarning ? [[0, 0.7], 660, 0.5] : [[0, 0.35, 0.7], 1760, 0.25];
+    toner.forEach(t => {
       const o = ljud.createOscillator(), g = ljud.createGain();
-      o.frequency.value = 1760; o.connect(g); g.connect(ljud.destination);
-      g.gain.setValueAtTime(0.5, ljud.currentTime + t); g.gain.setValueAtTime(0, ljud.currentTime + t + 0.25);
-      o.start(ljud.currentTime + t); o.stop(ljud.currentTime + t + 0.3);
+      o.frequency.value = hz; o.connect(g); g.connect(ljud.destination);
+      g.gain.setValueAtTime(0.5, ljud.currentTime + t); g.gain.setValueAtTime(0, ljud.currentTime + t + langd);
+      o.start(ljud.currentTime + t); o.stop(ljud.currentTime + t + langd + 0.05);
     });
   } catch { /* utan ljud */ }
-  navigator.vibrate?.([300, 150, 300, 150, 300]);
-  overlay.classList.remove('blink'); void overlay.offsetWidth; overlay.classList.add('blink');
+  navigator.vibrate?.(forvarning ? [600] : [300, 150, 300, 150, 300]);
+  const klass = forvarning ? 'blink-gul' : 'blink';
+  overlay.classList.remove('blink', 'blink-gul'); void overlay.offsetWidth; overlay.classList.add(klass);
 }
 
 // Börja svetsa: först tiderna, sedan förvärmning, tappning, formhållarplåtar och avskrotning.
@@ -220,7 +224,7 @@ async function borjaSvetsa(h, row, onChange) {
   let forvarmStart, forvarmKlar, tappning, senaste;
   const startaForvarmning = () => {
     fas = 'forvarm'; forvarmStart = Date.now(); senaste = forvarmStart;
-    let paminnelse = false, klar = false;
+    let paminnelse = false, klar = false, forvarnat = false;
     visaKlockor();
     knapp.replaceChildren(h('button', { type: 'button', class: 'button primary big', onclick: tappa }, 'Tappning'));
     clearInterval(timer);
@@ -229,10 +233,12 @@ async function borjaSvetsa(h, row, onChange) {
       const gatt = (Date.now() - forvarmStart) / 1000;
       const kvar = tider.forvarm - gatt;
       if (!paminnelse && gatt >= 30) { paminnelse = true; signal(overlay); }
+      if (!forvarnat && kvar <= FORVARNING && kvar > 0) { forvarnat = true; signal(overlay, true); }
       if (!klar && kvar <= 0) { klar = true; forvarmKlar = Date.now(); senaste = forvarmKlar; signal(overlay); }
       rubrik.textContent = klar ? 'Förvärmningen klar' : 'Förvärmning';
       stor.textContent = klar ? `+${klocka(-kvar)}` : klocka(kvar);
       stor.classList.toggle('over', klar);
+      stor.classList.toggle('snart', !klar && kvar <= FORVARNING);
       besked.textContent = klar
         ? 'Ta bort brännaren, sätt in regeln, ställ degeln och tänd. Tryck Tappning när degeln tappar.'
         : gatt >= 30 && gatt < 45 ? 'Kontrollera lågan: knatter, sedan precis tyst. Håll trycken konstanta.' : 'Kontrollera formens tätning under förvärmningen.';
@@ -250,7 +256,7 @@ async function borjaSvetsa(h, row, onChange) {
       ['platar', 'Formhållarplåtar', 'Ta försiktigt bort formhållarplåtarna.'],
       ['avskrot', 'Avskrotning', 'Börja avskrota. Tippa formhuvudet först och kontrollera att svetsgodset inte är flytande.'],
     ];
-    const signalerat = new Set();
+    const signalerat = new Set(), forvarnade = new Set();
     // Klart visas först när avskrotningen är nådd; ✕ avbryter före dess.
     const klarKnapp = h('button', { type: 'button', class: 'button primary big', hidden: true, onclick: klart }, 'Klart');
     knapp.replaceChildren(klarKnapp);
@@ -258,6 +264,7 @@ async function borjaSvetsa(h, row, onChange) {
     timer = setInterval(tick, 250);
     function tick() {
       const gatt = (Date.now() - tappning) / 1000;
+      for (const [key] of steg) if (gatt >= tider[key] - FORVARNING && gatt < tider[key] && !forvarnade.has(key)) { forvarnade.add(key); signal(overlay, true); }
       for (const [key] of steg) if (gatt >= tider[key] && !signalerat.has(key)) { signalerat.add(key); senaste = tappning + tider[key] * 1000; signal(overlay); }
       const nasta = steg.find(([key]) => gatt < tider[key]);
       const forra = [...steg].reverse().find(([key]) => gatt >= tider[key]);
@@ -265,11 +272,13 @@ async function borjaSvetsa(h, row, onChange) {
         rubrik.textContent = `${nasta[1]} om`;
         stor.textContent = klocka(tider[nasta[0]] - gatt);
         stor.classList.remove('over');
+        stor.classList.toggle('snart', tider[nasta[0]] - gatt <= FORVARNING);
         besked.textContent = forra ? forra[2] : 'Väntar efter tappningen.';
       } else {
         rubrik.textContent = 'Avskrotning';
         stor.textContent = `+${klocka(gatt - tider.avskrot)}`;
         stor.classList.add('over');
+        stor.classList.remove('snart');
         klarKnapp.hidden = false;
         besked.textContent = `${steg[1][2]} Kilarna sitter kvar och inga fordon passerar förrän skarven är under 150 °C.`;
       }
