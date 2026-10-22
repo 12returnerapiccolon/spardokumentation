@@ -295,7 +295,8 @@ async function komIgangView() {
   setTitle('Kom igång', '#/');
   const profile = await db.getSetting('profile', {});
   const templates = await db.getAll('templates');
-  const missing = FORMS.filter(f => !f.valfri && !templates.some(t => t.key === f.key));
+  // Svetsrapporten räcker med en av sina mallar (DOK 2630 eller TMALL 0435).
+  const missing = FORMS.filter(f => !f.valfri && !templates.some(t => t.key === f.key || (f.key === 'svets' && t.key === 'svets0435')));
   const jobs = await db.getAll('jobs');
   const senasteKopia = await db.getSetting('senasteKopia', null);
   // Öppnad från hemskärmen eller som installerad app.
@@ -363,7 +364,8 @@ async function homeView() {
   setTitle('Svetsjobb');
   const jobs = (await db.getAll('jobs')).sort((a, b) => (b.updated || '').localeCompare(a.updated || ''));
   const templates = await db.getAll('templates');
-  const missing = FORMS.filter(f => !f.valfri && !templates.some(t => t.key === f.key));
+  // Svetsrapporten räcker med en av sina mallar (DOK 2630 eller TMALL 0435).
+  const missing = FORMS.filter(f => !f.valfri && !templates.some(t => t.key === f.key || (f.key === 'svets' && t.key === 'svets0435')));
   const gamla = (await Promise.all(templates.map(async t => (await gammalMall(t)) && t))).filter(Boolean);
   const senasteKopia = await db.getSetting('senasteKopia', null);
   const kopiaGammal = jobs.length && (!senasteKopia || Date.now() - new Date(senasteKopia) > 7 * 864e5);
@@ -1902,7 +1904,6 @@ async function settingsView() {
     ]),
     h('h2', {}, 'Blankettmallar'),
     h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
-    h('h2', {}, 'Svetsrapport'),
     svetsmallKort(),
     h('h2', {}, 'Svetsstöd'),
     svetsstodKort(),
@@ -1920,19 +1921,19 @@ async function settingsView() {
 // Svetsstöd på eller av (2026-10-22): Lathund och Börja svetsa under svetsar med SkV-Elite. Av från början.
 // Mall för svetsrapporten (2026-10-22): DOK 2630 eller Trafikverkets TMALL 0435, när den är
 // inläst under Blankettmallar.
+// Visas bara när båda mallarna är inlästa (2026-10-22).
 function svetsmallKort() {
-  const ruta = h('div', { class: 'card' });
-  db.get('templates', 'svets0435').then(t => {
+  const ruta = h('div', {});
+  Promise.all([db.get('templates', 'svets'), db.get('templates', 'svets0435')]).then(([a, b]) => {
+    if (!a || !b) return;
     const val = (v, text) => h('label', { class: 'check' },
-      h('input', { type: 'radio', name: 'svetsmall', checked: svetsmall.val === v, disabled: v === '0435' && !t,
+      h('input', { type: 'radio', name: 'svetsmall', checked: svetsmall.val === v,
         onchange: () => { svetsmall.val = v; db.setSetting('svetsmall', v); } }),
       h('span', {}, text));
-    ruta.replaceChildren(
+    ruta.replaceChildren(h('h2', {}, 'Svetsrapport'), h('div', { class: 'card' },
       val('2630', 'DOK 2630 Svetsrapport'),
       val('0435', 'TMALL 0435 Svetsrapport (Trafikverket)'),
-      h('p', { class: 'muted note' }, t
-        ? 'Mallen som svetsrapporten fylls i på. Uppgifterna är desamma; med TMALL 0435 kan du också välja en avvikelse ur mallens lista under Avvikelser och kommentarer.'
-        : 'TMALL 0435 går att välja när den är inläst under Blankettmallar.'));
+      h('p', { class: 'muted note' }, 'Mallen som svetsrapporten fylls i på. Uppgifterna är desamma; med TMALL 0435 kan du också välja en avvikelse ur mallens lista under Avvikelser och kommentarer.')));
   });
   return ruta;
 }
@@ -2049,7 +2050,9 @@ async function delaFiler(files, area) {
 
 async function route() {
   window.onpagehide = null;
-  svetsmall.val = await db.getSetting('svetsmall', '2630');
+  // Valet gäller bara när båda mallarna är inlästa; annars används den som finns (2026-10-22).
+  const [m2630, m0435] = await Promise.all([db.get('templates', 'svets'), db.get('templates', 'svets0435')]);
+  svetsmall.val = m0435 && !m2630 ? '0435' : m2630 && !m0435 ? '2630' : await db.getSetting('svetsmall', '2630');
   const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   document.querySelector('.hjalp-overlay')?.remove();
   hjalpNyckel = parts[0] === 'jobb' ? 'jobb' : HJALP[parts[0]] ? parts[0] : 'start';

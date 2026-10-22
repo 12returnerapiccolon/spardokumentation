@@ -174,7 +174,7 @@ export const HJALP = {
         'Visar vilka mallar som finns i telefonen och läser in nya.',
       ]],
       ['Svetsrapport', [
-        'Välj om svetsrapporten ska fyllas i på DOK 2630 eller Trafikverkets TMALL 0435. TMALL 0435 går att välja när den är inläst under Blankettmallar. Uppgifterna är desamma, så du kan byta när som helst. Med TMALL 0435 finns också en rullista med mallens avvikelser (t.ex. Solkurva) under Avvikelser och kommentarer.',
+        'Syns bara när både DOK 2630 och Trafikverkets TMALL 0435 är inlästa under Blankettmallar. Välj då vilken svetsrapporten ska fyllas i på; finns bara en av dem används den. Uppgifterna är desamma, så du kan byta när som helst. Med TMALL 0435 finns också en rullista med mallens avvikelser (t.ex. Solkurva) under Avvikelser och kommentarer.',
       ]],
       ['Svetsstöd', [
         'Visa svetsstöd slår på eller av knapparna Lathund och Börja svetsa under svetsar med svetsmetod SkV Elite L25 eller SkV L50 (och WPS TDOK 2014:0664 eller ingen WPS vald) i svetsrapporten. Avstängt från början; slå på det här om du svetsar SkV-Elite.',
