@@ -186,6 +186,7 @@ export const HJALP = {
       ]],
       ['Om appen', [
         'Kom igång visar stegen för att börja använda appen. Versionen längst ner visar vilken version telefonen har.',
+        'Appen är gjord för stående läge. På Android stannar den stående när den är tillagd på hemskärmen. En webbsida kan inte låsa skärmen på iPhone, så där slår du på Låst stående läge i Kontrollcenter (dra ned från övre högra hörnet och tryck på hänglåset med pilen).',
         'Inget skickas till någon server, utom när du trycker Min position eller Välj på karta: då skickas positionen till OpenStreetMap.',
       ]],
     ],
