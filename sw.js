@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v179';
+const VERSION = 'v180';
 const FILES = [
   './',
   'index.html',
@@ -50,6 +50,8 @@ const FILES = [
   'js/forms/heta-layout.js',
   'js/forms/ibt.js',
   'js/forms/tdok0311.js',
+  'js/forms/bedomning-kort.js',
+  'js/bedomning.js',
   'img/tdok/0334-fritt-utrymme.png',
   'img/tdok/00012-7-1-1-7.png',
   'img/tdok/00012-8-1-1-15.png',

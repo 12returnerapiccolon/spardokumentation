@@ -4,6 +4,7 @@
 // i en äldre version. Ligger här som 0334-4.1.22 (2026-10-22). Bara kraven ("Kontrollera att …"), inte bedömningsstöden.
 // Avsnitt: [rubrik, stycken, figurer?, bedömningsstöd?], se FIGURER och BEDOMNING längst ner. PUNKT: rad i mallen → avsnitt.
 import { KATALOG } from '../ralsfel.js';
+import KORT from './bedomning-kort.js';
 export const AVSNITT = {
  "4.1.1": [
   "4.1.1 Spårläge",
@@ -459,9 +460,10 @@ const FIGURER = {
   '0334-4.1.22': { 'figur 4': fritt },
 };
 const TABELL = { '4.1.2.2': 3, '4.1.2.3': 4, '4.1.3.1': 5, '4.1.4': 6, '4.1.5': 7, '4.1.6.2': 8, '4.1.7.2': 9, '4.1.8': 10, '4.1.8.1': 12, '4.1.9': 13, '4.1.9.1': 13, '4.1.10': 14, '4.1.11': 15, '4.2.7': 16, '4.2.8.1': 17, '4.2.8.2': 18, '4.2.8.3': 19, '4.2.9': 20, '4.2.10': 21, '4.3.1': 51, '4.3.2': 54, '4.6': 64, '4.7.1': 65, '4.7.1.1': 66, '4.7.2': 67, '4.7.2.1': 68 };
+// Tredje delen är texten som kort (js/forms/bedomning-kort.js), visas i js/bedomning.js.
 const BEDOMNING = {
-  ...Object.fromEntries(Object.entries(TABELL).map(([k, nr]) => [k, [`img/tdok/0311-tabell${nr}-bedomning.png`, `Tabell ${nr} Bedömningsstöd ${AVSNITT[k][0].replace(/^[\d.]+ /, '')} (TDOK 2021:0311)`]])),
-  '0334-4.1.22': ['img/tdok/0334-bedomning-vag.png', 'Bedömningsstöd Väg-/gångbana (TDOK 2021:0334)'],
+  ...Object.fromEntries(Object.entries(TABELL).map(([k, nr]) => [k, [`img/tdok/0311-tabell${nr}-bedomning.png`, `Tabell ${nr} Bedömningsstöd ${AVSNITT[k][0].replace(/^[\d.]+ /, '')} (TDOK 2021:0311)`, KORT[nr]]])),
+  '0334-4.1.22': ['img/tdok/0334-bedomning-vag.png', 'Bedömningsstöd Väg-/gångbana (TDOK 2021:0334)', KORT['0334-vag']],
 };
 for (const [k, a] of Object.entries(AVSNITT)) {
   const f = { ...FIGURER[k], ...HANVISNINGAR[k] };

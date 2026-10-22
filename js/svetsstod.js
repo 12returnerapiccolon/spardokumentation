@@ -72,7 +72,8 @@ export function svetsstodRad(h, { row, onChange, pa, avslutat, showImage }) {
   const matt = h('p', { class: 'tappning matt' });
   let mattFore = null;
   const visa = () => {
-    knappar.hidden = !pa || row.wps !== WPS_0664 || !METODER.includes(row.metod);
+    // Även utan vald WPS, men inte med en annan WPS (2026-10-22).
+    knappar.hidden = !pa || (row.wps && row.wps !== WPS_0664) || !METODER.includes(row.metod);
     tappning.hidden = !pa || !row.tappning || avslutat;
     if (!tappning.hidden) tappning.textContent = `Tappning ${new Date(row.tappning).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}, ${tidSedan(row.tappning)} sedan`;
     const kvar = row.tappning && row.mattTid ? row.mattTid - (Date.now() - new Date(row.tappning)) / 1000 : null;
@@ -245,7 +246,6 @@ async function borjaSvetsa(h, row, onChange, visaRad) {
       h('output', {}, klocka(tider[key])),
       h('button', { type: 'button', class: 'button', 'aria-label': `${label} längre`, onclick: () => { tider[key] += steg; spara(); } }, '+'));
     const spara = () => { sparade[l] = { ...tider }; db.setSetting('svetstider', sparade); visaTider(); };
-    const euro = l === 'L50' ? 30 : 60;
     innehall.replaceChildren(...[
       h('p', { class: 'muted' }, `Tiderna gäller ${FAKTA[l].namn} enligt faktabladet. Ändra dem vid behov, de sparas till nästa svets.`),
       rad('forvarm', 'Förvärmning'),
@@ -253,8 +253,6 @@ async function borjaSvetsa(h, row, onChange, visaRad) {
       rad('avskrot', 'Avskrotning efter tappning'),
       tider.avskrot <= tider.platar ? h('p', { class: 'notis' }, 'Avskrotningen ska komma efter formhållarplåtarna.') : null,
       rad('matt', 'Mät temperaturen efter tappning', 60),
-      // Med Euro-degel får avskrotningen börja upp till 1 min (L50 0,5 min) senare.
-      tider.avskrot < FAKTA[l].tider.avskrot + euro ? h('button', { type: 'button', class: 'button', onclick: () => { tider.avskrot = FAKTA[l].tider.avskrot + euro; spara(); } }, `Euro-degel: avskrotning ${klocka(FAKTA[l].tider.avskrot + euro)}`) : null,
       h('button', { type: 'button', class: 'button', onclick: () => { tider.forvarm = FAKTA[l].tider.forvarm; tider.platar = FAKTA[l].tider.platar; tider.avskrot = FAKTA[l].tider.avskrot; spara(); } }, 'Återställ till faktabladet'),
       h('p', { class: 'muted note' }, 'Starta förvärmningen när lågorna är fullt utbildade över luftkanalerna. Ljudet hörs inte om telefonen står på ljudlöst.'),
       h('button', { type: 'button', class: 'button primary big', onclick: () => { signalFörbered(); startaForvarmning(); } }, 'Starta förvärmning'),

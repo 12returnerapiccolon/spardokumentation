@@ -249,7 +249,8 @@ export default {
       closed: true,
       help: title === 'Allmänt' ? 'Kryssa i punkterna som är kontrollerade. De signeras med dina initialer, eller besiktningsmannens om en sådan är ifylld, och övriga lämnas tomma. Tryck på en punkt för att se vad som ska kontrolleras enligt TDOK 2021:0311. A- och V-anmärkningar ska vara åtgärdade före trafikupplåtelse, annars ska hastighetsnedsättning införas tills de är åtgärdade.' : null,
       items: rows.map(([r, label, enligt, moment]) => ({
-        type: 'check', key: `k${r}`, label, isChecked: kontrollerad,
+        // anm: knappen + Anmärkning under punkten (2026-10-22).
+        type: 'check', key: `k${r}`, label, isChecked: kontrollerad, anm: true,
         details: { intro: [`Utförs enligt: ${enligt}`, `Kontrollmoment: ${moment}`], blocks: (PUNKT[r] || []).map(n => AVSNITT[n]) },
       })),
     })),

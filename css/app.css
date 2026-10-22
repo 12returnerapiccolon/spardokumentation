@@ -289,6 +289,8 @@ details[open] summary { margin-bottom: 12px; }
   flex-direction: column;
 }
 /* Bildvisare med egen zoom, se showImage. */
+/* Dubbeltryck zoomar inte sidan (2026-10-22). Nyp-zoom finns kvar, och bilder zoomas i sin egen vy. */
+html { touch-action: manipulation; }
 .zoom-stage { flex: 1; position: relative; overflow: hidden; touch-action: none; }
 .zoom-stage img { position: absolute; left: 0; top: 0; max-width: none; pointer-events: none; transform-origin: 0 0; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .zoom-tools { display: flex; justify-content: center; gap: 12px; padding: 8px 12px calc(env(safe-area-inset-bottom) + 8px); background: rgba(0, 0, 0, .05); }
@@ -355,8 +357,8 @@ button.link.inline { padding: 0; font-size: inherit; text-decoration: underline;
 .note.rule.radio { margin: -6px 0 16px 0; }
 
 /* Regelverkstext som fälls ut (TMALL 0737). */
-details.info-block { border-top: 1px solid var(--line, #ddd); }
-details.info-block:last-of-type { border-bottom: 1px solid var(--line, #ddd); margin-bottom: 12px; }
+details.info-block { border-top: 1px solid var(--line); }
+details.info-block:last-of-type { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
 details.info-block summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; list-style: none; color: var(--accent, inherit); }
 details.info-block summary::-webkit-details-marker { display: none; }
 details.info-block summary::after { content: '›'; color: var(--muted); font-size: 22px; transition: transform .15s; }
@@ -364,7 +366,7 @@ details.info-block[open] summary::after { transform: rotate(90deg); }
 .tdok p.kid { margin: 10px 0 2px; font-size: 12px; color: var(--muted); }
 .tdok p.rad { margin: 8px 0 2px; font-style: italic; font-weight: 600; }
 .info-summary { width: 100%; border-collapse: collapse; margin: 4px 0 10px; font-size: 14px; }
-.info-summary th, .info-summary td { text-align: left; vertical-align: top; padding: 6px 4px; border-bottom: 1px solid var(--line, #ddd); }
+.info-summary th, .info-summary td { text-align: left; vertical-align: top; padding: 6px 4px; border-bottom: 1px solid var(--line); }
 .info-summary th { font-weight: 600; width: 55%; }
 .button.info-image { display: block; width: 100%; text-align: left; margin: 0 0 8px; min-height: 44px; }
 
@@ -591,3 +593,17 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 /* Varningar i lathunden och klockrutan, som varningarna före Skapa filer. */
 .guide-body .notis { background: #fff4e5; color: #7a3e00; border-radius: 10px; padding: 10px 12px; margin: 0 0 8px; }
 @media (prefers-color-scheme: dark) { .guide-body .notis { background: #3b2a14; color: #fcd9a8; } }
+/* Bedömningsstöd som kort, se js/bedomning.js (2026-10-22). */
+.bedomning .bed-punkt { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 10px; background: var(--surface); }
+.bedomning .bed-punkt summary { padding: 12px 14px; font-weight: 600; cursor: pointer; }
+.bedomning .bed-punkt[open] summary { border-bottom: 1px solid var(--line); }
+.bedomning .bed-rad, .bedomning .bed-niva { padding: 8px 14px; }
+.bedomning .bed-rad p, .bedomning .bed-niva p { margin: 2px 0; }
+.bedomning .bed-niva { border-left: 5px solid; margin: 6px 10px; border-radius: 4px; }
+.bedomning .bed-niva > strong { display: block; font-size: 14px; }
+.bedomning .bed-akut { border-color: #c62828; }
+.bedomning .bed-v { border-color: #ef6c00; }
+.bedomning .bed-m { border-color: #f9a825; }
+.bedomning .bed-b { border-color: #9e9e9e; }
+.bedomning .bed-niva.tom { opacity: .6; }
+.bedomning .button.liten { width: auto; padding: 6px 12px; font-size: 14px; margin-top: 6px; min-height: 0; }

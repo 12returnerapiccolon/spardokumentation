@@ -20,6 +20,7 @@ import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
 import MALLVERSIONER from './mallversioner.js';
 import { HJALP, blankettHjalp } from './hjalp.js';
 import { klassificera } from './ralsfel.js';
+import { visaBedomning } from './bedomning.js';
 import { svetsstodRad } from './svetsstod.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
@@ -1353,10 +1354,29 @@ function renderItem(item, data, onChange, job) {
               (item.details.blocks || []).map(([rubrik, stycken, figurer, bedomning, verktyg]) => [
                 h('h4', {}, rubrik),
                 stycken.map(t => medFigurer(t, figurer, /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null)),
-                // Bedömningsstödet visas först när man trycker (2026-10-22).
-                bedomning ? h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(...bedomning) }, '📋 Bedömningsstöd') : null,
+                // Bedömningsstödet visas först när man trycker (2026-10-22). Med avskriven text
+                // visas det som kort, annars som bild.
+                bedomning ? h('button', {
+                  type: 'button', class: 'button info-image',
+                  onclick: () => (bedomning[2]
+                    ? visaBedomning(h, { kort: bedomning[2], bild: bedomning.slice(0, 2), showImage, anm: anmTill(data), anl: item.label })
+                    : showImage(...bedomning)),
+                }, '📋 Bedömningsstöd') : null,
                 verktyg === 'ralsfel' ? h('button', { type: 'button', class: 'button info-image', onclick: () => klassificera(h, showImage, ralsfelSomAnm(data)) }, '🔎 Klassificera rälsfel') : null,
-              ]))));
+              ]),
+              // En tom anmärkning för punkten, med anläggning och km ifyllda (2026-10-22).
+              item.anm ? h('button', {
+                type: 'button', class: 'button',
+                onclick: () => {
+                  const svar = anmTill(data)?.({ text: '', anl: item.label });
+                  if (svar === 'last') return;
+                  if (svar === 'full') { alert('Blanketten har plats för 4 anmärkningar och alla är använda.'); return; }
+                  const kort = anmRader().querySelectorAll('.rowcard')[svar - 1];
+                  kort?.closest('details:not([open])')?.setAttribute('open', '');
+                  kort?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  kort?.querySelector('input')?.focus({ preventScroll: true });
+                },
+              }, '＋ Anmärkning') : null)));
       }
       return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },
         h('input', { type: 'checkbox', name: item.key, checked, onchange: e => onChange(item.key, e.target.checked) }),
@@ -1502,12 +1522,18 @@ function rowsEditor(item, data, onChange, job) {
 // Rälsfelsguidens "Lägg till som anmärkning" i IBT: texten "Rälsfel 227 Squat", anläggning Räl
 // och km från första objektet (2026-10-22). null när blanketten saknar anmärkningsrader.
 function ralsfelSomAnm(data) {
-  const rader = () => document.querySelector('.rows[data-key="anm"]');
-  if (!rader()) return null;
-  return (nr, namn) => {
+  const anm = anmTill(data);
+  return anm && ((nr, namn) => anm({ text: `Rälsfel ${nr} ${namn}`, anl: 'Räl' }));
+}
+// Lägger en anmärkning i IBT med km från första objektet (2026-10-22). Svarar med radens
+// nummer, 'full' eller 'last'. null när blanketten saknar anmärkningsrader.
+const anmRader = () => document.querySelector('.rows[data-key="anm"]');
+function anmTill(data) {
+  if (!anmRader()) return null;
+  return rad => {
     const o = data.objekt?.[0] || {};
     const km = Object.fromEntries(['franKm', 'franM', 'tillKm', 'tillM'].filter(k => o[k]).map(k => [k, o[k]]));
-    return rader()?.laggTill({ text: `Rälsfel ${nr} ${namn}`, ...km, anl: 'Räl' }) ?? 'full';
+    return anmRader()?.laggTill({ text: rad.text, ...km, anl: rad.anl, ...(rad.prio ? { prio: rad.prio } : {}) }) ?? 'full';
   };
 }
 
