@@ -12,11 +12,11 @@ import { AVSNITT, PUNKT } from './tdok0311.js';
 const MITT = { A78: [95.1, 86], C78: [229.4, 175], G78: [386, 130] };
 // Rutorna för UH-kontrakt och projekt får namnet på två rader (2026-10-19).
 const KONTRAKT = { C2: 162.27, E2: 251.8 };
-// Utskriften förstoras 5 % och flyttas upp till vänster så att tabellen blir lika bred som
+// Utskriften förstoras 5 % och centreras i sidled så att tabellen blir lika bred som
 // originalet i Excel och sidfoten får plats (2026-10-22).
 const layout = {
   ...LAYOUT,
-  skala: { s: 1.05, x: 5, y: -3.3 },
+  skala: { s: 1.05, x: 33.3, y: -3.3 },
   text: { ...LAYOUT.text, ...Object.fromEntries(Object.entries(MITT).map(([cell, [x, maxW]]) => [cell, [1, x, 77.7, 11, 'center', maxW]])),
     ...Object.fromEntries(Object.entries(KONTRAKT).map(([cell, x]) => [cell, [0, x, 748.4, 9, 'center', 44, 21.7]])) },
 };
