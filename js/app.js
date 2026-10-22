@@ -1540,7 +1540,7 @@ function anmTill(data) {
 // Senast använda värden för fält med remember, se formView.
 let remembered = {};
 // Svetsstöd på eller av (Inställningar), läses i formView.
-let svetsstodPa = true;
+let svetsstodPa = false;
 
 // Namn som skrivits i fält med names sparas som förslag, de senaste först.
 function kommIhagNamn(value) {
@@ -1758,7 +1758,7 @@ async function formView(id, key) {
   const save = debounce(async () => { if (job !== lagrat) return; job.updated = new Date().toISOString(); await db.put('jobs', job); }, 300);
   // Fält med remember får förra jobbets värde, t.ex. enhet och svetsansvarig.
   remembered = await db.getSetting('remember', {});
-  svetsstodPa = await db.getSetting('svetsstod', true);
+  svetsstodPa = await db.getSetting('svetsstod', false);
   const remember = new Set();
   const walk = items => items.forEach(i => { if (i.remember) { remember.add(i.key); i.form = form.key; } if (i.items) walk(i.items); });
   form.sections.forEach(s => walk(s.items));
@@ -1897,14 +1897,14 @@ async function settingsView() {
   );
 }
 
-// Svetsstöd på eller av (2026-10-22): Lathund och Börja svetsa under svetsar med WPS TDOK 2014:0664.
+// Svetsstöd på eller av (2026-10-22): Lathund och Börja svetsa under svetsar med SkV-Elite. Av från början.
 function svetsstodKort() {
   const ruta = h('div', { class: 'card' });
-  db.getSetting('svetsstod', true).then(pa => ruta.replaceChildren(
+  db.getSetting('svetsstod', false).then(pa => ruta.replaceChildren(
     h('label', { class: 'check' },
       h('input', { type: 'checkbox', checked: pa, onchange: e => db.setSetting('svetsstod', e.target.checked) }),
       h('span', {}, 'Visa svetsstöd')),
-    h('p', { class: 'muted note' }, 'Knapparna Lathund och Börja svetsa under varje svets i svetsrapporten när WPS är TDOK 2014:0664 (SkV-Elite). Lathunden visar portion, faktablad och varningar, och Börja svetsa har klockor för förvärmning, formhållarplåtar och avskrotning.')));
+    h('p', { class: 'muted note' }, 'Knapparna Lathund och Börja svetsa under varje svets i svetsrapporten med SkV Elite L25 eller SkV L50. Avstängt från början. Lathunden visar portion, faktablad och varningar, och Börja svetsa har klockor för förvärmning, formhållarplåtar och avskrotning.')));
   return ruta;
 }
 

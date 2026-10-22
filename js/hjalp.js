@@ -174,7 +174,7 @@ export const HJALP = {
         'Visar vilka mallar som finns i telefonen och läser in nya.',
       ]],
       ['Svetsstöd', [
-        'Visa svetsstöd slår på eller av knapparna Lathund och Börja svetsa under svetsar med svetsmetod SkV Elite L25 eller SkV L50 (och WPS TDOK 2014:0664 eller ingen WPS vald) i svetsrapporten. Påslaget från början.',
+        'Visa svetsstöd slår på eller av knapparna Lathund och Börja svetsa under svetsar med svetsmetod SkV Elite L25 eller SkV L50 (och WPS TDOK 2014:0664 eller ingen WPS vald) i svetsrapporten. Avstängt från början; slå på det här om du svetsar SkV-Elite.',
       ]],
       ['Säkerhetskopia', [
         'Jobben finns bara i telefonen. Spara säkerhetskopia gör en zip-fil med alla jobb, bilder, mallar och inställningar som du sparar i Filer, t.ex. i iCloud Drive eller OneDrive.',
