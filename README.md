@@ -48,7 +48,7 @@ Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilag
 - Överföringsfilen (Överför jobbet) bär jobbet i dokumentinformationen (`js/jobbfil.js`), så att jobbet kan läsas in igen. De enskilda blanketterna bär det inte, så att de inte innehåller dolda uppgifter från andra blanketter.
 - Svetsrapporten: fler än tio svetsar ger fler blanketter, numrerade 11–20 osv. med sidnummer, t.ex. 2(3).
 - IBT: km från och till skrivs som km + m i två rutor, förval från svetsrapportens svetsar eller jobbet.
-- IBT: kraven ur TDOK 2021:0311 (och 0334 för plankorsning) i `js/forms/tdok0311.js`, med figurer, hänvisade tabeller, bedömningsstöd och avsnitt ur TRVINFRA-00012/13/15/17/18 som bilder i `img/tdok/` (urklippta med `tools/tdok_bilder.py` och `tools/regelverk_bilder.py`).
+- IBT: kraven ur TDOK 2021:0311 (och 0334 för plankorsning) i `js/forms/tdok0311.js`, med figurer, hänvisade tabeller, bedömningsstöd och avsnitt ur TRVINFRA-00012/13/15/17/18 som bilder i `img/tdok/` (urklippta med `tools/tdok_bilder.py` och `tools/regelverk_bilder.py`). TDOK 2014:0598 Katalog över rälsfel ligger som `img/tdok/0598-*.jpg` (`tools/ralsfel_bilder.py`) i en egen cache i `sw.js` (`ralsfel-1`) som inte hämtas om vid varje ny version.
 - TMALL 1481 fylls i mallens formulärfält, som plattas till vid export.
 - Säkerhetskopia som zip (`js/backup.js`), okrypterad. Vid inläsning väljer man att behålla den nyare versionen av varje jobb eller att appen frågar per jobb.
 - Lagring i Inställningar: hur mycket appen använder, och borttagning av bilder i avslutade jobb äldre än tre månader.

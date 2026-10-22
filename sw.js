@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v169';
+const VERSION = 'v170';
 const FILES = [
   './',
   'index.html',
@@ -122,14 +122,82 @@ const FILES = [
   'icons/icon-512.png',
 ];
 
+// Katalogen över rälsfel (TDOK 2014:0598, ca 7 MB) ligger i en egen cache som inte töms vid
+// varje ny version. Den hämtas en gång och byter namn bara om bilderna ändras.
+const RALSFEL = 'ralsfel-1';
+const RALSFEL_FILES = [
+  'img/tdok/0598-intro.jpg',
+  'img/tdok/0598-indelning.jpg',
+  'img/tdok/0598-100.jpg',
+  'img/tdok/0598-111.jpg',
+  'img/tdok/0598-112.jpg',
+  'img/tdok/0598-113.jpg',
+  'img/tdok/0598-121.jpg',
+  'img/tdok/0598-122.jpg',
+  'img/tdok/0598-123.jpg',
+  'img/tdok/0598-124.jpg',
+  'img/tdok/0598-125.jpg',
+  'img/tdok/0598-1321.jpg',
+  'img/tdok/0598-1322.jpg',
+  'img/tdok/0598-133.jpg',
+  'img/tdok/0598-134.jpg',
+  'img/tdok/0598-135.jpg',
+  'img/tdok/0598-139.jpg',
+  'img/tdok/0598-153.jpg',
+  'img/tdok/0598-154.jpg',
+  'img/tdok/0598-200.jpg',
+  'img/tdok/0598-211.jpg',
+  'img/tdok/0598-212.jpg',
+  'img/tdok/0598-213.jpg',
+  'img/tdok/0598-2201.jpg',
+  'img/tdok/0598-2202.jpg',
+  'img/tdok/0598-2203.jpg',
+  'img/tdok/0598-2204.jpg',
+  'img/tdok/0598-221.jpg',
+  'img/tdok/0598-2221.jpg',
+  'img/tdok/0598-2222.jpg',
+  'img/tdok/0598-2223.jpg',
+  'img/tdok/0598-223.jpg',
+  'img/tdok/0598-224.jpg',
+  'img/tdok/0598-2251.jpg',
+  'img/tdok/0598-2252.jpg',
+  'img/tdok/0598-227.jpg',
+  'img/tdok/0598-2321.jpg',
+  'img/tdok/0598-2322.jpg',
+  'img/tdok/0598-233.jpg',
+  'img/tdok/0598-234.jpg',
+  'img/tdok/0598-235.jpg',
+  'img/tdok/0598-236.jpg',
+  'img/tdok/0598-239.jpg',
+  'img/tdok/0598-253.jpg',
+  'img/tdok/0598-254.jpg',
+  'img/tdok/0598-301.jpg',
+  'img/tdok/0598-302.jpg',
+  'img/tdok/0598-303.jpg',
+  'img/tdok/0598-411.jpg',
+  'img/tdok/0598-412.jpg',
+  'img/tdok/0598-421.jpg',
+  'img/tdok/0598-422.jpg',
+  'img/tdok/0598-431.jpg',
+  'img/tdok/0598-432.jpg',
+  'img/tdok/0598-471.jpg',
+  'img/tdok/0598-472.jpg',
+  'img/tdok/0598-481.jpg',
+];
+
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting()));
+  // Bara de blad som saknas hämtas. Går det inte nu hämtas bladet när det öppnas.
+  const ralsfel = caches.open(RALSFEL).then(async cache => {
+    const har = new Set((await cache.keys()).map(r => new URL(r.url).pathname));
+    await Promise.all(RALSFEL_FILES.filter(f => !har.has(new URL(f, self.location).pathname)).map(f => cache.add(f).catch(() => {})));
+  });
+  event.waitUntil(Promise.all([caches.open(VERSION).then(cache => cache.addAll(FILES)), ralsfel]).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== VERSION && k !== RALSFEL).map(k => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -138,6 +206,12 @@ self.addEventListener('activate', event => {
 // används cachen efter tre sekunder.
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
+  // Rälsfelsbladen ändras inte: cachen först.
+  if (event.request.url.includes('/img/tdok/0598-')) {
+    event.respondWith(caches.open(RALSFEL).then(cache => cache.match(event.request, { ignoreSearch: true })
+      .then(r => r || fetch(event.request).then(response => { if (response.ok) cache.put(event.request, response.clone()); return response; }))));
+    return;
+  }
   // no-cache: fråga alltid servern, så att webbläsarens cache inte ger en gammal version.
   const network = fetch(event.request.url, { cache: 'no-cache' }).then(response => {
     if (response.ok) {

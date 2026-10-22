@@ -539,3 +539,4 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 .tdok .hanvisning { margin: 4px 0 12px 1.4em; }
 .tdok .hanvisning .button.info-image { min-height: 0; padding: 8px 12px; margin: 0 0 6px; font-size: 14px; }
 .tdok .ref { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.tdok .hanvisning .hanvisning { margin: 0 0 8px 1em; }

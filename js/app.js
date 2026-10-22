@@ -1502,8 +1502,15 @@ function medFigurer(t, figurer, klass) {
     // span i stället för knapp: en knapp blir inline-block och bryter raden i Safari och Chrome.
     const lank = (onclick, text, extra = {}) => h('span', { class: 'ref', role: 'button', tabindex: '0', onclick, onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onclick(e); } }, ...extra }, text);
     if (!Array.isArray(f[0])) return lank(() => showImage(...f), del);
-    const lista = h('div', { class: 'hanvisning', hidden: true },
-      f.map(([rubrik, src, alt]) => h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(src, alt) }, `📄 ${rubrik}`)));
+    // En post är [rubrik, bild, alt] eller en grupp [rubrik, [poster]] som fälls ut i sin tur.
+    const poster = lista => h('div', { class: 'hanvisning', hidden: true }, lista.map(([rubrik, src, alt]) => {
+      if (!Array.isArray(src)) return h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(src, alt) }, `📄 ${rubrik}`);
+      const under = poster(src);
+      return [h('button', { type: 'button', class: 'button info-image grupp', 'aria-expanded': 'false', onclick: e => {
+        under.hidden = !under.hidden; e.currentTarget.setAttribute('aria-expanded', String(!under.hidden));
+      } }, `📁 ${rubrik} ▾`), under];
+    }));
+    const lista = poster(f);
     listor.push(lista);
     return lank(e => { lista.hidden = !lista.hidden; e.currentTarget.setAttribute('aria-expanded', String(!lista.hidden)); }, `${del} ▾`, { 'aria-expanded': 'false' });
   });

@@ -426,9 +426,45 @@ const SPARLAGE = avsnitt('TRVINFRA-00013', [
 ]);
 const TUNGOR = avsnitt('TRVINFRA-00017', [['10.6 Kontroll av växeltungors, stödräls slitage', '00017-10-6']]);
 const SAKERHET17 = avsnitt('TRVINFRA-00017', [['9.3 Säkerhetsbesiktning', '00017-9-3']]);
+// TDOK 2014:0598 Katalog över rälsfel, ett blad per feltyp i grupper (2026-10-22).
+// Bilderna görs med tools/ralsfel_bilder.py. En grupp är [rubrik, [poster]].
+const ralsfel = lista => lista.map(([nr, namn]) => [`${nr} ${namn}`, `img/tdok/0598-${nr}.jpg`, `TDOK 2014:0598 ${nr} ${namn}`]);
+const RALSFEL = [
+  ['Omfattning, definitioner och klassificering', 'img/tdok/0598-intro.jpg', 'TDOK 2014:0598 kapitel 1–8'],
+  ['Indelning och numrering av rälsfel', 'img/tdok/0598-indelning.jpg', 'TDOK 2014:0598 kapitel 9'],
+  ['1 Fel vid rälsänden', ralsfel([
+    ['100', 'Sprödbrott utan synbar orsak'], ['111', 'Tvärspricka (njurbrott)'], ['112', 'Vågrät spricka'],
+    ['113', 'Vertikalt längsgående spricka'], ['121', 'Ytfel'], ['122', 'Utplattning'], ['123', 'Krosskador'],
+    ['124', 'Svacka'], ['125', 'Slirsår'], ['1321', 'Vågrät spricka mellan liv och huvud'],
+    ['1322', 'Vågrät spricka mellan liv och fot'], ['133', 'Vertikal längsgående spricka (pipe)'], ['134', 'Korrosion'],
+    ['135', 'Sprickor från skarvskruvhål'], ['139', 'Valsveck'], ['153', 'Vertikal längsgående spricka i foten'],
+    ['154', 'Korrosion i foten'],
+  ])],
+  ['2 Fel inne på rälen', ralsfel([
+    ['200', 'Sprödbrott utan synbar orsak'], ['211', 'Tvärspricka (njurbrott)'], ['212', 'Vågrät spricka'],
+    ['213', 'Vertikalt längsgående spricka'], ['2201', 'Räfflor'], ['2202', 'Vågor'], ['2203', 'Stort sidoslitage'],
+    ['2204', 'Stort höjdslitage'], ['221', 'Ytfel'], ['2221', 'Avskalning på farbanan'],
+    ['2222', 'Avskalning på farkanten (shelling)'], ['2223', 'Farkantsprickor (head checking)'], ['223', 'Utplattning'],
+    ['224', 'Svacka'], ['2251', 'Slirsår av enstaka slirning'], ['2252', 'Slirsår av flera slirningar'],
+    ['227', 'Squat'], ['2321', 'Vertikal spricka mellan liv och huvud'], ['2322', 'Vertikal spricka mellan liv och fot'],
+    ['233', 'Vertikal längsgående spricka (pipe)'], ['234', 'Korrosion'], ['235', 'Sprickor från andra hål än skarvskruvhål'],
+    ['236', 'Sned spricka, inte från borrat hål'], ['239', 'Valsveck'], ['253', 'Vertikal längsgående spricka i foten'],
+    ['254', 'Korrosion i foten'],
+  ])],
+  ['3 Fel genom åverkan', ralsfel([
+    ['301', 'Slag och yttre påverkan'], ['302', 'Felaktig bearbetning'], ['303', 'Kvarstående deformation (krökt räl)'],
+  ])],
+  ['4 Svetsfel', ralsfel([
+    ['411', 'Tvärspricka, brännsvets'], ['412', 'Vågrät spricka i liv, brännsvets'], ['421', 'Tvärspricka, termitsvets'],
+    ['422', 'Vågrät spricka i liv, termitsvets'], ['431', 'Tvärspricka, bågsvets'], ['432', 'Vågrät spricka i rälsliv, bågsvets'],
+    ['471', 'Tvärspricka i rälshuvudet, påsvetsning'], ['472', 'Avskalning på påsvetsad farbana'],
+    ['481', 'Tvärspricka av fastsättning av kontaktförbindning'],
+  ])],
+];
 const HANVISNINGAR = {
   '4.1.1': { [T13]: SPARLAGE },
   '4.1.2.2': {
+    'TDOK 2014:0598 Katalog över rälsfel': RALSFEL,
     'TRVINFRA-00015 Banöverbyggnad Oförstörande provning': avsnitt('TRVINFRA-00015', [['7 Åtgärdstider för rälfel', '00015-7']]),
     [T17]: avsnitt('TRVINFRA-00017', [['10.8 Mangankorsning', '00017-10-8']]),
   },
