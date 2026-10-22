@@ -611,3 +611,24 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 .fallbar-text { margin: 8px 0; }
 .fallbar-text summary { cursor: pointer; color: var(--accent); font-weight: 600; padding: 6px 0; }
 .fallbar-text .field { margin-top: 4px; }
+/* Avsnitt ur regelverken som text och tabeller (js/regelverk.js, 2026-10-22). */
+.regelverk .rv-text { font-size: 15px; line-height: 1.45; margin: 12px 0; }
+.regelverk .rv-text h3 { font-size: 16px; margin: 18px 0 6px; }
+.regelverk .rv-text p { margin: 0 0 8px; }
+.regelverk .rv-krav { margin: 12px 0 2px !important; font-size: 12px; font-weight: 600; color: var(--muted); }
+.regelverk .rv-rad { border-left: 4px solid var(--line); padding: 2px 0 2px 10px; margin: 8px 0 10px; color: var(--muted); }
+.regelverk .rv-rad > strong { display: block; color: var(--text); font-size: 13px; }
+.regelverk .rv-li { display: flex; gap: .5em; margin: 0 0 6px; }
+.regelverk .rv-mark { flex: 0 0 auto; min-width: 1.3em; }
+.regelverk .rv-tabelltitel { font-weight: 600; margin-top: 14px !important; }
+.regelverk .rv-fotnot { font-size: 13px; color: var(--muted); }
+.regelverk .rv-tabell { overflow-x: auto; margin: 4px 0 10px; -webkit-overflow-scrolling: touch; }
+.regelverk .rv-tabell table { border-collapse: collapse; font-size: 13px; line-height: 1.3; min-width: 100%; }
+.regelverk .rv-tabell :is(th, td) { border: 1px solid var(--line); padding: 4px 4px; hyphens: auto; -webkit-hyphens: auto; vertical-align: top; text-align: left; white-space: pre-line; }
+.regelverk .rv-tabell th { background: var(--surface); font-weight: 600; }
+/* Breda tabeller rullas i sidled; första kolumnen står kvar. */
+.regelverk .rv-tabell td:first-child { position: sticky; left: 0; background: var(--bg); }
+.regelverk .rv-figur { margin: 6px 0 12px; }
+.regelverk .rv-figur .visa { display: block; width: 100%; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.regelverk .rv-figur img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.regelverk .rv-figur figcaption { font-size: 13px; color: var(--muted); margin-top: 4px; }

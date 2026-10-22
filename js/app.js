@@ -20,6 +20,7 @@ import { jobbText, laggIJobb, lasJobb } from './jobbfil.js';
 import MALLVERSIONER from './mallversioner.js';
 import { HJALP, blankettHjalp } from './hjalp.js';
 import { klassificera } from './ralsfel.js';
+import { visaAvsnitt } from './regelverk.js';
 import { visaBedomning } from './bedomning.js';
 import { svetsstodRad } from './svetsstod.js';
 
@@ -1583,10 +1584,10 @@ function medFigurer(t, figurer, klass) {
     if (!f) return del;
     // span i stället för knapp: en knapp blir inline-block och bryter raden i Safari och Chrome.
     const lank = (onclick, text, extra = {}) => h('span', { class: 'ref', role: 'button', tabindex: '0', onclick, onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onclick(e); } }, ...extra }, text);
-    if (!Array.isArray(f[0])) return lank(() => showImage(...f), del);
+    if (!Array.isArray(f[0])) return lank(() => visaAvsnitt(h, showImage, ...f), del);
     // En post är [rubrik, bild, alt] eller en grupp [rubrik, [poster]] som fälls ut i sin tur.
     const poster = lista => h('div', { class: 'hanvisning', hidden: true }, lista.map(([rubrik, src, alt]) => {
-      if (!Array.isArray(src)) return h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(src, alt) }, `📄 ${rubrik}`);
+      if (!Array.isArray(src)) return h('button', { type: 'button', class: 'button info-image', onclick: () => visaAvsnitt(h, showImage, src, alt) }, `📄 ${rubrik}`);
       const under = poster(src);
       return [h('button', { type: 'button', class: 'button info-image grupp', 'aria-expanded': 'false', onclick: e => {
         under.hidden = !under.hidden; e.currentTarget.setAttribute('aria-expanded', String(!under.hidden));

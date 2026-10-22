@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v187';
+const VERSION = 'v188';
 const FILES = [
   './',
   'index.html',
@@ -53,6 +53,8 @@ const FILES = [
   'js/forms/tdok0311.js',
   'js/forms/bedomning-kort.js',
   'js/bedomning.js',
+  'js/regelverk.js',
+  'js/forms/regelverk-text.js',
   'img/tdok/0334-fritt-utrymme.png',
   'img/tdok/00012-7-1-1-7.png',
   'img/tdok/00012-8-1-1-15.png',
@@ -192,19 +194,150 @@ const RALSFEL_FILES = [
   'img/tdok/0598-481.jpg',
 ];
 
+// Avsnitten ur regelverken som IBT hänvisar till (originalen som bilder och figurerna i texten,
+// ca 12 MB) ligger också i en egen cache som bara byter namn när bilderna ändras (2026-10-22).
+const REGELVERK = 'regelverk-1';
+const REGELVERK_FILES = [
+  'img/tdok/00014-10.png',
+  'img/tdok/00014-11-1.png',
+  'img/tdok/00014-11-2.png',
+  'img/tdok/00014-11-3.png',
+  'img/tdok/00014-11.png',
+  'img/tdok/00014-7.png',
+  'img/tdok/00014-9-6.png',
+  'img/tdok/00017-b10.png',
+  'img/tdok/00398-7-1-1.png',
+  'img/tdok/00398-7-1-2.png',
+  'img/tdok/00398-7-1-3.png',
+  'img/tdok/00398-7-1-4.png',
+  'img/tdok/00398-7-1-5.png',
+  'img/tdok/00398-7-1-6.png',
+  'img/tdok/00398-7-1-7.png',
+  'img/tdok/00398-7-1.png',
+  'img/tdok/00398-7-2-1.png',
+  'img/tdok/00398-7-2-10.png',
+  'img/tdok/00398-7-2-11.png',
+  'img/tdok/00398-7-2-12.png',
+  'img/tdok/00398-7-2-2.png',
+  'img/tdok/00398-7-2-3.png',
+  'img/tdok/00398-7-2-4.png',
+  'img/tdok/00398-7-2-5.png',
+  'img/tdok/00398-7-2-6.png',
+  'img/tdok/00398-7-2-7.png',
+  'img/tdok/00398-7-2-8.png',
+  'img/tdok/00398-7-2-9.png',
+  'img/tdok/00398-7-3.png',
+  'img/tdok/0360-2-1.png',
+  'img/tdok/0360-2-2.png',
+  'img/tdok/0448-5-1.png',
+  'img/tdok/0448-5-2.png',
+  'img/tdok/0448-5-3.png',
+  'img/tdok/0448-5-4.png',
+  'img/tdok/0448-5-5.png',
+  'img/tdok/0448-6-1.png',
+  'img/tdok/0448-6-2.png',
+  'img/tdok/0448-6-3.png',
+  'img/tdok/0448-6-4.png',
+  'img/tdok/0514-5.png',
+  'img/tdok/0514-6.png',
+  'img/tdok/0514-7.png',
+  'img/tdok/0514-8.png',
+  'img/tdok/fig/00012-7-1-1-7-1.jpg',
+  'img/tdok/fig/00012-7-1-1-7-2.jpg',
+  'img/tdok/fig/00012-7-1-1-7-3.jpg',
+  'img/tdok/fig/00012-7-1-1-7-4.png',
+  'img/tdok/fig/00017-10-6-1.jpg',
+  'img/tdok/fig/00017-10-6-2.jpg',
+  'img/tdok/fig/00017-10-6-3.png',
+  'img/tdok/fig/00017-10-6-4.png',
+  'img/tdok/fig/00017-10-6-5.png',
+  'img/tdok/fig/00017-9-3-1.png',
+  'img/tdok/fig/00018-10-1.png',
+  'img/tdok/fig/00398-7-1-1-1.png',
+  'img/tdok/fig/00398-7-1-2-1.png',
+  'img/tdok/fig/00398-7-1-2-2.png',
+  'img/tdok/fig/00398-7-1-3-1.png',
+  'img/tdok/fig/00398-7-1-3-2.png',
+  'img/tdok/fig/00398-7-1-3-3.png',
+  'img/tdok/fig/00398-7-1-5-1.png',
+  'img/tdok/fig/00398-7-1-5-2.png',
+  'img/tdok/fig/00398-7-1-5-3.png',
+  'img/tdok/fig/00398-7-1-5-4.png',
+  'img/tdok/fig/00398-7-1-6-1.png',
+  'img/tdok/fig/00398-7-1-6-2.png',
+  'img/tdok/fig/00398-7-1-6-3.png',
+  'img/tdok/fig/00398-7-1-6-4.png',
+  'img/tdok/fig/00398-7-1-7-1.png',
+  'img/tdok/fig/00398-7-2-12-1.png',
+  'img/tdok/fig/00398-7-2-2-1.png',
+  'img/tdok/fig/00398-7-2-2-2.png',
+  'img/tdok/fig/00398-7-2-2-3.png',
+  'img/tdok/fig/00398-7-2-2-4.png',
+  'img/tdok/fig/00398-7-2-2-5.png',
+  'img/tdok/fig/00398-7-2-4-1.png',
+  'img/tdok/fig/00398-7-2-5-1.png',
+  'img/tdok/fig/00398-7-2-5-2.png',
+  'img/tdok/fig/00398-7-2-6-1.png',
+  'img/tdok/fig/0360-2-1-1.jpg',
+  'img/tdok/fig/0360-2-1-2.jpg',
+  'img/tdok/fig/0360-2-1-3.jpg',
+  'img/tdok/fig/0360-2-1-4.png',
+  'img/tdok/fig/0360-2-1-5.jpg',
+  'img/tdok/fig/0360-2-1-6.png',
+  'img/tdok/fig/0360-2-1-7.png',
+  'img/tdok/fig/0360-2-2-1.jpg',
+  'img/tdok/fig/0448-5-1-1.png',
+  'img/tdok/fig/0448-5-2-1.png',
+  'img/tdok/fig/0448-5-2-10.png',
+  'img/tdok/fig/0448-5-2-11.png',
+  'img/tdok/fig/0448-5-2-12.png',
+  'img/tdok/fig/0448-5-2-13.png',
+  'img/tdok/fig/0448-5-2-2.png',
+  'img/tdok/fig/0448-5-2-3.png',
+  'img/tdok/fig/0448-5-2-4.png',
+  'img/tdok/fig/0448-5-2-5.png',
+  'img/tdok/fig/0448-5-2-6.png',
+  'img/tdok/fig/0448-5-2-7.png',
+  'img/tdok/fig/0448-5-2-8.png',
+  'img/tdok/fig/0448-5-2-9.png',
+  'img/tdok/fig/0448-5-3-1.jpg',
+  'img/tdok/fig/0448-5-3-2.jpg',
+  'img/tdok/fig/0448-6-1-1.jpg',
+  'img/tdok/fig/0448-6-1-2.jpg',
+  'img/tdok/fig/0448-6-1-3.jpg',
+  'img/tdok/fig/0448-6-1-4.jpg',
+  'img/tdok/fig/0448-6-1-5.jpg',
+  'img/tdok/fig/0448-6-1-6.jpg',
+  'img/tdok/fig/0448-6-2-1.png',
+  'img/tdok/fig/0448-6-3-1.png',
+  'img/tdok/fig/0448-6-3-2.jpg',
+  'img/tdok/fig/0448-6-3-3.png',
+  'img/tdok/fig/0448-6-3-4.png',
+  'img/tdok/fig/0448-6-3-5.png',
+  'img/tdok/fig/0448-6-4-1.jpg',
+  'img/tdok/fig/0448-6-4-2.jpg',
+  'img/tdok/fig/0448-6-4-3.jpg',
+  'img/tdok/fig/0514-6-1.jpg',
+  'img/tdok/fig/0514-6-2.jpg',
+  'img/tdok/fig/0514-6-3.jpg',
+  'img/tdok/fig/0514-6-4.png',
+];
+
+const REGELVERK_SET = new Set(REGELVERK_FILES.map(f => new URL(f, self.location).pathname));
+
 self.addEventListener('install', event => {
-  // Bara de blad som saknas hämtas. Går det inte nu hämtas bladet när det öppnas.
-  const ralsfel = caches.open(RALSFEL).then(async cache => {
+  // Bara de bilder som saknas hämtas. Går det inte nu hämtas bilden när den öppnas.
+  const fyll = (namn, filer) => caches.open(namn).then(async cache => {
     const har = new Set((await cache.keys()).map(r => new URL(r.url).pathname));
-    await Promise.all(RALSFEL_FILES.filter(f => !har.has(new URL(f, self.location).pathname)).map(f => cache.add(f).catch(() => {})));
+    await Promise.all(filer.filter(f => !har.has(new URL(f, self.location).pathname)).map(f => cache.add(f).catch(() => {})));
   });
-  event.waitUntil(Promise.all([caches.open(VERSION).then(cache => cache.addAll(FILES)), ralsfel]).then(() => self.skipWaiting()));
+  event.waitUntil(Promise.all([caches.open(VERSION).then(cache => cache.addAll(FILES)), fyll(RALSFEL, RALSFEL_FILES), fyll(REGELVERK, REGELVERK_FILES)]).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION && k !== RALSFEL).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => ![VERSION, RALSFEL, REGELVERK].includes(k)).map(k => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -213,9 +346,10 @@ self.addEventListener('activate', event => {
 // används cachen efter tre sekunder.
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== location.origin) return;
-  // Rälsfelsbladen ändras inte: cachen först.
-  if (event.request.url.includes('/img/tdok/0598-')) {
-    event.respondWith(caches.open(RALSFEL).then(cache => cache.match(event.request, { ignoreSearch: true })
+  // Rälsfelsbladen och regelverksbilderna ändras inte: cachen först.
+  const egen = event.request.url.includes('/img/tdok/0598-') ? RALSFEL : REGELVERK_SET.has(new URL(event.request.url).pathname) ? REGELVERK : null;
+  if (egen) {
+    event.respondWith(caches.open(egen).then(cache => cache.match(event.request, { ignoreSearch: true })
       .then(r => r || fetch(event.request).then(response => { if (response.ok) cache.put(event.request, response.clone()); return response; }))));
     return;
   }

@@ -428,7 +428,81 @@ const SPARLAGE = avsnitt('TRVINFRA-00013', [
 ]);
 const TUNGOR = avsnitt('TRVINFRA-00017', [['10.6 Kontroll av växeltungors, stödräls slitage', '00017-10-6']]);
 const SAKERHET17 = avsnitt('TRVINFRA-00017', [['9.3 Säkerhetsbesiktning', '00017-9-3']]);
+// Avsnitt som visas som text och tabeller (js/regelverk.js), med originalet som bild (2026-10-22).
+const T398 = 'TRVINFRA-00398 Banutformning';
+const T14 = 'TRVINFRA-00014 Banöverbyggnad Stabilitetspåverkande arbete';
+const BILAGA10 = avsnitt('TRVINFRA-00017', [['Bilaga 10 Toleranser Säkerhet (spår- och styrviddsmått)', '00017-b10']]);
+const BANUTFORMNING = [
+  ['7.1 Normalsektion och minsta sektion', avsnitt('TRVINFRA-00398', [
+    ['7.1 Normalsektion och minsta sektion', '00398-7-1'],
+    ['7.1.1 Normalsektion för fria rummet ovan 50 mm över RÖK', '00398-7-1-1'],
+    ['7.1.2 Minsta sektion C och Minsta sektion A', '00398-7-1-2'],
+    ['7.1.3 Fritt utrymme under 50 mm över RÖK', '00398-7-1-3'],
+    ['7.1.4 Fri höjd under fast konstruktion', '00398-7-1-4'],
+    ['7.1.5 Utvidgning i kurva', '00398-7-1-5'],
+    ['7.1.6 Tillägg för rälsförhöjning', '00398-7-1-6'],
+    ['7.1.7 Gräns för hinderfrihet', '00398-7-1-7'],
+  ])],
+  ['7.2 Särskild regel för objekt invid spår', avsnitt('TRVINFRA-00398', [
+    ['7.2.1 Lastkaj', '00398-7-2-1'],
+    ['7.2.2 Plattform', '00398-7-2-2'],
+    ['7.2.3 Rangerbroms', '00398-7-2-3'],
+    ['7.2.4 Tavla, skylt, dvärgsignal och växelklot', '00398-7-2-4'],
+    ['7.2.5 Spärrstaket', '00398-7-2-5'],
+    ['7.2.6 Portsektion', '00398-7-2-6'],
+    ['7.2.7 Skyddsnisch', '00398-7-2-7'],
+    ['7.2.8 Järnväg under bro', '00398-7-2-8'],
+    ['7.2.9 Järnväg på bro', '00398-7-2-9'],
+    ['7.2.10 Byggnad', '00398-7-2-10'],
+    ['7.2.11 Upplag', '00398-7-2-11'],
+    ['7.2.12 Rälsmörjsutrustning', '00398-7-2-12'],
+  ])],
+  ...avsnitt('TRVINFRA-00398', [['7.3 Fritt utrymme mellan väg och järnväg', '00398-7-3']]),
+];
+const STABILITET = [
+  ...avsnitt('TRVINFRA-00014', [
+    ['7 Kategoriindelning stabilitetspåverkande arbete', '00014-7'],
+    ['9.6 Erforderlig stabilisering mellan arbeten', '00014-9-6'],
+    ['10 Åtgärder innan trafikering', '00014-10'],
+  ]),
+  ['11 Tillåtna hastigheter', avsnitt('TRVINFRA-00014', [
+    ['11 Tillåtna hastigheter', '00014-11'],
+    ['11.1 Betongsliperspår', '00014-11-1'],
+    ['11.2 Träsliperspår i makadamballast', '00014-11-2'],
+    ['11.3 Träsliperspår i grusballast', '00014-11-3'],
+  ])],
+];
+const DEF = avsnitt('TDOK 2014:0514', [
+  ['5 Besiktning', '0514-5'],
+  ['6 Klassificering av skador på sliprar', '0514-6'],
+  ['7 Övriga skador', '0514-7'],
+  ['8 Säkerhetskrav som skall innehållas', '0514-8'],
+]);
+const BALK_HALLSBERG = avsnitt('TDOK 2022:0360', [
+  ['2.1 Kontrollpunkter balkbroms Thyssen', '0360-2-1'],
+  ['2.2 Kontrollpunkter hydraulikanläggning', '0360-2-2'],
+]);
+const BALK_MALMO = [
+  ['5 Balkbroms Thyssen TW5', avsnitt('TDOK 2014:0448', [
+    ['5.1 Mekanisk del', '0448-5-1'], ['5.2 Åtgärder', '0448-5-2'], ['5.3 Hydraulisk del', '0448-5-3'],
+    ['5.4 Åtgärder', '0448-5-4'], ['5.5 Ritningar', '0448-5-5'],
+  ])],
+  ['6 Central matningsanläggning för hydraulolja för dalbromsar', avsnitt('TDOK 2014:0448', [
+    ['6.1 Uppbyggnad', '0448-6-1'], ['6.2 Funktionsbeskrivning', '0448-6-2'],
+    ['6.3 Information för drift och underhåll', '0448-6-3'], ['6.4 Service', '0448-6-4'],
+  ])],
+];
+// Kontrollpunkt 17 och 18 i TMALL 0824 hänvisar inte till TDOK 2021:0311 utan direkt till
+// TRVINFRA-00398 och TRVINFRA-00014.
+AVSNITT['00398'] = ['TRVINFRA-00398 Banutformning', [`Krav för placering av fasta objekt utmed spåret finns i kapitel 7 Infrastruktursektion i ${T398}.`]];
+AVSNITT['00014'] = ['TRVINFRA-00014 Stabilitetspåverkande arbete', [`Vad som räknas som arbete i kategori 1, 2 och 3 och vilken hastighet som gäller efteråt står i ${T14}.`]];
+PUNKT['17'] = ['00398'];
+PUNKT['18'] = ['00014'];
 const HANVISNINGAR = {
+  '00398': { [T398]: BANUTFORMNING },
+  '00014': { [T14]: STABILITET },
+  '4.1.3.2': { 'TDOK 2014:0514 Spårkomponenter DEF-sliprar Besiktning': DEF },
+  '4.4.3': { 'TDOK 2022:0360 Spårkomponenter Balkbromsar Thyssen TW-4E och TW-5F': BALK_HALLSBERG, 'TDOK 2014:0448 Balkbromsar Thyssen TW5': BALK_MALMO },
   '4.1.1': { [T13]: SPARLAGE },
   '4.1.2.2': {
     'TDOK 2014:0598 Katalog över rälsfel': KATALOG,
@@ -438,7 +512,7 @@ const HANVISNINGAR = {
   '4.1.6.2': { [T17]: TUNGOR },
   '4.1.10': { 'TRVINFRA-00018 Banöverbyggnad Spårkomponenter kapitel 10': avsnitt('TRVINFRA-00018', [['10 Skyddsräler', '00018-10']]) },
   '4.1.11': { 'TRVINFRA-00012 Banöverbyggnad Spårsystem': avsnitt('TRVINFRA-00012', [['7.1.1.7 Ballast och ballastsektion (skarvfritt spår)', '00012-7-1-1-7'], ['8.1.1.15 Ballast och ballastsektion (skarvspår)', '00012-8-1-1-15']]) },
-  '4.2.1': { [T17]: SAKERHET17 },
+  '4.2.1': { [T17]: [...SAKERHET17, ...BILAGA10] },
   '4.2.7': { [T17]: TUNGOR },
   '4.2.8.3': { [`${T17}, kapitel 9.3 Säkerhetsbesiktning`]: SAKERHET17 },
   '4.6': { 'TRVINFRA-00018 Banöverbyggnad Spårkomponenter': avsnitt('TRVINFRA-00018', [['11 Stoppbock', '00018-11']]) },
