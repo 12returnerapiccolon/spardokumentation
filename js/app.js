@@ -1336,9 +1336,11 @@ function renderItem(item, data, onChange, job) {
             h('summary', {}, item.label),
             h('div', { class: 'tdok' },
               (item.details.intro || []).filter(Boolean).map(t => h('p', { class: 'muted' }, t)),
-              (item.details.blocks || []).map(([rubrik, stycken, figurer]) => [
+              (item.details.blocks || []).map(([rubrik, stycken, figurer, bedomning]) => [
                 h('h4', {}, rubrik),
                 stycken.map(t => h('p', { class: /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null }, ...medFigurer(t, figurer))),
+                // Bedömningsstödet visas först när man trycker (2026-10-22).
+                bedomning ? h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(...bedomning) }, '📋 Bedömningsstöd') : null,
               ]))));
       }
       return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },

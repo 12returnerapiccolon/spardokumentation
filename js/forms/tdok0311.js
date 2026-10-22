@@ -1,7 +1,7 @@
 // Kraven i TDOK 2021:0311 Säkerhetsbesiktning – Banöverbyggnad, version 7.0 (gäller från 2026-01-01),
 // för kontrollpunkterna i TMALL 0824. Plankorsning hänvisar till TDOK 2021:0334 Säkerhetsbesiktning –
 // Signalsystem, version 7.0, kap 4.1.22, som ligger här som 0334-4.1.22 (2026-10-22). Bara kraven ("Kontrollera att …"), inte bedömningsstöden.
-// Avsnitt: [rubrik, stycken, figurer?]; figurer: text i styckena → [bild, beskrivning]. PUNKT: rad i mallen → avsnitt.
+// Avsnitt: [rubrik, stycken, figurer?, bedömningsstöd?], se FIGURER och BEDOMNING längst ner. PUNKT: rad i mallen → avsnitt.
 export const AVSNITT = {
  "4.1.1": [
   "4.1.1 Spårläge",
@@ -34,7 +34,7 @@ export const AVSNITT = {
    "3. beläggningen ligger nära rälen och inte ligger högre än rälens överkant.",
    "4. dräneringen från rälen fungerar och inte ansamlar vatten eller is.",
    "5. flänsrännor är fria från främmande föremål.",
-   "6. höjdslitage (h), farkantsslitage (s) och flänsslitage (f) inte är onormalt stor. Okulär bedömning räcker.",
+   "6. höjdslitage (h), farkantsslitage (s) och flänsslitage (f) inte är onormalt stor. Okulär bedömning räcker. Se Figur 1.",
    "7. spårvidden inte överstiger krav enligt kap 4.1.1."
   ]
  ],
@@ -133,7 +133,7 @@ export const AVSNITT = {
   "4.1.8.1 Skarvöppning",
   [
    "Kontrollera att:",
-   "1. skarvöppnings storlek inte avviker från gällande värden, enligt tabellen i kapitlet. Tabellen anger säkerhetsminvärde (Sä min) och säkerhetsmaxvärde (Sä max) för respektive rältemperatur och rällängd.",
+   "1. skarvöppnings storlek inte avviker från gällande värden, enligt Tabell 11 i kapitlet. Tabellen anger säkerhetsminvärde (Sä min) och säkerhetsmaxvärde (Sä max) för respektive rältemperatur och rällängd.",
    "Kontrollmätning av skarvöppnings storlek ska utföras maskinellt eller manuellt."
   ]
  ],
@@ -320,9 +320,7 @@ export const AVSNITT = {
    "8. att aktuell spårvidd inte överstiger 1455 millimeter",
    "9. att flänsrännor är fria från främmande föremål.",
    "Punkt 1-5 tillhör risktyp O3m. Punkt 6-9 tillhör risktyp Tsäk."
-  ],
-  // Kapitlet har en enda figur (märkt Figur 2 i TDOK:en), som både punkt 6 och 7 hänvisar till.
-  { "figur 1": ["img/tdok/0334-fritt-utrymme.png", "Fritt utrymme för järnvägshjul (TDOK 2021:0334)"], "figur 2": ["img/tdok/0334-fritt-utrymme.png", "Fritt utrymme för järnvägshjul (TDOK 2021:0334)"] }
+  ]
  ],
  "4.4.1": [
   "4.4.1 Kolvbromsar",
@@ -402,3 +400,31 @@ export const AVSNITT = {
 };
 
 export const PUNKT = {"21": ["4.1.1"], "22": ["4.1.2.2", "4.1.2.3"], "23": ["4.1.3.1", "4.1.3.2"], "24": ["4.1.4"], "25": ["4.1.5"], "26": ["4.1.6.2"], "27": ["4.1.7.2", "4.1.7.3", "4.1.7.4", "4.1.8"], "28": ["4.1.8.1"], "29": ["4.1.9"], "30": ["4.1.9.1"], "31": ["4.1.10"], "32": ["4.1.11"], "34": ["4.2.1", "4.1.1"], "35": ["4.2.1"], "36": ["4.2.2.2", "4.1.2.2"], "37": ["4.2.3"], "38": ["4.2.4"], "39": ["4.2.5", "4.1.5", "4.1.8"], "40": ["4.2.6", "4.1.11"], "41": ["4.2.7"], "42": ["4.2.8.1"], "43": ["4.2.8.2"], "44": ["4.2.8.3"], "45": ["4.2.9"], "46": ["4.2.10"], "48": ["4.3.1", "4.3.2"], "49": ["4.9.1", "0334-4.1.22"], "50": ["4.4.1"], "51": ["4.4.2"], "52": ["4.4.3"], "53": ["4.6"], "54": ["4.7.1", "4.7.1.1", "4.7.2", "4.7.2.1"]};
+
+// Figurer och tabeller som kraven hänvisar till, och bedömningsstöden (Akut/V/M/B), som bilder
+// ur TDOK:erna (2026-10-22). FIGURER: text i styckena som blir en knapp → [bild, beskrivning].
+// BEDOMNING: knappen Bedömningsstöd under avsnittet. Läggs som tredje och fjärde del i AVSNITT.
+const fritt = ['img/tdok/0334-fritt-utrymme.png', 'Figur 2 Fritt utrymme för järnvägshjul (TDOK 2021:0334)'];
+const FIGURER = {
+  '4.1.2.3': { 'Figur 1': ['img/tdok/0311-figur1-gatural.png', 'Figur 1 Gaturäl'] },
+  '4.1.8.1': { 'Tabell 11': ['img/tdok/0311-tabell11-skarvoppning.png', 'Tabell 11 Säkerhetsgränsvärden för skarvöppnings storlek'] },
+  '4.3.1': {
+    'Tabell 49': ['img/tdok/0311-tabell49-plattform.png', 'Tabell 49 Säkerhetsgränser för plattform'],
+    'tabell 49': ['img/tdok/0311-tabell49-plattform.png', 'Tabell 49 Säkerhetsgränser för plattform'],
+    'Tabell 50': ['img/tdok/0311-tabell50-plattform.png', 'Tabell 50 Ökning/minskning av breddmåttet B mht rälsförhöjning'],
+  },
+  '4.3.2': {
+    'Tabell 52': ['img/tdok/0311-tabell52-lastkaj.png', 'Tabell 52 Säkerhetsgränser för lastkaj'],
+    'tabell 52': ['img/tdok/0311-tabell52-lastkaj.png', 'Tabell 52 Säkerhetsgränser för lastkaj'],
+    'Tabell 53': ['img/tdok/0311-tabell53-lastkaj.png', 'Tabell 53 Utvidgning i cirkulär kurva'],
+  },
+  // Kapitlet har en enda figur (märkt Figur 2 i TDOK:en), som både punkt 6 och 7 hänvisar till.
+  '0334-4.1.22': { 'figur 1': fritt, 'figur 2': fritt },
+};
+const TABELL = { '4.1.2.2': 3, '4.1.2.3': 4, '4.1.3.1': 5, '4.1.4': 6, '4.1.5': 7, '4.1.6.2': 8, '4.1.7.2': 9, '4.1.8': 10, '4.1.8.1': 12, '4.1.9': 13, '4.1.9.1': 13, '4.1.10': 14, '4.1.11': 15, '4.2.7': 16, '4.2.8.1': 17, '4.2.8.2': 18, '4.2.8.3': 19, '4.2.9': 20, '4.2.10': 21, '4.3.1': 51, '4.3.2': 54, '4.6': 64, '4.7.1': 65, '4.7.1.1': 66, '4.7.2': 67, '4.7.2.1': 68 };
+const BEDOMNING = {
+  ...Object.fromEntries(Object.entries(TABELL).map(([k, nr]) => [k, [`img/tdok/0311-tabell${nr}-bedomning.png`, `Tabell ${nr} Bedömningsstöd ${AVSNITT[k][0].replace(/^[\d.]+ /, '')} (TDOK 2021:0311)`]])),
+  '0334-4.1.22': ['img/tdok/0334-bedomning-vag.png', 'Bedömningsstöd Väg-/gångbana (TDOK 2021:0334)'],
+};
+for (const [k, a] of Object.entries(AVSNITT)) { a[2] = FIGURER[k]; a[3] = BEDOMNING[k]; }
+
