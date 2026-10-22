@@ -554,6 +554,9 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 .svetsstod { display: flex; gap: 8px; margin-top: 8px; }
 .svetsstod .button { flex: 1; }
 .tappning { margin: 6px 0 0; }
+.tappning.matt { font-size: 14px; color: var(--muted); }
+.tappning.matt.nu { color: var(--accent); font-weight: 600; }
+.tappning.matt .link { margin-left: 10px; }
 .guide-namn .rad { display: block; }
 .guide-body .row { display: flex; gap: 8px; }
 .guide-body .row .field { flex: 1; min-width: 0; }
@@ -577,3 +580,14 @@ details.andra-blanketter[open] { padding: 8px 16px 12px; margin-bottom: 12px; }
 .storklocka.snart { color: #d97706; }
 @keyframes blink-gul { 0%, 60% { background: #facc15; } 100% { background: var(--bg); } }
 .overlay.guide.blink-gul { animation: blink-gul 1s ease-out 1; }
+/* Under blinkningen blir texten vit (orange) eller mörk (gul) så att klockan syns, och
+   knapparna får vit bakgrund (2026-10-22). */
+@keyframes text-vit { 0%, 60% { color: #fff; } }
+@keyframes text-mork { 0%, 60% { color: #1d1d1b; } }
+@keyframes knapp-vit { 0%, 60% { background: #fff; color: #c2410c; } }
+.overlay.guide.blink :is(h2, .storklocka, .fasrubrik, .fasbesked, .smaklockor span, .smaklockor strong, .notis) { animation: text-vit 1.2s ease-out 2; }
+.overlay.guide.blink .button { animation: knapp-vit 1.2s ease-out 2; }
+.overlay.guide.blink-gul :is(h2, .storklocka, .fasrubrik, .fasbesked, .smaklockor span, .smaklockor strong, .notis) { animation: text-mork 1s ease-out 1; }
+/* Varningar i lathunden och klockrutan, som varningarna före Skapa filer. */
+.guide-body .notis { background: #fff4e5; color: #7a3e00; border-radius: 10px; padding: 10px 12px; margin: 0 0 8px; }
+@media (prefers-color-scheme: dark) { .guide-body .notis { background: #3b2a14; color: #fcd9a8; } }

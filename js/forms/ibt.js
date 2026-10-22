@@ -140,12 +140,17 @@ const besiktningsman = data => (data.besiktningsman || '').trim();
 const kmm = (k, m) => (k ? `${k}+${String(m || 0).padStart(3, '0')}` : '');
 // Km från/till hämtas från svetsrapportens svetsar med km+m (första och sista läget),
 // annars från jobbet (2026-10-20). Utan till-värde gäller från-värdet. Visas grått och kan skrivas över.
+// Svetsar med bara km räknas som km+000; svetsar med m men utan km hoppas över och varnas
+// för när filerna skapas (2026-10-22). En kilometer kan vara längre än 1000 m (123+1500),
+// så km och m jämförs var för sig.
+const kmTal = (k, m) => [Number(k), Number(m || 0)];
+const kmJamfor = ([k1, m1], [k2, m2]) => k1 - k2 || m1 - m2;
 function svetsKm(job) {
   const lagen = (job.forms?.svets?.svetsar || [])
-    .filter(r => r.lagekm && r.lagem)
-    .map(r => [Number(r.lagekm) * 1000 + Number(r.lagem), [r.lagekm, r.lagem]])
-    .filter(([n]) => Number.isFinite(n))
-    .sort((a, b) => a[0] - b[0]);
+    .filter(r => r.lagekm)
+    .map(r => [kmTal(r.lagekm, r.lagem), [r.lagekm, r.lagem || '']])
+    .filter(([n]) => n.every(Number.isFinite))
+    .sort((a, b) => kmJamfor(a[0], b[0]));
   if (lagen.length) return [lagen[0][1], lagen[lagen.length - 1][1]];
   const fran = [job.km || '', job.km ? job.m || '' : ''];
   return [fran, job.km2 ? [job.km2, job.m2 || ''] : fran];
@@ -304,6 +309,31 @@ export default {
 
   // Varning innan filerna skapas (2026-10-20).
   saknas: (job, data) => (PUNKTER.some(([, rows]) => rows.some(([r]) => kontrollerad(data[`k${r}`]))) ? [] : ['inga kontrollpunkter ikryssade.']),
+
+  // Rimlighetskontroller före Skapa filer (2026-10-22). Meter över 999 är tillåtna.
+  rimlighet(job, data) {
+    const out = [];
+    const radTal = row => {
+      const tal = (k, m) => (k ? kmTal(k, m) : null);
+      const fran = tal(row.franKm, row.franM);
+      const till = tal(row.tillKm, row.tillM);
+      return fran && till && fran.every(Number.isFinite) && till.every(Number.isFinite) ? [fran, till] : null;
+    };
+    for (const [key, namn] of [['objekt', 'objekt'], ['anm', 'anmärkning'], ['godkand', 'sträcka']]) {
+      (data[key] || []).forEach((row, i) => {
+        const t = radTal(row);
+        if (t && kmJamfor(t[1], t[0]) < 0) out.push(`${namn} ${i + 1}: Km till är mindre än Km från.`);
+      });
+    }
+    const sth = Number(data.sth), tillaten = Number(data.tillaten);
+    if (data.sth && data.tillaten && tillaten > sth) out.push('tillåten hastighet vid ibruktagning är högre än STH.');
+    (data.anm || []).forEach((row, i) => {
+      if (['A-anm', 'V-anm'].includes(row.prio) && !(row.atgardad || '').trim()) out.push(`anmärkning ${i + 1} är en ${row.prio[0]}-anmärkning som inte är markerad som åtgärdad. Den ska vara åtgärdad före trafikupplåtelse, annars ska hastighetsnedsättning införas.`);
+    });
+    const utanKm = (job.forms?.svets?.svetsar || []).filter(r => r.lagem && !r.lagekm).length;
+    if (utanKm && !(data.objekt || []).some(r => r.franKm)) out.push(`${utanKm === 1 ? 'en svets' : `${utanKm} svetsar`} i svetsrapporten har m men inte km och räknas inte med i Km från/till. Jobbets km används i stället.`);
+    return out;
+  },
 
   toValues(job, data) {
     const val = (key, def) => (data[key] !== undefined ? data[key] : def);

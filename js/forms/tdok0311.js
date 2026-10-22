@@ -449,6 +449,7 @@ const FIGURER = {
     'Tabell 49': ['img/tdok/0311-tabell49-plattform.png', 'Tabell 49 Säkerhetsgränser för plattform'],
     'tabell 49': ['img/tdok/0311-tabell49-plattform.png', 'Tabell 49 Säkerhetsgränser för plattform'],
     'Tabell 50': ['img/tdok/0311-tabell50-plattform.png', 'Tabell 50 Ökning/minskning av breddmåttet B mht rälsförhöjning'],
+    'Tabell 53': ['img/tdok/0311-tabell53-lastkaj.png', 'Tabell 53 Utvidgning i cirkulär kurva'],
   },
   '4.3.2': {
     'Tabell 52': ['img/tdok/0311-tabell52-lastkaj.png', 'Tabell 52 Säkerhetsgränser för lastkaj'],

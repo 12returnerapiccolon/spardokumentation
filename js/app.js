@@ -312,8 +312,8 @@ async function komIgangView() {
     dela: {
       iPhone: 'Tryck Skicka in jobb och skicka filerna till arbetsledaren med Mail eller Teams.',
       Android: 'Tryck Skicka in jobb och skicka filerna till arbetsledaren med Mail eller Teams.',
-      Mac: 'I Safari fungerar Skicka in jobb. I Chrome på Mac går det inte att dela filer: ladda ned dem via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
-      Windows: 'Skicka in jobb fungerar via Windows delning. Du kan också ladda ned filerna via länkarna under knapparna och bifoga dem i mejlet. Bilder väljs som filer från datorn.',
+      Mac: 'I Safari fungerar Skicka in jobb. I Chrome på Mac går det inte att dela filer: ladda ned dem via länkarna under knapparna, bifoga dem i mejlet och tryck Jag har skickat filerna. Bilder väljs som filer från datorn.',
+      Windows: 'Skicka in jobb fungerar via Windows delning. Du kan också ladda ned filerna via länkarna under knapparna, bifoga dem i mejlet och trycka Jag har skickat filerna. Bilder väljs som filer från datorn.',
     },
   };
   let enhet = gissad;
@@ -953,10 +953,10 @@ function delaBlankett(job, key, form, save) {
       knapp.textContent = 'Skapar filen …';
       const { files, problems } = await skapaFiler({ ...job, docs: [key] }, { bilder: false });
       const lankar = h('ul', { class: 'files' }, files.map(filLank));
-      ruta.replaceChildren(...problems.map(p => h('p', { class: 'error' }, p)),
+      ruta.replaceChildren(...[...problems.map(p => h('p', { class: 'error' }, p)),
         files.length ? h('button', { class: 'button big', type: 'button', onclick: () => delaFiler(files, lankar) },
           `Dela ${form.kort || form.title} (${files.length === 1 ? '1 fil' : `${files.length} filer`})`) : null,
-        lankar);
+        lankar].filter(Boolean));
     },
   }, 'Dela bara den här blanketten');
   ruta.append(knapp, h('p', { class: 'muted note' }, 'Gör en PDF av bara den här blanketten. Jobbets status ändras inte.'));
@@ -1128,16 +1128,25 @@ async function buildFiles(job, area, onSent, { forberedd = false, notis = '' } =
       return;
     }
     if (!(await delaFiler(list, lankar))) return;
-    if (!(navigator.canShare && navigator.canShare({ files: list }))) return;
     // Senaste inskicket sparas, så att jobbsidan kan visa om något ändrats efter det (2026-10-21).
-    job.inskickat = { datum: new Date().toISOString(), filer: list.map(f => ({ namn: f.name, storlek: f.size })), avtryck: fore };
-    if (jobStatus(job) === 'Pågående') {
-      job.status = 'Skickat';
-      job.skickad = job.inskickat.datum;
-      lasAlla(job);
+    const skickat = async () => {
+      job.inskickat = { datum: new Date().toISOString(), filer: list.map(f => ({ namn: f.name, storlek: f.size })), avtryck: fore };
+      if (jobStatus(job) === 'Pågående') {
+        job.status = 'Skickat';
+        job.skickad = job.inskickat.datum;
+        lasAlla(job);
+      }
+      await db.put('jobs', job);
+      onSent && onSent();
+    };
+    // På en dator laddas filerna ned i stället för att delas. Då markerar man själv att de är
+    // skickade, så att jobbet blir Skickat och låses som på telefonen (2026-10-22).
+    if (!(navigator.canShare && navigator.canShare({ files: list }))) {
+      lankar.append(h('li', {}, h('button', { class: 'button primary', type: 'button', onclick: skickat }, 'Jag har skickat filerna')),
+        h('li', { class: 'muted note' }, 'Ladda ned filerna, skicka dem med mail eller lägg dem i Teams eller OneDrive, och tryck sedan Jag har skickat filerna. Jobbet blir då Skickat och låses.'));
+      return;
     }
-    await db.put('jobs', job);
-    onSent && onSent();
+    await skickat();
   };
   area.replaceChildren(...[
     notis ? h('p', { class: 'notis' }, notis) : forberedd ? h('p', { class: 'muted note' }, 'Filerna är klara. Inget saknas.') : null,
@@ -1346,7 +1355,7 @@ function renderItem(item, data, onChange, job) {
                 stycken.map(t => medFigurer(t, figurer, /^\d+[a-z]?\.\s/.test(t) ? 'pkt' : null)),
                 // Bedömningsstödet visas först när man trycker (2026-10-22).
                 bedomning ? h('button', { type: 'button', class: 'button info-image', onclick: () => showImage(...bedomning) }, '📋 Bedömningsstöd') : null,
-                verktyg === 'ralsfel' ? h('button', { type: 'button', class: 'button info-image', onclick: () => klassificera(h, showImage) }, '🔎 Klassificera rälsfel') : null,
+                verktyg === 'ralsfel' ? h('button', { type: 'button', class: 'button info-image', onclick: () => klassificera(h, showImage, ralsfelSomAnm(data)) }, '🔎 Klassificera rälsfel') : null,
               ]))));
       }
       return [h('label', { class: 'check' + (item.sub ? ' sub' : '') },
@@ -1455,7 +1464,14 @@ function renderItems(items, data, onChange, job) {
 // säger att raden kommer från ett tidigare jobb.
 function rowsEditor(item, data, onChange, job) {
   const list = data[item.key] = data[item.key] || [];
-  const wrap = h('div', { class: 'rows' });
+  const wrap = h('div', { class: 'rows', 'data-key': item.key });
+  // Lägger till en färdig rad utifrån, t.ex. ett rälsfel från guiden (2026-10-22).
+  wrap.laggTill = row => {
+    if (wrap.closest('fieldset.last')) return 'last';
+    if (list.length >= item.max) return 'full';
+    list.push(row); onChange(item.key, list); draw();
+    return list.length;
+  };
   const fields = row => renderItems(item.fields, row, (k, v) => { row[k] = v; onChange(item.key, list); }, job);
   const draw = () => wrap.replaceChildren(
     ...list.map((row, i) => h('div', { class: 'rowcard' },
@@ -1481,6 +1497,18 @@ function rowsEditor(item, data, onChange, job) {
       : h('p', { class: 'muted note' }, `Blanketten har plats för ${item.max}. Gör ett nytt jobb för fler.`));
   draw();
   return wrap;
+}
+
+// Rälsfelsguidens "Lägg till som anmärkning" i IBT: texten "Rälsfel 227 Squat", anläggning Räl
+// och km från första objektet (2026-10-22). null när blanketten saknar anmärkningsrader.
+function ralsfelSomAnm(data) {
+  const rader = () => document.querySelector('.rows[data-key="anm"]');
+  if (!rader()) return null;
+  return (nr, namn) => {
+    const o = data.objekt?.[0] || {};
+    const km = Object.fromEntries(['franKm', 'franM', 'tillKm', 'tillM'].filter(k => o[k]).map(k => [k, o[k]]));
+    return rader()?.laggTill({ text: `Rälsfel ${nr} ${namn}`, ...km, anl: 'Räl' }) ?? 'full';
+  };
 }
 
 // Senast använda värden för fält med remember, se formView.
@@ -1760,7 +1788,7 @@ async function formView(id, key) {
   );
   // Låst: rutor och knappar stängs av, men bilder, ⓘ-texter och avsnitt går att öppna.
   if (last) {
-    const stang = () => blankettRuta.querySelectorAll('input, select, textarea, button:not(.figure):not(.info-image):not(.link.inline)').forEach(el => { el.disabled = true; });
+    const stang = () => blankettRuta.querySelectorAll('input, select, textarea, button:not(.figure):not(.info-image):not(.link.inline):not(.oppnas)').forEach(el => { el.disabled = true; });
     stang(); setTimeout(stang, 0);
   }
 }

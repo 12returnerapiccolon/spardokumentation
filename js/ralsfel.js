@@ -25,7 +25,8 @@ export const NAMN = {
 
 export const bild = nr => `img/tdok/0598-${nr}.jpg`;
 const post = nr => [`${nr} ${NAMN[nr]}`, bild(nr), `TDOK 2014:0598 ${nr} ${NAMN[nr]}`];
-const forsta = s => Object.keys(NAMN).filter(nr => nr[0] === s).map(post);
+// Sorterat som text så att t.ex. 2201–2204 hamnar före 221 (Object.keys sorterar heltal numeriskt).
+const forsta = s => Object.keys(NAMN).filter(nr => nr[0] === s).sort().map(post);
 
 // Listan under Räl. En grupp är [rubrik, [poster]].
 export const KATALOG = [
@@ -172,7 +173,9 @@ export const START = {
 };
 
 // Guiden: en fråga i taget med Tillbaka, och till sist felnumret med knapp till bladet.
-export function klassificera(h, showImage) {
+// somAnm(nr, namn): lägger felet som anmärkning i IBT och svarar med radens nummer,
+// 'full' eller 'last' (2026-10-22). Saknas den visas ingen knapp.
+export function klassificera(h, showImage, somAnm) {
   const vag = []; // [nod, valt svar]
   const innehall = h('div', { class: 'guide-body' });
   const close = () => overlay.remove();
@@ -186,7 +189,16 @@ export function klassificera(h, showImage) {
         ? h('p', {}, 'Katalogen har inga feltyper för gas-, gaspress- eller induktionssvets. Ange svetsmetoden (44 gassvets, 45 gaspressvets, 46 induktionssvets) och beskriv felet.')
         : [h('p', { class: 'guide-nr' }, nr), h('p', { class: 'guide-namn' }, NAMN[nr]),
           h('p', { class: 'muted' }, 'Jämför med bladet i katalogen, där står också vad felet inte får förväxlas med.'),
-          h('button', { type: 'button', class: 'button primary', onclick: () => showImage(bild(nr), `TDOK 2014:0598 ${nr} ${NAMN[nr]}`) }, `📄 Visa bladet ${nr}`)],
+          h('button', { type: 'button', class: 'button primary', onclick: () => showImage(bild(nr), `TDOK 2014:0598 ${nr} ${NAMN[nr]}`) }, `📄 Visa bladet ${nr}`),
+          somAnm ? h('button', {
+            type: 'button', class: 'button',
+            onclick: e => {
+              const svar = somAnm(nr, NAMN[nr]);
+              e.target.replaceWith(h('p', { class: 'muted' }, svar === 'last' ? 'Blanketten är låst, lås upp den för att lägga till anmärkningar.'
+                : svar === 'full' ? 'Blanketten har plats för 4 anmärkningar och alla är använda.'
+                : `Tillagd som anmärkning ${svar}. Välj prioritet under Noterade anmärkningar.`));
+            },
+          }, '＋ Lägg till som anmärkning') : null],
         tillbaka, h('button', { type: 'button', class: 'button', onclick: () => { vag.length = 0; visa(START); } }, 'Börja om'));
       return;
     }
