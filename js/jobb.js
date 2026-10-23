@@ -81,7 +81,7 @@ function vecka(datum) {
 
 const DAGAR = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör'];
 
-// V01 Mån Lnk Isolbyte 123456, eller V01 NmTis Lnk Isolbyte 123456 för natt mot tisdag. Arbetslaget står
+// V01 Mån Lnk Isolbyte 2026-901-123 123456, eller V01 NmTis Lnk Isolbyte 123456 för natt mot tisdag. Arbetslaget står
 // efter dagen (2026-10-20). Veckan räknas på
 // skiftets startdag.
 export function jobbnamn(job) {
@@ -94,6 +94,8 @@ export function jobbnamn(job) {
   if (job.arbetslag) delar.push(job.arbetslag.trim());
   if (job.driftplats) delar.push(job.driftplats.trim());
   if (job.arbete) delar.push(job.arbete.trim());
+  // Bessy-nummer före Ao nr (2026-10-23).
+  if (job.bessy) delar.push(String(job.bessy).trim());
   // Ao-numret sist (2026-10-22).
   if (job.ao) delar.push(String(job.ao).trim());
   return delar.filter(Boolean).join(' ');

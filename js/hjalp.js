@@ -63,7 +63,7 @@ export const HJALP = {
           'Skickat: filerna är delade. Det blir automatiskt när du delar.',
           'Avslutat: jobbet är klart och flyttas till Arkiv längst ner.',
         ],
-        'Sökrutan söker på plats, vx nr, Ao nr, arbetslag, bandel, datum och status. Träffar i arkivet visas direkt.',
+        'Sökrutan söker på plats, vx nr, Ao nr, Bessy nr, arbetslag, bandel, datum och status. Träffar i arkivet visas direkt.',
       ]],
       ['Uppe till höger', [[
         '? visar den här hjälpen. Den finns på alla sidor och förklarar just den sidan.',
@@ -80,13 +80,14 @@ export const HJALP = {
         'Datum är dagen skiftet börjar. Kryssa i Nattarbete om du jobbar natt; då får blanketterna nästa dags datum.',
         'Ao nr blir förval för Eget Ao nr på svetsrapporten och Beställningsnr på IBT och kontrollplanen.',
         'Arbetslag förvalt från förra jobbet och kommer med i jobbnamnet.',
+        'Bessy nr, t.ex. 2026-901-123. Flera nummer skrivs med komma, t.ex. 2026-961-123, 321. Numret kommer med i jobbnamnet före Ao nr och fylls i under Bessy på svetsrapporten.',
       ]],
       ['Plats', [
         'Bandel, Driftplats/Sträcka och Spår hamnar på alla blanketter.',
         'Från och Till km+m: läget för arbetet. Till behövs bara om arbetet går över en sträcka.',
       ]],
       ['Arbete', [
-        'Arbetsbeskrivning, t.ex. Isolbyte, blir en del av jobbnamnet. Jobbnamnet skapas av vecka, dag, arbetslag, plats och arbetsbeskrivning, och visas grått. Skriv ett eget namn om du vill.',
+        'Arbetsbeskrivning, t.ex. Isolbyte, blir en del av jobbnamnet. Jobbnamnet skapas av vecka, dag, arbetslag, plats, arbetsbeskrivning, Bessy nr och Ao nr, och visas grått. Skriv ett eget namn om du vill.',
         'Kryssa i det som gäller: Hett arbete, Svetsning, Arbete i växel och Växelrevision. Svaren styr vilka blanketter som föreslås.',
         'Typ av arbete väljs enligt TRVINFRA-00271 bilaga 1. Appen visar då vem som får ibruktaga och om spårlägesmätningen ska vara belastad eller obelastad.',
       ]],
@@ -234,7 +235,7 @@ export const HJALP = {
     intro: 'Rapporten över dagens svetsar (DOK 2630, eller Trafikverkets TMALL 0435 om den är vald i Inställningar). I en DKV eller spårkorsning används Spårsvetsrapport för DKV (DOK 5868) eller för spårkorsning (DOK 5869) när mallen är inläst, med växelbilden för den växeltypen. En rad per svets.',
     delar: [
       ['Rapportuppgifter', [
-        'Företag/enhet, svetsansvarig och ditt namn och svets-ID hämtas från Inställningar. Eget Ao nr hämtas från jobbet. Kundens Ao nr och Bessy/Ofelia skriver du själv.',
+        'Företag/enhet, svetsansvarig och ditt namn och svets-ID hämtas från Inställningar. Eget Ao nr hämtas från jobbet. Bessy anm/Ofelia hämtas från jobbets Bessy nr. Kundens Ao nr skriver du själv.',
       ]],
       ['Svetsar', [
         'Tryck + Lägg till svets för varje svets. En ny svets får samma uppgifter som den förra, utom läge och kapmått, så du behöver oftast bara ändra några rutor. Den första svetsen i ett nytt jobb får uppgifterna från förra jobbet, men rältemp är tom tills du väljer den.',

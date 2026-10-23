@@ -81,6 +81,8 @@ const SHARED = [
   { key: 'vxnr', label: 'Växelnummer' },
   // Fyller i Eget Ao nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
   { key: 'ao', label: 'Ao nr', inputmode: 'numeric', kopiera: true },
+  // Bessy-nummer, flera med komma (2026-10-23). Står i jobbnamnet före Ao nr och fyller i Bessy på svetsrapporten.
+  { key: 'bessy', label: 'Bessy nr', placeholder: 'T.ex. 2026-901-123, 321' },
   // Står i jobbnamnet efter vecka och dag (2026-10-20). Förvalt från förra jobbet.
   { key: 'arbetslag', label: 'Arbetslag', placeholder: 'T.ex. Lena & Per' },
   // Personuppgifterna finns bara under Inställningar och kan ändras i de enskilda blanketterna.
@@ -401,7 +403,7 @@ async function homeView() {
       ].filter(Boolean).join(' · '))))));
   // Sök på namn, plats, växel, Ao nr, arbetslag eller datum (2026-10-20). Träffar i
   // arkivet visas direkt under de pågående.
-  const sokText = job => [jobLabel(job), job.datum, job.driftplats, job.vxnr && `vx ${job.vxnr}`, job.vxnr, job.ao, job.arbetslag, job.bandel, job.spar, job.arbete, jobStatus(job)]
+  const sokText = job => [jobLabel(job), job.datum, job.driftplats, job.vxnr && `vx ${job.vxnr}`, job.vxnr, job.ao, job.bessy, job.arbetslag, job.bandel, job.spar, job.arbete, jobStatus(job)]
     .filter(Boolean).join(' ').toLowerCase();
   const jobbDel = h('div', {});
   const visaJobb = (fraga = '') => {
@@ -574,7 +576,7 @@ function jobInputs(job, change, { visaVaxel }) {
 
   const out = [
     // Rubriker på rutorna (2026-10-20).
-    h('div', { class: 'card' }, h('h3', {}, 'Datum och order'), sharedInputs(job, onChange, { only: ['datum', 'ao', 'arbetslag'] })),
+    h('div', { class: 'card' }, h('h3', {}, 'Datum och order'), sharedInputs(job, onChange, { only: ['datum', 'ao', 'arbetslag', 'bessy'] })),
     h('div', { class: 'card' }, h('h3', {}, 'Plats'), sharedInputs(job, onChange, { only: ['bandel', 'driftplats', 'spar', 'km', 'km2'] })),
     h('div', { class: 'card' }, h('h3', {}, 'Arbete'),
       h('label', { class: 'field' }, h('span', {}, 'Arbetsbeskrivning'),
