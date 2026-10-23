@@ -128,7 +128,7 @@ export const HJALP = {
         'Bilderna ligger ovanför Skapa filer, så att du lägger till dem innan du skickar in. De följer med när du skickar in jobbet. Saknas Efter-bilder eller rälsmärkning får du en påminnelse.',
       ]],
       ['Skapa filer', [
-        'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder, mått utanför tolerans, besiktningstyp eller värden som ser felskrivna ut (t.ex. ett mått med en siffra för mycket). Du kan rätta till det eller trycka Skapa filerna ändå.',
+        'Fyller i blankettmallarna med det du skrivit och gör PDF-filer. Först visas en lista över det som verkar saknas, t.ex. mått, bilder, mått utanför tolerans, besiktningstyp eller värden som ser felskrivna ut (t.ex. ett mått med en siffra för mycket) eller text som är för lång för sin ruta på blanketten. Lång text krymps så att den får plats i rutan; blir den mindre än 5 pt varnar appen, så att du kan korta den. Du kan rätta till det eller trycka Skapa filerna ändå.',
         'När inget saknas i ett pågående jobb är filerna klara redan när du öppnar jobbet, och Skicka in jobb syns direkt. Knappen Skapa filer heter då Skapa filerna igen. Ändrar du något efter det, t.ex. lägger till en bild, gör appen om filerna när du trycker Skicka in jobb, och du trycker en gång till.',
         [
           'Skicka in jobb: öppnar delningen, så att du kan skicka filerna till arbetsledaren med Mail eller Teams eller spara dem i OneDrive. Ämnesraden i Mail fyller du i själv: tryck på kopieraknappen bredvid jobbnamnet överst och klistra in. Jobbet blir Skickat och alla blanketter låses.',

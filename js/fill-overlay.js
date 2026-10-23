@@ -54,6 +54,43 @@ function drawWrapped(page, value, { x, base, size, maxWidth, height, align, font
   });
 }
 
+// Minsta läsbara textstorlek. Krymps en text mer än så varnar Skapa filer (2026-10-23).
+export const MINSTA = 5;
+
+// Text som inte får plats i sin ruta i minst MINSTA pt: [fält, text]. Samma mått som när
+// mallen fylls i, men ingen PDF skapas.
+export async function forTrangt(layout, values) {
+  const pdf = await PDFLib.PDFDocument.create();
+  const f = await font(pdf);
+  const s0 = layout.skala?.s || 1;
+  const ut = [];
+  for (const [key, value] of Object.entries(values)) {
+    const pos = layout.text?.[key];
+    if (!pos || layout.check?.[key] || value == null || typeof value === 'boolean' || value === '') continue;
+    const [, , , size, , maxW, h] = pos;
+    if (!maxW) continue;
+    const text = String(value);
+    let ryms;
+    if (h) {
+      const lines = sz => text.split(/\r?\n/).flatMap(para => {
+        const out = []; let line = '';
+        for (const word of para.split(/\s+/)) {
+          const next = line ? `${line} ${word}` : word;
+          if (line && f.widthOfTextAtSize(next, sz) > maxW) { out.push(line); line = word; } else line = next;
+        }
+        return [...out, line];
+      });
+      const l = lines(MINSTA / s0);
+      ryms = l.length * (MINSTA / s0) * 1.15 <= h - 1 && l.every(t => f.widthOfTextAtSize(t, MINSTA / s0) <= maxW);
+    } else {
+      const w = f.widthOfTextAtSize(text.replace(/\s+/g, ' '), size);
+      ryms = w <= maxW || size * maxW / w >= MINSTA / s0;
+    }
+    if (!ryms) ut.push([key, text]);
+  }
+  return ut;
+}
+
 export function isPdf(buffer) {
   const head = new Uint8Array(buffer, 0, 5);
   return String.fromCharCode(...head) === '%PDF-';

@@ -31,6 +31,8 @@ Vilken besiktningsrapport som används styrs av växeltypen som väljs när jobb
 
 Word-blanketterna skrivs därför ut till tomma PDF-mallar en gång med `tools/pdfmall.py`, som också tar fram var varje formulärfält hamnar (`js/forms/vaxel-layout.js`). Appen skriver sedan text och kryss på de platserna (`js/fill-overlay.js`). Fälten i Word-mallarna har inte unika namn, så de räknas efter sin ordning i dokumentet (se `js/forms/vaxel.js`, måttabellerna i `js/forms/vaxel-matt.js`). PDF-mallarna känns igen på sitt ämne (Subject), t.ex. `Spårdokumentation mall ev`.
 
+Varje textfält har en största bredd (och flerradiga en höjd): `js/fill-overlay.js` krymper texten så att den ryms och `js/fill-pdf.js` gör likadant i PDF-formulär (TMALL 1481) i stället för att klippa av den. Blir texten mindre än 5 pt varnar Skapa filer (`forTrangt`, `pdfForTrangt`).
+
 Excel-blanketter görs om på samma sätt med `tools/pdfmall_excel.py`, som tar fram cellernas platser (t.ex. `js/forms/svets-layout.js` för svetsrapporten). Den tomma PDF:en får nya metadata (titel och ämne) innan den lämnas ut, så att Excel-filens författare inte följer med.
 
 Normalvärden kommer ur bilaga 8 (`js/forms/vaxel-normal.js`) och toleranser ur bilaga 9–11 (`js/forms/vaxel-tolerans.js`). PDF-fälten fylls efter namn (se `js/forms/oversyn1481.js`).

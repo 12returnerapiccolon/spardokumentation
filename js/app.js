@@ -1,7 +1,7 @@
 import * as db from './db.js';
 import { fillWord, wordInfo } from './fill-word.js';
-import { fillPdf, pdfInfo } from './fill-pdf.js';
-import { fillOverlay, isPdf } from './fill-overlay.js';
+import { fillPdf, pdfInfo, pdfForTrangt } from './fill-pdf.js';
+import { fillOverlay, isPdf, forTrangt } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
 import svets, { svets0435, svetsdkv, svetsspk, svetsmall, VXL } from './forms/svets.js';
@@ -991,6 +991,25 @@ async function varningar(job) {
     const form = docForm(jobbFor(job, key), key);
     const t = form && await db.get('templates', mallForm(form, jobbFor(job, key)).key);
     if (t && await gammalMall(t)) lista.push(`${form.title}: mallen är en gammal version. Läs in den senaste under Inställningar > Blankettmallar.`);
+  }
+  // Text som är för lång för sin ruta och skulle bli mindre än 5 pt eller inte få plats (2026-10-23).
+  for (const key of job.docs) {
+    const j = jobbFor(job, key);
+    const form = mallForm(docForm(j, key), j);
+    if (!form) continue;
+    const tpl = await db.get('templates', form.key);
+    if (!tpl || !isPdf(tpl.data)) continue;
+    try {
+      const data = job.forms[form.dataKey || form.key] || {};
+      const trangt = [];
+      for (let sida = 0; sida < (form.sidor ? form.sidor(j, data) : 1); sida++) {
+        const values = form.toValues(j, data, { diff, sida });
+        trangt.push(...(form.format === 'overlay' ? await forTrangt(form.layout, values) : form.format === 'pdf' ? await pdfForTrangt(tpl.data, values) : []));
+      }
+      const texter = [...new Set(trangt.map(([, t]) => t.replace(/\s+/g, ' ')))];
+      const kort = t => (t.length > 40 ? `${t.slice(0, 40)}…` : t);
+      if (texter.length) lista.push(`${form.title}: ${texter.length === 1 ? 'texten' : `${texter.length} texter`} ${texter.slice(0, 3).map(t => `”${kort(t)}”`).join(', ')}${texter.length > 3 ? ' m.fl.' : ''} ${texter.length === 1 ? 'är för lång för sin ruta' : 'är för långa för sina rutor'} och blir svår att läsa på blanketten. Korta texten.`);
+    } catch (e) { console.error(e); }
   }
   return lista;
 }
