@@ -79,6 +79,18 @@ function sft(row) {
   return r.dt === 'Utanför' ? 'Utanför' : r.sft;
 }
 
+// Neutraltemperatur från Inställningar (2026-10-23). Neutraltemperaturområdet är 3 °C under till
+// 7 °C över neutraltemperaturen (TRVINFRA-00012 avsnitt 7.2.1). Utan inställning görs ingen kontroll.
+export const neutral = { temp: null };
+export const neutralOmrade = () => (neutral.temp == null ? null : [neutral.temp - 3, neutral.temp + 7]);
+function sftUtanfor(row) {
+  const o = neutralOmrade();
+  const s = sft(row);
+  if (!o || !s || s === 'Utanför') return false;
+  const n = Number(String(s).replace('−', '-').replace(',', '.'));
+  return Number.isFinite(n) && (n < o[0] || n > o[1]);
+}
+
 const svets = {
   key: 'svets',
   code: 'DOK 2630',
@@ -110,7 +122,7 @@ const svets = {
     },
     {
       title: 'Svetsar',
-      help: `Blanketten har plats för ${RADER} svetsar; fler svetsar hamnar på en blankett till (del 2, 3 …). En ny svets får samma uppgifter som den förra, utom läge och kapmått. Rältemp hämtas inte från ett tidigare jobb. Grå text hämtas från jobbet. SFT räknas ut som på kapmetoden när före kap, efter kap och rältemp är ifyllda; den visas bara här och kommer inte med på blanketten.`,
+      help: `Blanketten har plats för ${RADER} svetsar; fler svetsar hamnar på en blankett till (del 2, 3 …). En ny svets får samma uppgifter som den förra, utom läge och kapmått. Rältemp hämtas inte från ett tidigare jobb. Grå text hämtas från jobbet. SFT räknas ut som på kapmetoden när före kap, efter kap och rältemp är ifyllda; den visas bara här och kommer inte med på blanketten. Har du ställt in neutraltemperatur under Inställningar blir SFT röd när den ligger utanför neutraltemperaturområdet (3 °C under till 7 °C över neutraltemperaturen), och appen varnar innan filerna skapas.`,
       items: [{
         type: 'rows',
         key: 'svetsar',
@@ -132,7 +144,7 @@ const svets = {
           { type: 'text', key: 'efter', label: 'Efter kap mm', inputmode: 'decimal', half: true },
           // SFT räknas som på kapmetoden och visas bara i appen, inte på blanketten (2026-10-20).
           { type: 'select', key: 'temp', label: 'Rältemp °C', options: TEMP, row: 3, flex: 1 },
-          { type: 'calc', label: 'SFT °C', value: sft, flex: 1 },
+          { type: 'calc', label: 'SFT °C', value: sft, ute: sftUtanfor, uteText: () => `Utanför neutraltemperaturområdet ${neutralOmrade().join('–')} °C`, flex: 1 },
           { type: 'select', key: 'modell', label: 'Rälsmodell', options: MODELL, flex: 1 },
           { type: 'select', key: 'material', label: 'Rälsmaterial', options: MATERIAL, half: true },
           { type: 'select', key: 'typ', label: 'Typ av arbete', options: ARBETE, half: true },
@@ -186,7 +198,9 @@ const svets = {
     return [`${vilka} har rältemp under 0 °C, men ${rutor} under Egenkontroll.`];
   },
   // Rimlighetskontroll före Skapa filer (2026-10-21).
-  rimlighet: (job, data) => (data.svetsar || []).flatMap((row, i) => (sft(row) === 'Utanför' ? [`svets ${i + 1}: före och efter kap ger en öppning utanför tabellen, kontrollera måtten.`] : [])),
+  // SFT utanför neutraltemperaturområdet varnas också (2026-10-23).
+  rimlighet: (job, data) => (data.svetsar || []).flatMap((row, i) => (sft(row) === 'Utanför' ? [`svets ${i + 1}: före och efter kap ger en öppning utanför tabellen, kontrollera måtten.`]
+    : sftUtanfor(row) ? [`svets ${i + 1}: SFT ${sft(row)} °C ligger utanför neutraltemperaturområdet ${neutralOmrade().join('–')} °C.`] : [])),
 
   toValues(job, data, { sida = 0 } = {}) {
     const kommentarer = (d, s) => [(d.kommentar || '').trim(), ...(d.svetsar || []).map((row, i) => [i, (row.kommentar || '').trim()])

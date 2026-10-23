@@ -167,6 +167,8 @@ h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: v
   min-height: 44px;
 }
 
+.field.shared.ute output { border-color: var(--danger); color: var(--danger); background: rgba(180, 35, 24, .1); font-weight: 700; }
+
 .row { display: flex; gap: 12px; }
 .row > .field { flex: 1; }
 .row > .check { flex: 1; min-width: 0; }

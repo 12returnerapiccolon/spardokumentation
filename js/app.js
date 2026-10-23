@@ -4,7 +4,7 @@ import { fillPdf, pdfInfo, pdfForTrangt } from './fill-pdf.js';
 import { fillOverlay, isPdf, forTrangt } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
-import svets, { svets0435, svetsdkv, svetsspk, svetsmall, VXL } from './forms/svets.js';
+import svets, { svets0435, svetsdkv, svetsspk, svetsmall, VXL, neutral } from './forms/svets.js';
 import heta from './forms/heta.js';
 import ibt from './forms/ibt.js';
 import k0737 from './forms/k0737.js';
@@ -1301,9 +1301,17 @@ function renderItem(item, data, onChange, job) {
       return svetsstodRad(h, { row: data, onChange, pa: svetsstodPa, avslutat: jobStatus(job) === 'Avslutat', showImage });
     case 'calc': {
       // Uträknat värde som inte går att skriva i, t.ex. SFT. Räknas om när något ändras.
-      const out = h('output', { 'data-calc': '' }, item.value(data, job) || '–');
-      out.refreshCalc = () => { out.textContent = item.value(data, job) || '–'; };
-      return h('div', { class: 'field shared' }, h('span', {}, item.label), out);
+      // ute: rödmarkeras, t.ex. SFT utanför neutraltemperaturområdet (2026-10-23).
+      const out = h('output', { 'data-calc': '' });
+      const falt = h('div', { class: 'field shared' }, h('span', {}, item.label), out);
+      out.refreshCalc = () => {
+        out.textContent = item.value(data, job) || '–';
+        const ute = !!item.ute?.(data, job);
+        falt.classList.toggle('ute', ute);
+        out.title = ute ? item.uteText(data, job) : '';
+      };
+      out.refreshCalc();
+      return falt;
     }
     case 'text': {
       // list: förslag att välja bland (man kan ändå skriva något annat).
@@ -1934,6 +1942,8 @@ async function settingsView() {
     h('h2', {}, 'Blankettmallar'),
     h('a', { class: 'button big', href: '#/mallar' }, 'Blankettmallar'),
     svetsmallKort(),
+    h('h2', {}, 'Neutraltemperatur'),
+    neutralKort(),
     h('h2', {}, 'Svetsstöd'),
     svetsstodKort(),
     h('h2', {}, 'Säkerhetskopia'),
@@ -1965,6 +1975,27 @@ function svetsmallKort() {
       h('p', { class: 'muted note' }, 'Mallen som svetsrapporten fylls i på. Uppgifterna är desamma; med TMALL 0435 kan du också välja en avvikelse ur mallens lista under Avvikelser och kommentarer. Med DOK 2630 används svetsrapporten för DKV eller spårkorsning (DOK 5868, 5869) i sådana växlar, om mallen är inläst.')));
   });
   return ruta;
+}
+
+// Neutraltemperatur för spåret (2026-10-23). SFT i svetsrapporten rödmarkeras och varnas när den
+// ligger utanför neutraltemperaturområdet, 3 °C under till 7 °C över (TRVINFRA-00012 avsnitt 7.2.1).
+function neutralKort() {
+  const omrade = h('p', { class: 'muted note' });
+  const visa = t => {
+    omrade.textContent = t == null
+      ? 'Ingen neutraltemperatur inställd, så SFT kontrolleras inte. Neutraltemperaturen bestäms av Trafikverket för spåravsnittet.'
+      : `Neutraltemperaturområde ${t - 3} till ${t + 7} °C (3 °C under till 7 °C över, TRVINFRA-00012 avsnitt 7.2.1). SFT i svetsrapporten blir röd utanför området, och appen varnar innan filerna skapas.`;
+  };
+  const input = h('input', { type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: 'T.ex. 18',
+    oninput: e => {
+      const v = e.target.value.trim().replace('−', '-').replace(',', '.');
+      const t = v === '' || !Number.isFinite(Number(v)) ? null : Number(v);
+      neutral.temp = t;
+      db.setSetting('neutraltemp', t);
+      visa(t);
+    } });
+  db.getSetting('neutraltemp', null).then(t => { input.value = t ?? ''; visa(t); });
+  return h('div', { class: 'card' }, h('label', { class: 'field' }, h('span', {}, 'Neutraltemperatur °C'), input), omrade);
 }
 
 function svetsstodKort() {
@@ -2082,6 +2113,7 @@ async function route() {
   // Valet gäller bara när båda mallarna är inlästa; annars används den som finns (2026-10-22).
   const [m2630, m0435, mdkv, mspk] = await Promise.all(['svets', 'svets0435', 'svetsdkv', 'svetsspk'].map(k => db.get('templates', k)));
   svetsmall.vxl = { dkv: !!mdkv, spk: !!mspk };
+  neutral.temp = await db.getSetting('neutraltemp', null);
   svetsmall.val = m0435 && !m2630 ? '0435' : m2630 && !m0435 ? '2630' : await db.getSetting('svetsmall', '2630');
   const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   document.querySelector('.hjalp-overlay')?.remove();

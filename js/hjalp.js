@@ -176,6 +176,9 @@ export const HJALP = {
       ['Svetsrapport', [
         'Syns bara när både DOK 2630 och Trafikverkets TMALL 0435 är inlästa under Blankettmallar. Välj då vilken svetsrapporten ska fyllas i på; finns bara en av dem används den. Uppgifterna är desamma, så du kan byta när som helst. Med TMALL 0435 finns också en rullista med mallens avvikelser (t.ex. Solkurva) under Avvikelser och kommentarer. Är DOK 2630 vald och jobbets växeltyp DKV eller spårkorsning (SPK) används Spårsvetsrapport för DKV (DOK 5868) respektive för spårkorsning (DOK 5869), om den mallen är inläst.',
       ]],
+      ['Neutraltemperatur', [
+        'Skriv neutraltemperaturen för spåret du arbetar på (den bestäms av Trafikverket för spåravsnittet). Neutraltemperaturområdet är 3 °C under till 7 °C över neutraltemperaturen enligt TRVINFRA-00012 avsnitt 7.2.1, och det visas under rutan. Ligger SFT för en svets i svetsrapporten utanför området blir SFT-rutan röd, och appen varnar innan filerna skapas. Lämna rutan tom om du inte vill ha kontrollen.',
+      ]],
       ['Svetsstöd', [
         'Visa svetsstöd slår på eller av knapparna Lathund och Börja svetsa under svetsar med svetsmetod SkV Elite L25 eller SkV L50 (och WPS TDOK 2014:0664 eller ingen WPS vald) i svetsrapporten. Avstängt från början; slå på det här om du svetsar SkV-Elite.',
       ]],
@@ -235,7 +238,7 @@ export const HJALP = {
       ]],
       ['Svetsar', [
         'Tryck + Lägg till svets för varje svets. En ny svets får samma uppgifter som den förra, utom läge och kapmått, så du behöver oftast bara ändra några rutor. Den första svetsen i ett nytt jobb får uppgifterna från förra jobbet, men rältemp är tom tills du väljer den.',
-        'SFT bredvid Rältemp räknas ut som på SFT Kapmetoden när Före kap, Efter kap och Rältemp är ifyllda. Den är bara till för dig och kommer inte med på svetsrapporten.',
+        'SFT bredvid Rältemp räknas ut som på SFT Kapmetoden när Före kap, Efter kap och Rältemp är ifyllda. Den är bara till för dig och kommer inte med på svetsrapporten. Har du ställt in neutraltemperatur under Inställningar blir SFT-rutan röd när SFT ligger utanför neutraltemperaturområdet, och appen varnar innan filerna skapas.',
         'Dag och plats hämtas från jobbet. Km + m är svetsens läge; i en växel kan du i stället skriva svetsens nummer på växelbilden (1–14, i DKV 1–22 och i spårkorsning 1–24) i första rutan och lämna meter tom. Tryck på ordet växelbilden för att se numren.',
         'Fyll i före och efter kap, rältemperatur, rälsmodell, material, typ av arbete, svetsmetod, tillsatsmaterial, batch och WPS.',
         'En blankett har plats för 10 svetsar. Fler svetsar ger fler blanketter när du skapar filerna: på den andra står svetsarna 11–20, och nere till höger står t.ex. 2(3).',
