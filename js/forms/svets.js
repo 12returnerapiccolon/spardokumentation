@@ -165,7 +165,7 @@ const svets = {
     },
     {
       title: 'Egenkontroll',
-      help: 'Kryssa i det som är utfört. Det blir X på blanketten, och det som inte är ikryssat lämnas tomt. Har någon svets rältemp under 0 °C ska Svetsad i kallt klimat, Säkerställt gasflödet och Skyddad svalning av svetsobjekt vara ikryssade, annars varnar appen innan filerna skapas.',
+      help: 'Kryssa i det som är utfört. Det blir X på blanketten, och det som inte är ikryssat lämnas tomt. Har någon svets rältemp under 0 °C ska Svetsad i kallt klimat, Säkerställt gasflödet och Skyddad svalning av svetsobjekt vara ikryssade, annars varnar appen innan filerna skapas. Appen varnar också om Återställd rälsmängd inte är ikryssad.',
       // En kryssruta per egenkontroll (2026-10-19). Äldre jobb sparade X eller --.
       items: EGENKONTROLL.map(([key, label]) => ({ type: 'check', key, label, isChecked: v => v === true || v === 'X' })),
     },
@@ -189,13 +189,16 @@ const svets = {
   saknas: (job, data) => {
     const svetsar = data.svetsar || [];
     if (!svetsar.length) return ['inga svetsar ifyllda.'];
+    const ikryssad = key => data[key] === true || data[key] === 'X';
+    // Återställd rälsmängd ska alltid vara ikryssad (2026-10-23).
+    const out = ikryssad('ralsmangd') ? [] : ['rutan Återställd rälsmängd under Egenkontroll är inte ikryssad.'];
     const kalla = svetsar.map((row, i) => (grader(row.temp) < 0 ? i + 1 : 0)).filter(Boolean);
-    const ej = EGENKONTROLL.filter(([key]) => KALLT.includes(key) && !(data[key] === true || data[key] === 'X')).map(([, label]) => label.toLowerCase());
-    if (!kalla.length || !ej.length) return [];
+    const ej = EGENKONTROLL.filter(([key]) => KALLT.includes(key) && !ikryssad(key)).map(([, label]) => label.toLowerCase());
+    if (!kalla.length || !ej.length) return out;
     const och = a => a.join(', ').replace(/, ([^,]*)$/, ' och $1');
     const vilka = kalla.length === 1 ? `svets ${kalla[0]}` : `svetsarna ${och(kalla)}`;
     const rutor = ej.length === 1 ? `rutan ${ej[0]} är inte ikryssad` : `rutorna ${och(ej)} är inte ikryssade`;
-    return [`${vilka} har rältemp under 0 °C, men ${rutor} under Egenkontroll.`];
+    return [...out, `${vilka} har rältemp under 0 °C, men ${rutor} under Egenkontroll.`];
   },
   // Rimlighetskontroll före Skapa filer (2026-10-21).
   // SFT utanför neutraltemperaturområdet varnas också (2026-10-23).
