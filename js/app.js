@@ -79,10 +79,10 @@ const SHARED = [
   { key: 'vaxeltyp', label: 'Växeltyp', kind: 'vaxeltyp' },
   { key: 'vxmodell', label: 'Växelmodell', kind: 'vxmodell' },
   { key: 'vxnr', label: 'Växelnummer' },
-  // Fyller i Eget AO nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
-  { key: 'ao', label: 'AO nr', inputmode: 'numeric', kopiera: true },
-  // Bessy-nummer, flera med komma (2026-10-23). Står i jobbnamnet före AO nr och fyller i Bessy på svetsrapporten.
-  { key: 'bessy', label: 'Bessy/Ofelia nr', placeholder: 'T.ex. 2026-901-123, 321' },
+  // Fyller i Eget Ao nr (svetsrapport) och Beställningsnr (IBT, TMALL 0737).
+  { key: 'ao', label: 'Ao nr', inputmode: 'numeric', kopiera: true },
+  // Bessy-nummer, flera med komma (2026-10-23). Står i jobbnamnet före Ao nr och fyller i Bessy på svetsrapporten.
+  { key: 'bessy', label: 'Bessy anm/Ofelia', placeholder: 'T.ex. 2026-901-123, 321' },
   // Står i jobbnamnet efter vecka och dag (2026-10-20). Förvalt från förra jobbet.
   { key: 'arbetslag', label: 'Arbetslag', placeholder: 'T.ex. Lena & Per' },
   // Personuppgifterna finns bara under Inställningar och kan ändras i de enskilda blanketterna.
@@ -401,7 +401,7 @@ async function homeView() {
         upgradeJob(job).docs.map(k => docForm(job, k)?.code || '').filter(Boolean).join(', '),
         jobStatus(job) === 'Skickat' && job.skickad && `skickat ${new Date(job.skickad).toLocaleDateString('sv-SE')}`,
       ].filter(Boolean).join(' · '))))));
-  // Sök på namn, plats, växel, AO nr, arbetslag eller datum (2026-10-20). Träffar i
+  // Sök på namn, plats, växel, Ao nr, arbetslag eller datum (2026-10-20). Träffar i
   // arkivet visas direkt under de pågående.
   const sokText = job => [jobLabel(job), job.datum, job.driftplats, job.vxnr && `vx ${job.vxnr}`, job.vxnr, job.ao, job.bessy, job.arbetslag, job.bandel, job.spar, job.arbete, jobStatus(job)]
     .filter(Boolean).join(' ').toLowerCase();
@@ -445,7 +445,7 @@ async function homeView() {
     h('a', { class: 'button primary big', href: '#/nytt' }, '+ Nytt jobb'),
     importKnapp(),
     h('h2', {}, 'Jobb'),
-    jobs.length > 1 ? h('input', { class: 'sok', type: 'search', placeholder: 'Sök jobb (plats, vx nr, AO nr, datum …)', 'aria-label': 'Sök jobb', autocomplete: 'off', oninput: e => visaJobb(e.target.value) }) : null,
+    jobs.length > 1 ? h('input', { class: 'sok', type: 'search', placeholder: 'Sök jobb (plats, vx nr, Ao nr, datum …)', 'aria-label': 'Sök jobb', autocomplete: 'off', oninput: e => visaJobb(e.target.value) }) : null,
     jobbDel,
   );
 }
@@ -517,7 +517,7 @@ function sharedInputs(values, onChange, opts = {}) {
         oninput: e => change(field.key, e.target.value),
       }),
       field.list ? h('datalist', { id: `list-${field.key}` }, field.list.map(v => h('option', { value: v }))) : null,
-      // Kopieraknapp i rutan, t.ex. för AO nr (2026-10-20).
+      // Kopieraknapp i rutan, t.ex. för Ao nr (2026-10-20).
       field.kopiera ? kopieraKnapp(() => inputs[field.key].value, `Kopiera ${field.label}`) : null);
     if (f.key === 'datum') {
       // Nattarbete: blanketterna får nästa dags datum (ingen förklaring visas, 2026-10-20).
@@ -542,7 +542,7 @@ function sharedInputs(values, onChange, opts = {}) {
   return out;
 }
 
-// Uppgifterna om jobbet i ordningen datum/AO, plats, arbetsbeskrivning och jobbnamn, km, frågor,
+// Uppgifterna om jobbet i ordningen datum/Ao, plats, arbetsbeskrivning och jobbnamn, km, frågor,
 // typ av arbete och växel (2026-10-19). Används både för nytt jobb och i ett befintligt jobb.
 // visaVaxel(job): om växeldelen ska visas. Anropar change(nyckel, värde) vid varje ändring.
 function jobInputs(job, change, { visaVaxel }) {

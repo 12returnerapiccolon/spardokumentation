@@ -63,7 +63,7 @@ export const HJALP = {
           'Skickat: filerna är delade. Det blir automatiskt när du delar.',
           'Avslutat: jobbet är klart och flyttas till Arkiv längst ner.',
         ],
-        'Sökrutan söker på plats, vx nr, AO nr, Bessy/Ofelia nr, arbetslag, bandel, datum och status. Träffar i arkivet visas direkt.',
+        'Sökrutan söker på plats, vx nr, Ao nr, Bessy anm/Ofelia, arbetslag, bandel, datum och status. Träffar i arkivet visas direkt.',
       ]],
       ['Uppe till höger', [[
         '? visar den här hjälpen. Den finns på alla sidor och förklarar just den sidan.',
@@ -78,16 +78,16 @@ export const HJALP = {
     delar: [
       ['Datum och order', [
         'Datum är dagen skiftet börjar. Kryssa i Nattarbete om du jobbar natt; då får blanketterna nästa dags datum.',
-        'AO nr blir förval för Eget AO nr på svetsrapporten och Beställningsnr på IBT och kontrollplanen.',
+        'Ao nr blir förval för Eget Ao nr på svetsrapporten och Beställningsnr på IBT och kontrollplanen.',
         'Arbetslag förvalt från förra jobbet och kommer med i jobbnamnet.',
-        'Bessy/Ofelia nr, t.ex. 2026-901-123. Flera nummer skrivs med komma, t.ex. 2026-961-123, 321. Numret kommer med i jobbnamnet före AO nr och fylls i under Bessy på svetsrapporten.',
+        'Bessy anm/Ofelia, t.ex. 2026-901-123. Flera nummer skrivs med komma, t.ex. 2026-961-123, 321. Numret kommer med i jobbnamnet före Ao nr och fylls i under Bessy på svetsrapporten.',
       ]],
       ['Plats', [
         'Bandel, Driftplats/Sträcka och Spår hamnar på alla blanketter.',
         'Från och Till km+m: läget för arbetet. Till behövs bara om arbetet går över en sträcka.',
       ]],
       ['Arbete', [
-        'Arbetsbeskrivning, t.ex. Isolbyte, blir en del av jobbnamnet. Jobbnamnet skapas av vecka, dag, arbetslag, plats, arbetsbeskrivning, Bessy/Ofelia nr och AO nr, och visas grått. Skriv ett eget namn om du vill.',
+        'Arbetsbeskrivning, t.ex. Isolbyte, blir en del av jobbnamnet. Jobbnamnet skapas av vecka, dag, arbetslag, plats, arbetsbeskrivning, Bessy anm/Ofelia och Ao nr, och visas grått. Skriv ett eget namn om du vill.',
         'Kryssa i det som gäller: Hett arbete, Svetsning, Arbete i växel och Växelrevision. Svaren styr vilka blanketter som föreslås.',
         'Typ av arbete väljs enligt TRVINFRA-00271 bilaga 1. Appen visar då vem som får ibruktaga och om spårlägesmätningen ska vara belastad eller obelastad.',
       ]],
@@ -109,9 +109,9 @@ export const HJALP = {
         'Pågående, Skickat eller Avslutat. Statusen blir Skickat när du trycker Skicka in jobb och skickar filerna, och då låses alla blanketter. Välj Avslutat när jobbet är klart, så flyttas det till arkivet.',
         'Under statusen står när jobbet senast skickades in och hur många filer det var. Tryck på raden för att se filerna. Står det "ändrat efter det" har något i jobbet ändrats sedan dess, och du kan skicka in det igen.',
       ]],
-      ['Kopiera jobbnamn och AO nr', [
+      ['Kopiera jobbnamn och Ao nr', [
         'Knappen bredvid jobbnamnet överst kopierar namnet. Klistra in det på ämnesraden när du mejlar filerna; telefonen kan inte fylla i ämnesraden själv.',
-        'Rutan AO nr under Uppgifter om jobbet har en likadan knapp som kopierar numret.',
+        'Rutan Ao nr under Uppgifter om jobbet har en likadan knapp som kopierar numret.',
       ]],
       ['Uppgifter om jobbet', [
         'Samma uppgifter som när jobbet skapades. Ändringar här syns på alla blanketter som inte är låsta.',
@@ -122,7 +122,7 @@ export const HJALP = {
         'Överst på blanketten står ett kort namn, t.ex. Besiktningsrapport EV eller SFT Kapmetoden. Hela namnet och mallnumret står på raden under.',
         'Lägg till/ta bort blanketter direkt under rubriken fäller ut kryssrutor för alla blanketter. Kryssa i fler eller ta bort en, och tryck Klar. Det du fyllt i finns kvar om du lägger till en blankett igen. En låst blankett går inte att kryssa ur, men nya blanketter går alltid att lägga till.',
         'Längst ner i varje blankett finns Dela bara den här blanketten. Den gör en PDF av bara den blanketten och ändrar inte jobbets status.',
-        'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. En låst blanketts uppgifter från jobbet, t.ex. AO nr och datum, ligger kvar som de var när den låstes, även om du ändrar dem under Uppgifter om jobbet. Lås upp blanketten om ändringen ska med.',
+        'Hänglåset till höger låser blanketten, så att den går att läsa men inte ändra. Tryck igen, eller på Lås upp inne i blanketten, för att låsa upp. När jobbet blir Skickat låses alla blanketter, och även avsnitten Bilder och Uppgifter om jobbet, som har egna hänglås i rubriken. Den som låser upp något får frågan om man är säker först. En låst blanketts uppgifter från jobbet, t.ex. Ao nr och datum, ligger kvar som de var när den låstes, även om du ändrar dem under Uppgifter om jobbet. Lås upp blanketten om ändringen ska med.',
       ]],
       ['Bilder', [
         'Tre grupper: Före, Efter och Rälsmärkning/bricka. Tryck på + i gruppen för att ta en bild eller välja bilder. Tryck på en bild för att se den större, och på × för att ta bort den.',
@@ -235,7 +235,7 @@ export const HJALP = {
     intro: 'Rapporten över dagens svetsar (DOK 2630, eller Trafikverkets TMALL 0435 om den är vald i Inställningar). I en DKV eller spårkorsning används Spårsvetsrapport för DKV (DOK 5868) eller för spårkorsning (DOK 5869) när mallen är inläst, med växelbilden för den växeltypen. En rad per svets.',
     delar: [
       ['Rapportuppgifter', [
-        'Företag/enhet, svetsansvarig och ditt namn och svets-ID hämtas från Inställningar. Eget AO nr hämtas från jobbet. Bessy anm/Ofelia hämtas från jobbets Bessy/Ofelia nr. Kundens AO nr skriver du själv.',
+        'Företag/enhet, svetsansvarig och ditt namn och svets-ID hämtas från Inställningar. Eget Ao nr och Bessy anm/Ofelia hämtas från jobbet. Kundens Ao nr skriver du själv.',
       ]],
       ['Svetsar', [
         'Tryck + Lägg till svets för varje svets. En ny svets får samma uppgifter som den förra, utom läge och kapmått, så du behöver oftast bara ändra några rutor. Den första svetsen i ett nytt jobb får uppgifterna från förra jobbet, men rältemp är tom tills du väljer den.',
