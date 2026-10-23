@@ -4,7 +4,7 @@ import { fillPdf, pdfInfo } from './fill-pdf.js';
 import { fillOverlay, isPdf } from './fill-overlay.js';
 import { VAXELTYPER, VAXELFORMS, effektiv } from './forms/vaxel.js';
 import oversyn1481 from './forms/oversyn1481.js';
-import svets, { svets0435, svetsmall } from './forms/svets.js';
+import svets, { svets0435, svetsdkv, svetsspk, svetsmall, VXL } from './forms/svets.js';
 import heta from './forms/heta.js';
 import ibt from './forms/ibt.js';
 import k0737 from './forms/k0737.js';
@@ -25,13 +25,20 @@ import { visaBedomning } from './bedomning.js';
 import { svetsstodRad } from './svetsstod.js';
 
 // Samma ordning som dokumenten i jobbet (CATALOG).
-const FORMS = [heta, svets, svets0435, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
+const FORMS = [heta, svets, svets0435, svetsdkv, svetsspk, ibt, ...VAXELFORMS, oversyn1481, skev, k0737, kap];
 const FORM_BY_KEY = Object.fromEntries(FORMS.map(f => [f.key, f]));
 
 // Ett dokument i jobbet. Växelbesiktningen beror på vilken växeltyp jobbet gäller.
 // Mallen som blanketten fylls i på: svetsrapporten på TMALL 0435 i stället för DOK 2630 när
 // den är vald i Inställningar (2026-10-22). Uppgifterna är desamma (form.dataKey).
-const mallForm = form => (form?.key === 'svets' && svetsmall.val === '0435' ? svets0435 : form);
+// DKV och spårkorsning har egna svetsrapporter (DOK 5868 och 5869) som används när mallen är
+// inläst och TMALL 0435 inte är vald (2026-10-23).
+const mallForm = (form, job) => {
+  if (form?.key !== 'svets') return form;
+  if (svetsmall.val === '0435') return svets0435;
+  const v = job && VXL[job.vaxeltyp];
+  return v && svetsmall.vxl[v] ? { dkv: svetsdkv, spk: svetsspk }[v] : form;
+};
 function docForm(job, docKey) {
   return docKey === 'vaxel' ? FORM_BY_KEY[job.vaxeltyp] : FORM_BY_KEY[docKey];
 }
@@ -678,7 +685,7 @@ async function jobView(id) {
     return h('li', { class: 'med-las' }, h('a', { href: `#/jobb/${id}/${k}` },
       // Samma korta namn som sidtiteln (2026-10-20).
       h('span', { class: 'main' }, form.kort || form.title),
-      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${mallForm(form).code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], jobbFor(job, k)))),
+      (p => h('span', { class: 'sub' + (p.varning ? ' varn' : '') }, `${mallForm(form, job).code} · ${p.text || p}`))(formProgress(form, job.forms[form.key], jobbFor(job, k)))),
       // Hänglås: en låst blankett går att läsa men inte ändra (2026-10-21).
       lasKnapp(last, () => {
         if (last && !bekraftaUpplasning(form.kort || form.title)) return;
@@ -982,7 +989,7 @@ async function varningar(job) {
   }
   for (const key of job.docs) {
     const form = docForm(jobbFor(job, key), key);
-    const t = form && await db.get('templates', mallForm(form).key);
+    const t = form && await db.get('templates', mallForm(form, jobbFor(job, key)).key);
     if (t && await gammalMall(t)) lista.push(`${form.title}: mallen är en gammal version. Läs in den senaste under Inställningar > Blankettmallar.`);
   }
   return lista;
@@ -1088,7 +1095,7 @@ async function skapaFiler(job, { bilder = true } = {}) {
   const problems = [];
   for (const key of job.docs) {
     const j = jobbFor(job, key);
-    const form = mallForm(docForm(j, key));
+    const form = mallForm(docForm(j, key), j);
     if (!form) { problems.push('Välj växeltyp för växelbesiktningsrapporten.'); continue; }
     const tpl = await db.get('templates', form.key);
     if (!tpl || (form.format === 'overlay' && !isPdf(tpl.data))) {
@@ -1419,8 +1426,10 @@ function renderItem(item, data, onChange, job) {
     case 'plus':
       // Två sifferrutor med + emellan, t.ex. km + m.
       // image: en del av rubriken öppnar en bild, t.ex. växelbilden.
-      return h('div', { class: 'field plus' }, h('span', {}, item.image
-        ? item.label.split(item.image.text).flatMap((part, i) => (i ? [h('button', { type: 'button', class: 'link inline', onclick: () => showImage(item.image.src, item.image.alt) }, item.image.text), part] : [part]))
+      // image kan bero på jobbet, t.ex. växelbilden för DKV (2026-10-23).
+      const plusBild = typeof item.image === 'function' ? item.image(job || {}) : item.image;
+      return h('div', { class: 'field plus' }, h('span', {}, plusBild
+        ? item.label.split(plusBild.text).flatMap((part, i) => (i ? [h('button', { type: 'button', class: 'link inline', onclick: () => showImage(plusBild.src, plusBild.alt) }, plusBild.text), part] : [part]))
         : item.label),
         h('div', { class: 'plus-row' }, item.keys.map((key, i) => [
           i ? h('span', { class: 'plus-sign' }, '+') : null,
@@ -1934,7 +1943,7 @@ function svetsmallKort() {
     ruta.replaceChildren(h('h2', {}, 'Svetsrapport'), h('div', { class: 'card' },
       val('2630', 'DOK 2630 Svetsrapport'),
       val('0435', 'TMALL 0435 Svetsrapport (Trafikverket)'),
-      h('p', { class: 'muted note' }, 'Mallen som svetsrapporten fylls i på. Uppgifterna är desamma; med TMALL 0435 kan du också välja en avvikelse ur mallens lista under Avvikelser och kommentarer.')));
+      h('p', { class: 'muted note' }, 'Mallen som svetsrapporten fylls i på. Uppgifterna är desamma; med TMALL 0435 kan du också välja en avvikelse ur mallens lista under Avvikelser och kommentarer. Med DOK 2630 används svetsrapporten för DKV eller spårkorsning (DOK 5868, 5869) i sådana växlar, om mallen är inläst.')));
   });
   return ruta;
 }
@@ -2052,7 +2061,8 @@ async function delaFiler(files, area) {
 async function route() {
   window.onpagehide = null;
   // Valet gäller bara när båda mallarna är inlästa; annars används den som finns (2026-10-22).
-  const [m2630, m0435] = await Promise.all([db.get('templates', 'svets'), db.get('templates', 'svets0435')]);
+  const [m2630, m0435, mdkv, mspk] = await Promise.all(['svets', 'svets0435', 'svetsdkv', 'svetsspk'].map(k => db.get('templates', k)));
+  svetsmall.vxl = { dkv: !!mdkv, spk: !!mspk };
   svetsmall.val = m0435 && !m2630 ? '0435' : m2630 && !m0435 ? '2630' : await db.getSetting('svetsmall', '2630');
   const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
   document.querySelector('.hjalp-overlay')?.remove();

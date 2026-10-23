@@ -3,6 +3,8 @@
 // Värdelistorna är mallens egna rullistor.
 import LAYOUT from './svets-layout.js';
 import LAYOUT_0435 from './svets0435-layout.js';
+import LAYOUT_DKV from './svets-dkv-layout.js';
+import LAYOUT_SPK from './svets-spk-layout.js';
 import { blankettDatum } from '../datum.js';
 import { berakna } from './kap.js';
 
@@ -20,15 +22,22 @@ const WPS = ['001:05', '3-11:04', '3-12:05', '3-13:06', '3-14:04', '3-15:04', '3
 const RADER = 10;
 // Vid flera blanketter (fler än tio svetsar) skrivs radnumren 11–20 osv. och sidnumret, t.ex.
 // 2(3), över mallens 1–10 och 1(1) (2026-10-21).
-const RAD_BAS = [422.66, 403.18, 383.71, 364.24, 344.76, 325.29, 305.81, 286.34, 266.87, 247.39];
-const LAYOUT_DELAR = {
-  ...LAYOUT,
-  text: { ...LAYOUT.text, ...Object.fromEntries(RAD_BAS.map((y, i) => [`nr${i}`, [0, 31.9, y, 10, 'right']])), sida: [0, 824.9, 25.3, 9, 'right'] },
-  tack: { ...Object.fromEntries(RAD_BAS.map((y, i) => [`nr${i}`, [0, 20.8, y - 2.6, 11.3, 11.4]])), sida: [0, 800, 21.5, 26.5, 13] },
-};
+// Radnumrens baslinjer är svetsradernas (kolumn C). sida: sidnumrets högerkant och baslinje.
+function delar(layout, nrX, [sx, sy]) {
+  const bas = Array.from({ length: RADER }, (_, i) => layout.text[`C${6 + 2 * i}`][2]);
+  return {
+    ...layout,
+    text: { ...layout.text, ...Object.fromEntries(bas.map((y, i) => [`nr${i}`, [0, nrX, y, 10, 'right']])), sida: [0, sx, sy, 9, 'right'] },
+    tack: { ...Object.fromEntries(bas.map((y, i) => [`nr${i}`, [0, 20.8, y - 2.6, nrX - 20.6, 11.4]])), sida: [0, sx - 24.9, sy - 3.8, 26.5, 13] },
+  };
+}
+const LAYOUT_DELAR = delar(LAYOUT, 31.9, [824.9, 25.3]);
 // Vilken mall svetsrapporten fylls i på, väljs i Inställningar när TMALL 0435 är inläst
 // (2026-10-22). Sätts av app.js.
-export const svetsmall = { val: '2630' };
+// vxl: vilka av mallarna för DKV och spårkorsning som är inlästa (2026-10-23).
+export const svetsmall = { val: '2630', vxl: { dkv: false, spk: false } };
+// Växeltyp → svetsrapport för DKV eller spårkorsning (spårkorsning tillhörande kryssväxel också).
+export const VXL = { dkv: 'dkv', spk: 'spk', spkk: 'spk' };
 // Mallens lista över avvikelser (bara TMALL 0435).
 const AVVIKELSER = ['Solkurva', 'Räl höjdsliten', 'Räl sidosliten', 'Isolerskarv sliten', 'Sliprar dåliga', 'Befästningar, dåliga', 'Befästningar, mellanlägg slitna (gummin)', 'Befästningar, isolatorer slitna (plast)', 'Spår ostoppad', 'Korsning ostoppad', 'Växel ostoppad', 'Ballast saknas', 'Ballast dålig', 'Spårvidd stor', 'Spårvidd liten'];
 const COLS = { dag: 'C', plats: 'E', km: 'G', fore: 'I', efter: 'K', temp: 'M', modell: 'O', material: 'Q', hv: 'S', typ: 'U', metod: 'W', tillsats: 'Y', batch: 'AA', wps: 'AC' };
@@ -116,7 +125,7 @@ const svets = {
           { type: 'text', key: 'plats', label: 'Bandel-ort-vxnr / spår', placeholder: plats, flex: 4 },
           {
             type: 'plus', label: 'Km + m (utan meter: nr på växelbilden)', keys: ['lagekm', 'lagem'],
-            image: { text: 'växelbilden', src: 'img/svets/vaxelbild.jpg', alt: 'Växelbild med svetsarnas nummer 1–14' },
+            image: job => ({ text: 'växelbilden', ...(svetsmall.vxl[VXL[job.vaxeltyp]] && svetsmall.val !== '0435' ? VAXELBILD[VXL[job.vaxeltyp]] : { src: 'img/svets/vaxelbild.jpg', alt: 'Växelbild med svetsarnas nummer 1–14' }) }),
             placeholders: [job => (job.vxnr ? '' : job.km || ''), job => (job.vxnr || !job.km ? '' : job.m || '')],
           },
           { type: 'text', key: 'fore', label: 'Före kap mm', inputmode: 'decimal', half: true },
@@ -204,7 +213,7 @@ const svets = {
     const sidor = Math.max(1, Math.ceil((data.svetsar || []).length / RADER));
     if (sidor > 1) {
       v.sida = `${sida + 1}(${sidor})`;
-      if (sida > 0) RAD_BAS.forEach((_, i) => { v[`nr${i}`] = String(sida * RADER + i + 1); });
+      if (sida > 0) for (let i = 0; i < RADER; i++) v[`nr${i}`] = String(sida * RADER + i + 1);
     }
     return v;
   },
@@ -241,5 +250,29 @@ export const svets0435 = {
     return ut;
   },
 };
+
+// Spårsvetsrapport för DKV (dokumentnummer 5868) och för spårkorsning (5869), version 1.0
+// (2026-10-23). Samma blankett som DOK 2630 med en egen växelbild med svetsarnas nummer. Används
+// i stället för DOK 2630 när jobbets växeltyp är DKV respektive SPK och mallen är inläst (app.js,
+// mallForm). Kryssrutorna är inritade i mallen (tools/svetsmall_vaxel.py).
+export const VAXELBILD = {
+  dkv: { src: 'img/svets/vaxelbild-dkv.jpg', alt: 'Växelbild för DKV med svetsarnas nummer 1–22' },
+  spk: { src: 'img/svets/vaxelbild-spk.jpg', alt: 'Växelbild för spårkorsning med svetsarnas nummer 1–24' },
+};
+const vaxelvariant = (key, code, title, layout, templateHint) => ({
+  ...svets,
+  key,
+  dataKey: 'svets',
+  code,
+  title,
+  valfri: true,
+  layout: delar(layout, 32.1, [823.9, 24.2]),
+  templateHint,
+  async matches({ pdf }) {
+    return !!pdf && pdf.subject === `Spårdokumentation mall ${key}`;
+  },
+});
+export const svetsdkv = vaxelvariant('svetsdkv', 'DOK 5868', 'Spårsvetsrapport för DKV', LAYOUT_DKV, 'DOK 5868 Spårsvetsrapport för DKV (PDF-mall)');
+export const svetsspk = vaxelvariant('svetsspk', 'DOK 5869', 'Spårsvetsrapport för spårkorsning', LAYOUT_SPK, 'DOK 5869 Spårsvetsrapport för spårkorsning (PDF-mall)');
 
 export default svets;

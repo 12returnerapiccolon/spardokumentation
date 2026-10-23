@@ -9,6 +9,14 @@ export default {
     "sha": "316537f61cbc1ff3547864ad278adb0a2ab618e24da2c4c0654e3b67eb970615",
     "datum": "2026-10-20"
   },
+  "svetsdkv": {
+    "sha": "4ed20c494bf24e8b0099d9ad469476e8cb833411e62f0e8ad5aa6b36362b3fc8",
+    "datum": "2026-10-23"
+  },
+  "svetsspk": {
+    "sha": "9cf381e627f91301908fd3b6c9641a94ca2f17aab4cd72f6287ca4e36160960d",
+    "datum": "2026-10-23"
+  },
   "ev": {
     "sha": "7c3b974c591a6f2ad7efe6c7fa8459d1066ed1402e8734872a7b718c09b86b87",
     "datum": "2026-10-20"

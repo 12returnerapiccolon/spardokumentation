@@ -1,5 +1,5 @@
 // Gör appen körbar offline. Höj VERSION när filerna ändras.
-const VERSION = 'v190';
+const VERSION = 'v191';
 const FILES = [
   './',
   'index.html',
@@ -46,6 +46,8 @@ const FILES = [
   'js/forms/oversyn1481.js',
   'js/forms/svets.js',
   'js/forms/svets0435-layout.js',
+  'js/forms/svets-dkv-layout.js',
+  'js/forms/svets-spk-layout.js',
   'js/forms/svets-layout.js',
   'js/forms/heta.js',
   'js/forms/heta-layout.js',
@@ -121,6 +123,8 @@ const FILES = [
   'js/forms/kap-layout.js',
   'js/forms/ibt-layout.js',
   'img/svets/vaxelbild.jpg',
+  'img/svets/vaxelbild-dkv.jpg',
+  'img/svets/vaxelbild-spk.jpg',
   'vendor/jszip.min.js',
   'vendor/pdf-lib.min.js',
   'vendor/fontkit.min.js',
