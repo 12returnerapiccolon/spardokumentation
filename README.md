@@ -39,6 +39,8 @@ Normalvärden kommer ur bilaga 8 (`js/forms/vaxel-normal.js`) och toleranser ur 
 
 Växelmodellerna i rullistan kommer från TRVINFRA-00017 Spårväxel v5.0, bilaga 2–4 (`js/forms/vaxelmodeller.js`). Bilderna i `img/placering/` är sidorna ur bilaga 7 (Placering mått), och `img/vaxelbild/` är växelbilderna ur besiktningsmallarna.
 
+Alla blankettmallar, TDOK, TMALL och TRVINFRA som appen bygger på, med version och vilka filer som beror på dem, finns i [docs/kallor.md](docs/kallor.md). Gå igenom den när en ny version av ett dokument kommer ut.
+
 ## Funktioner i korthet
 
 - Nytt jobb: rutorna Datum och order, Plats, Arbete och Växel. Blanketterna förväljs efter svaren och kan ändras.
